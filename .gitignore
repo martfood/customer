@@ -57,6 +57,15 @@ key.properties
 **/ios/Runner.xcworkspace/xcuserdata/
 **/ios/Runner.xcodeproj/project.xcworkspace/xcuserdata/
 **/ios/Runner.xcodeproj/xcuserdata/
+*.key
+*.csr
+*.certSigningRequest
+*.cer
+*.pem
+*.p12
+*.p8
+*.mobileprovision
+p12_base64.txt
 
 # Environment Variables
 .env
