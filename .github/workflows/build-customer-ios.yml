@@ -14,7 +14,7 @@ on:
 jobs:
   build-and-sign-ios:
     name: Build & Auto-Sign iOS IPA
-    runs-on: macos-15
+    runs-on: macos-14
     defaults:
       run:
         working-directory: customer_app
