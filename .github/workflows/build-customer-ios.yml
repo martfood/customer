@@ -94,7 +94,12 @@ jobs:
       - name: Locate IPA Path
         id: find_ipa
         run: |
-          IPA_FILE=$(find customer_app/build/ios/ipa -name "*.ipa" | head -n 1)
+          IPA_FILE=$(find "$GITHUB_WORKSPACE/customer_app/build/ios/ipa" -name "*.ipa" | head -n 1)
+          if [ -z "$IPA_FILE" ] || [ ! -f "$IPA_FILE" ]; then
+            echo "ERROR: No IPA file found in $GITHUB_WORKSPACE/customer_app/build/ios/ipa"
+            ls -la "$GITHUB_WORKSPACE/customer_app/build/ios" || true
+            exit 1
+          fi
           echo "Found IPA: $IPA_FILE"
           echo "ipa_path=$IPA_FILE" >> "$GITHUB_OUTPUT"
 
