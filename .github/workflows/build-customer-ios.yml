@@ -1,0 +1,51 @@
+name: Build Customer App iOS
+
+on:
+  push:
+    branches:
+      - main
+      - master
+    paths:
+      - 'customer_app/**'
+      - 'shared_widgets/**'
+      - '.github/workflows/build-customer-ios.yml'
+  pull_request:
+    paths:
+      - 'customer_app/**'
+      - 'shared_widgets/**'
+  workflow_dispatch:
+
+jobs:
+  build-ios:
+    name: Build Customer iOS
+    runs-on: macos-14
+    defaults:
+      run:
+        working-directory: customer_app
+
+    steps:
+      - name: Checkout Monorepo
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter SDK
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.44.1'
+          channel: 'stable'
+          cache: true
+
+      - name: Install Dependencies
+        run: flutter pub get
+
+      - name: Run Tests
+        run: flutter test test/widget_test.dart
+
+      - name: Build iOS App (Unsigned IPA / Archive)
+        run: flutter build ipa --no-codesign
+
+      - name: Upload iOS Build Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: customer-app-ios-archive
+          path: customer_app/build/ios/archive/Runner.xcarchive
+          retention-days: 14
