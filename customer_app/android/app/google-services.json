@@ -1,0 +1,99 @@
+{
+  "project_info": {
+    "project_number": "45361321160",
+    "firebase_url": "https://martfood-app-default-rtdb.europe-west1.firebasedatabase.app",
+    "project_id": "martfood-app",
+    "storage_bucket": "martfood-app.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:45361321160:android:ea488aa4e951b82ef241fd",
+        "android_client_info": {
+          "package_name": "com.martfood.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "45361321160-fj2aqg7du44f5552g1bq244vep1s7ggp.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.martfood.app",
+            "certificate_hash": "db7beab73820599e7122ef502733fe7f35dcb55a"
+          }
+        },
+        {
+          "client_id": "45361321160-9ofs6jkpgbk539bjl5bdro0fnknhavtl.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAqxMaQB3HCnXLOY7oMHZZo3NkoCHjCnVM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "45361321160-9ofs6jkpgbk539bjl5bdro0fnknhavtl.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "45361321160-isflqc9c0lblgdane16vqhj26st7amo3.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.martfood.app"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:45361321160:android:a0b2e77d14cf0e49f241fd",
+        "android_client_info": {
+          "package_name": "com.martfood.rider"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "45361321160-cnhvbenf6t338i6puldc3up8faasph1a.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.martfood.rider",
+            "certificate_hash": "670140b4fb26e9a7eb67d92eeb182929e3f29d33"
+          }
+        },
+        {
+          "client_id": "45361321160-9ofs6jkpgbk539bjl5bdro0fnknhavtl.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAqxMaQB3HCnXLOY7oMHZZo3NkoCHjCnVM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "45361321160-9ofs6jkpgbk539bjl5bdro0fnknhavtl.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "45361321160-isflqc9c0lblgdane16vqhj26st7amo3.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.martfood.app"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

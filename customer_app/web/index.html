@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pay for Order - MartFood</title>
+  <!-- Paystack Inline JS -->
+  <script src="https://js.paystack.co/v1/inline.js"></script>
+  <style>
+    :root {
+      --primary-purple: #7C3AED;
+      --primary-purple-dark: #A855F7;
+      --bg-color: #F8FAFC;
+      --surface-color: #FFFFFF;
+      --input-fill: #F1F5F9;
+      --text-main: #0F172A;
+      --text-muted: #64748B;
+      --border-color: #E2E8F0;
+      --success-green: #16A34A;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --primary-purple: #A855F7;
+        --bg-color: #0F0F12;
+        --surface-color: #18181C;
+        --input-fill: #222228;
+        --text-main: #F8FAFC;
+        --text-muted: #94A3B8;
+        --border-color: #27272A;
+      }
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    /* Flat Minimal Design - Zero Elevation / Shadow */
+    .card {
+      width: 100%;
+      max-width: 460px;
+      background: var(--surface-color);
+      border: 1px solid var(--border-color);
+      border-radius: 24px;
+      padding: 28px;
+      box-shadow: none; /* Invariant: Zero drop shadows */
+    }
+
+    .brand-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .brand-name {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--primary-purple);
+      letter-spacing: -0.5px;
+    }
+
+    .secure-badge {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-muted);
+      background: var(--input-fill);
+      border: 1px solid var(--border-color);
+      padding: 4px 10px;
+      border-radius: 12px;
+    }
+
+    .banner {
+      background: rgba(124, 58, 237, 0.08);
+      border: 1px solid rgba(124, 58, 237, 0.2);
+      color: var(--primary-purple);
+      padding: 14px 18px;
+      border-radius: 16px;
+      font-size: 14px;
+      font-weight: 600;
+      text-align: center;
+      margin-bottom: 20px;
+      line-height: 1.4;
+    }
+
+    .restaurant-title {
+      font-size: 16px;
+      font-weight: 800;
+      color: var(--text-main);
+      margin-bottom: 14px;
+    }
+
+    .items-container {
+      background: var(--input-fill);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 14px 16px;
+      margin-bottom: 20px;
+    }
+
+    .item-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .item-row:last-child {
+      border-bottom: none;
+    }
+
+    .item-qty {
+      font-weight: 700;
+      color: var(--primary-purple);
+      margin-right: 8px;
+    }
+
+    .item-name {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-main);
+    }
+
+    .item-choices {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .item-price {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-main);
+      white-space: nowrap;
+    }
+
+    .summary-box {
+      margin-bottom: 24px;
+    }
+
+    .price-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 14px;
+      margin-bottom: 10px;
+      color: var(--text-muted);
+    }
+
+    .price-row.total {
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--text-main);
+      border-top: 1px solid var(--border-color);
+      padding-top: 14px;
+      margin-top: 14px;
+    }
+
+    .pay-button {
+      width: 100%;
+      height: 54px;
+      background-color: var(--primary-purple);
+      color: #ffffff;
+      border: none;
+      border-radius: 27px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: none;
+      transition: opacity 0.2s ease;
+    }
+
+    .pay-button:hover {
+      opacity: 0.9;
+    }
+
+    .status-card {
+      text-align: center;
+      padding: 40px 20px;
+    }
+
+    .status-icon {
+      font-size: 48px;
+      margin-bottom: 16px;
+    }
+
+    .status-title {
+      font-size: 20px;
+      font-weight: 800;
+      margin-bottom: 8px;
+    }
+
+    .status-desc {
+      font-size: 14px;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    .footer {
+      text-align: center;
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 24px;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="brand-header">
+      <div class="brand-name">MartFood 🍔</div>
+      <div class="secure-badge">🔒 Secure Payment</div>
+    </div>
+
+    <!-- Loading State -->
+    <div class="status-card" id="loading-state">
+      <div class="status-title">Loading Payment Details...</div>
+      <div class="status-desc">Fetching order summary from MartFood.</div>
+    </div>
+
+    <!-- Content State -->
+    <div id="content-state" style="display: none;">
+      <div class="banner" id="personal-banner">
+        Customer requested that you pay for this order.
+      </div>
+
+      <div class="restaurant-title" id="restaurant-name">MartFood Order</div>
+      
+      <div class="items-container" id="items-list"></div>
+
+      <div class="summary-box">
+        <div class="price-row">
+          <span>Subtotal</span>
+          <span id="subtotal-val">₦0.00</span>
+        </div>
+        <div class="price-row">
+          <span>Delivery Fee</span>
+          <span id="delivery-val">₦0.00</span>
+        </div>
+        <div class="price-row">
+          <span>Platform Fee</span>
+          <span id="platform-val">₦0.00</span>
+        </div>
+        <div class="price-row total">
+          <span>Total Amount</span>
+          <span id="total-val" style="color: var(--primary-purple);">₦0.00</span>
+        </div>
+      </div>
+
+      <button class="pay-button" id="pay-button" onclick="triggerPaystack()">
+        Pay with Paystack
+      </button>
+    </div>
+
+    <!-- Paid State -->
+    <div class="status-card" id="paid-state" style="display: none;">
+      <div class="status-icon">✅</div>
+      <div class="status-title">Already Paid</div>
+      <div class="status-desc">This order has already been paid for. Thank you for your support!</div>
+    </div>
+
+    <!-- Expired State -->
+    <div class="status-card" id="expired-state" style="display: none;">
+      <div class="status-icon">⌛</div>
+      <div class="status-title">Link Expired or Invalid</div>
+      <div class="status-desc">This payment request has expired or is no longer active. Please ask the customer to generate a new payment link.</div>
+    </div>
+
+    <!-- Cancelled State -->
+    <div class="status-card" id="cancelled-state" style="display: none;">
+      <div class="status-icon">❌</div>
+      <div class="status-title">Order Cancelled</div>
+      <div class="status-desc">This payment request was cancelled by the customer.</div>
+    </div>
+
+    <div class="footer">
+      Powered by Paystack • MartFood Technologies
+    </div>
+  </div>
+
+  <script>
+    const PAYSTACK_PUBLIC_KEY = 'pk_live_9a3133bdb8c6539b8ba228059dde0a4f10df3e1a';
+    let sessionData = null;
+
+    function formatCurrency(amount) {
+      return '₦' + Number(amount || 0).toLocaleString('en-NG', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    function parseFirestoreDoc(doc) {
+      if (!doc || !doc.fields) return {};
+      const result = {};
+      for (const key in doc.fields) {
+        result[key] = parseFirestoreValue(doc.fields[key]);
+      }
+      return result;
+    }
+
+    function parseFirestoreValue(val) {
+      if (!val) return null;
+      if (val.stringValue !== undefined) return val.stringValue;
+      if (val.integerValue !== undefined) return Number(val.integerValue);
+      if (val.doubleValue !== undefined) return Number(val.doubleValue);
+      if (val.booleanValue !== undefined) return val.booleanValue;
+      if (val.timestampValue !== undefined) return val.timestampValue;
+      if (val.mapValue) {
+        const obj = {};
+        const fields = val.mapValue.fields || {};
+        for (const k in fields) {
+          obj[k] = parseFirestoreValue(fields[k]);
+        }
+        return obj;
+      }
+      if (val.arrayValue) {
+        const arr = val.arrayValue.values || [];
+        return arr.map(parseFirestoreValue);
+      }
+      return null;
+    }
+
+    async function initPage() {
+      const urlParams = new URLSearchParams(window.location.search);
+      let token = urlParams.get('token');
+      if (!token) {
+        const fullPath = window.location.pathname;
+        const match = fullPath.match(/ps_[a-zA-Z0-9]+/);
+        if (match) {
+          token = match[0];
+        } else {
+          const parts = fullPath.split('/').filter(p => p.length > 0 && p !== 'pay' && p !== 'index.html');
+          token = parts.pop();
+        }
+      }
+
+      console.log("Token:", token);
+
+      if (!token || token.indexOf('ps_') !== 0) {
+        showState('expired-state');
+        return;
+      }
+
+      try {
+        const sessionRes = await fetch(`https://firestore.googleapis.com/v1/projects/martfood-app/databases/(default)/documents/payment_sessions/${token}`);
+        if (!sessionRes.ok) {
+          showState('expired-state');
+          return;
+        }
+
+        const sessionJson = await sessionRes.json();
+        const session = parseFirestoreDoc(sessionJson);
+        console.log("Parsed Session:", session);
+
+        if (session.status === 'paid') {
+          showState('paid-state');
+          return;
+        }
+        if (session.status === 'cancelled') {
+          showState('cancelled-state');
+          return;
+        }
+        if (session.expiresAt && new Date() > new Date(session.expiresAt)) {
+          showState('expired-state');
+          return;
+        }
+
+        sessionData = session;
+
+        // Fetch Order Details
+        if (session.orderId) {
+          try {
+            const orderRes = await fetch(`https://firestore.googleapis.com/v1/projects/martfood-app/databases/(default)/documents/orders/${session.orderId}`);
+            if (orderRes.ok) {
+              const orderJson = await orderRes.json();
+              const order = parseFirestoreDoc(orderJson);
+              console.log("Parsed Order:", order);
+              renderOrderDetails(session, order);
+            } else {
+              renderBasicDetails(session);
+            }
+          } catch (_) {
+            renderBasicDetails(session);
+          }
+        } else {
+          renderBasicDetails(session);
+        }
+
+        showState('content-state');
+      } catch (e) {
+        console.error("Initialization error:", e);
+        showState('expired-state');
+      }
+    }
+
+    function renderOrderDetails(session, order) {
+      document.getElementById('personal-banner').innerText = `${session.customerName || 'Customer'} requested that you pay for this order.`;
+      
+      if (order.restaurantName) {
+        document.getElementById('restaurant-name').innerText = order.restaurantName;
+      }
+
+      const itemsList = document.getElementById('items-list');
+      itemsList.innerHTML = '';
+
+      const isHidden = (session.hideOrderDetails === true || order.hideOrderDetails === true);
+
+      if (isHidden) {
+        itemsList.innerHTML = `
+          <div style="display: flex; align-items: center; gap: 12px; padding: 10px 4px;">
+            <div style="width: 36px; height: 36px; border-radius: 50%; background: rgba(124, 58, 237, 0.1); display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0;">🔒</div>
+            <div>
+              <div style="font-size: 14px; font-weight: 700; color: var(--text-main);">Order Details Hidden</div>
+              <div style="font-size: 12px; color: var(--text-muted); margin-top: 2px; line-height: 1.3;">The customer chose to keep the items and meal choices in this order private.</div>
+            </div>
+          </div>
+        `;
+      } else {
+        const items = order.items || [];
+        if (items.length > 0) {
+          items.forEach(item => {
+            const row = document.createElement('div');
+            row.className = 'item-row';
+
+            const left = document.createElement('div');
+            
+            const nameLine = document.createElement('div');
+            nameLine.innerHTML = `<span class="item-qty">${item.quantity || 1}x</span><span class="item-name">${item.title || 'Food Item'}</span>`;
+            left.appendChild(nameLine);
+
+            if (item.selectedChoices && item.selectedChoices.length > 0) {
+              const choices = document.createElement('div');
+              choices.className = 'item-choices';
+              choices.innerText = item.selectedChoices.map(c => c.label || c.group).join(', ');
+              left.appendChild(choices);
+            }
+
+            const right = document.createElement('div');
+            right.className = 'item-price';
+            right.innerText = formatCurrency((item.price || 0) * (item.quantity || 1));
+
+            row.appendChild(left);
+            row.appendChild(right);
+            itemsList.appendChild(row);
+          });
+        } else {
+          itemsList.innerHTML = `<div style="font-size:14px; color: var(--text-muted); text-align:center;">1x MartFood Order</div>`;
+        }
+      }
+
+      const subtotal = order.subtotal || session.amount || 0;
+      const delivery = order.deliveryFee || 0;
+      const service = order.serviceFee || order.platformFee || 0;
+      const total = order.total || session.amount || 0;
+
+      document.getElementById('subtotal-val').innerText = formatCurrency(subtotal);
+      document.getElementById('delivery-val').innerText = formatCurrency(delivery);
+      document.getElementById('platform-val').innerText = formatCurrency(service);
+      document.getElementById('total-val').innerText = formatCurrency(total);
+
+      document.getElementById('pay-button').innerText = `Pay ${formatCurrency(total)} with Paystack`;
+    }
+
+    function renderBasicDetails(session) {
+      document.getElementById('personal-banner').innerText = `${session.customerName || 'Customer'} requested that you pay for this order.`;
+      if (session.hideOrderDetails === true) {
+        document.getElementById('items-list').innerHTML = `
+          <div style="display: flex; align-items: center; gap: 12px; padding: 10px 4px;">
+            <div style="width: 36px; height: 36px; border-radius: 50%; background: rgba(124, 58, 237, 0.1); display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0;">🔒</div>
+            <div>
+              <div style="font-size: 14px; font-weight: 700; color: var(--text-main);">Order Details Hidden</div>
+              <div style="font-size: 12px; color: var(--text-muted); margin-top: 2px; line-height: 1.3;">The customer chose to keep the items and meal choices in this order private.</div>
+            </div>
+          </div>
+        `;
+      } else {
+        document.getElementById('items-list').innerHTML = `<div style="font-size:14px; color: var(--text-muted); text-align:center; padding: 10px 0;">1x MartFood Order</div>`;
+      }
+      document.getElementById('subtotal-val').innerText = formatCurrency(session.amount);
+      document.getElementById('delivery-val').innerText = formatCurrency(0);
+      document.getElementById('platform-val').innerText = formatCurrency(0);
+      document.getElementById('total-val').innerText = formatCurrency(session.amount);
+      document.getElementById('pay-button').innerText = `Pay ${formatCurrency(session.amount)} with Paystack`;
+    }
+
+    function showState(stateId) {
+      document.getElementById('loading-state').style.display = 'none';
+      document.getElementById('content-state').style.display = 'none';
+      document.getElementById('paid-state').style.display = 'none';
+      document.getElementById('expired-state').style.display = 'none';
+      document.getElementById('cancelled-state').style.display = 'none';
+
+      document.getElementById(stateId).style.display = 'block';
+    }
+
+    function triggerPaystack() {
+      if (!sessionData) return;
+      
+      const handler = PaystackPop.setup({
+        key: PAYSTACK_PUBLIC_KEY,
+        email: sessionData.payerEmail || 'payer@martfood.com',
+        amount: Math.round((sessionData.amount || 0) * 100),
+        ref: sessionData.token,
+        onClose: function() {
+          console.log('Payment window closed.');
+        },
+        callback: function(response) {
+          console.log('Payment success:', response);
+          updateOrderStatusToPaid(sessionData);
+          showState('paid-state');
+        }
+      });
+      handler.openIframe();
+    }
+
+    async function updateOrderStatusToPaid(session) {
+      try {
+        fetch(`https://firestore.googleapis.com/v1/projects/martfood-app/databases/(default)/documents/payment_sessions/${session.token}?updateMask.fieldPaths=status`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ fields: { status: { stringValue: 'paid' } } })
+        });
+
+        if (session.orderId) {
+          fetch(`https://firestore.googleapis.com/v1/projects/martfood-app/databases/(default)/documents/orders/${session.orderId}?updateMask.fieldPaths=status&updateMask.fieldPaths=paymentStatus`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              fields: {
+                status: { stringValue: 'pending' },
+                paymentStatus: { stringValue: 'paid' }
+              }
+            })
+          });
+        }
+
+        if (session.customerId) {
+          const notifyData = JSON.stringify({
+            fields: {
+              userId: { stringValue: session.customerId },
+              customerId: { stringValue: session.customerId },
+              title: { stringValue: 'Payment Received! 🎉' },
+              body: { stringValue: `Your 'Pay for Me' order of ${formatCurrency(session.amount)} has been paid for!` },
+              description: { stringValue: `Your 'Pay for Me' order of ${formatCurrency(session.amount)} has been paid for and is now pending preparation.` },
+              type: { stringValue: 'order_paid' },
+              orderId: { stringValue: session.orderId || '' },
+              isRead: { booleanValue: false },
+              createdAt: { timestampValue: new Date().toISOString() }
+            }
+          });
+
+          fetch(`https://firestore.googleapis.com/v1/projects/martfood-app/databases/(default)/documents/notifications`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: notifyData
+          });
+
+          fetch(`https://firestore.googleapis.com/v1/projects/martfood-app/databases/(default)/documents/customers/${session.customerId}/notifications`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: notifyData
+          });
+        }
+      } catch (e) {
+        console.error("Error updating paid status:", e);
+      }
+    }
+
+    window.onload = initPage;
+  </script>
+</body>
+</html>

@@ -1,0 +1,44 @@
+# MartFood Project Rules & Standards
+
+These rules apply to all development within the MartFood ecosystem, including the Customer app, Driver app, and shared libraries.
+
+## 1. Project Architecture & Structure
+- **External Shared Widgets:** All reusable UI components, themes, and utilities must reside in the `shared_widgets` directory, which is located outside the specific app projects (e.g., `../shared_widgets`).
+- **Feature-First Organization:** Within each app, organize code by features (e.g., `features/auth`, `features/orders`).
+- **Separation of Concerns:** Strictly follow the Data -> Domain -> Presentation layer separation.
+
+## 2. UI & Styling Standards
+- **Primary Color:** `#803ca2`
+- **Primary Gradient:** `LinearGradient(colors: [Color(0xFF803CA2), Color(0xFFA05CBF)], begin: Alignment.topCenter, end: Alignment.bottomCenter)`
+- **Accent Color:** `#E5A70C`
+- **Dual Theme Support:** Every screen and widget **must** support both Light and Dark modes.
+- **Dark Mode Aesthetic:** 
+  - Use a high-contrast "Pure Black" theme.
+  - Backgrounds should be `#000000` (OLED black) where possible.
+  - Text and icons should primarily be white or shades of light gray to maintain the "black and white" feel with "more black spaces."
+- **Shadow Standards:** Use very subtle, faint shadows for cards and inputs: `BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: Offset(0, 4))`.
+- **Corner Radius:** Standard corner radius for cards and buttons should be `16.0` to match the rounded design language.
+- **Padding:** Maintain consistent padding: `16.0` or `20.0` for screen margins, `12.0` for internal card padding.
+- **Status Bar Integration:** 
+  - All screens must extend into the status bar area (edge-to-edge).
+  - Status bar icons and background colors must dynamically update based on the current theme (e.g., dark icons on light theme, light icons on dark theme).
+- **Responsiveness:**
+  - Use `LayoutBuilder`, `FittedBox`, or responsive packages (like `flutter_screenutil`) to ensure all screens look perfect on all mobile screen sizes.
+  - Avoid hardcoded pixel values for layouts; use relative scaling.
+
+## 3. Component Consistency
+- **Shared Theme:** Always use `AppTheme` defined in `shared_widgets/lib/core/theme/app_theme.dart`.
+- **Atomic Design:** Build small, reusable components (atoms, molecules) in `shared_widgets` before assembling them into screens.
+- **Shared Utilities:** Use common validation, formatting, and networking logic from `shared_widgets/lib/core/utils`.
+
+## 4. Development Workflow
+- **State Management:** Use **Bloc** or **Riverpod** consistently across all apps.
+- **Real-time Data:** Use Firestore streams for live order tracking and status updates.
+- **No Placeholders:** Never use placeholder images or text. Use actual assets or the `generate_image` tool during development if assets are missing.
+- **Testing:** Aim for high test coverage. Every new feature requires unit or widget tests.
+
+## 5. Coding Standards
+- Follow the official [Dart Style Guide](https://dart.dev/guides/language/type-system).
+- Every public class and method must have a documentation comment (`///`).
+- Use `const` constructors whenever possible for better performance.
+- Handle all potential Firebase/Network errors gracefully with user-friendly messages.

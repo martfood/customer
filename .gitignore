@@ -1,0 +1,80 @@
+# OS & IDE
+.DS_Store
+Thumbs.db
+*.log
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+
+# Deployment & Hosting
+.netlify/
+.vercel/
+.firebase/
+
+# Node & Frontend Web Dependencies
+node_modules/
+**/node_modules/
+dist/
+**/dist/
+.next/
+**/next/
+
+# Flutter & Dart
+.dart_tool/
+**/.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+**/.flutter-plugins
+**/.flutter-plugins-dependencies
+.pub-cache/
+**/.pub-cache/
+.pub/
+**/.pub/
+build/
+**/build/
+coverage/
+**/coverage/
+
+# Android Studio & Gradle
+.gradle/
+**/.gradle/
+**/android/app/debug/
+**/android/app/profile/
+**/android/app/release/
+key.properties
+**/key.properties
+*.keystore
+*.jks
+
+# iOS & Xcode
+**/ios/Pods/
+**/ios/.symlinks/
+**/ios/Flutter/Generated.xcconfig
+**/ios/Flutter/flutter_export_environment.sh
+**/ios/Flutter/ephemeral/
+**/ios/Runner.xcworkspace/xcuserdata/
+**/ios/Runner.xcodeproj/project.xcworkspace/xcuserdata/
+**/ios/Runner.xcodeproj/xcuserdata/
+
+# Environment Variables
+.env
+.env.*
+!.env.example
+
+# Exclude other MartFood apps and desktop assets from customer repo
+rider_app/
+vendor_app/
+martfood_admin_dashboard/
+website/
+MartFood/
+images/
+*.png
+*.jpg
+*.jpeg
+.agents/
+MartFood_SRS.md
+qa_test_cases.md
+keystore_and_release_config.md
+

@@ -1,0 +1,27 @@
+{
+  "firestore": {
+    "rules": "firestore.rules"
+  },
+  "hosting": {
+    "public": "web",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "rewrites": [
+      {
+        "source": "/pay/**",
+        "destination": "/pay_landing_page.html"
+      },
+      {
+        "source": "/pay",
+        "destination": "/pay_landing_page.html"
+      },
+      {
+        "source": "**",
+        "destination": "/pay_landing_page.html"
+      }
+    ]
+  }
+}
