@@ -71,6 +71,7 @@ post_install do |installer|
     if File.file?(file)
       content = File.read(file)
       if content =~ /Traits::template\s+CallSeqFactory\s*(?!<)\(/
+        File.chmod(0644, file) rescue nil
         patched = content.gsub(/Traits::template\s+CallSeqFactory\s*(?!<)\(/, 'Traits::template CallSeqFactory<>(')
         File.write(file, patched)
         puts "[Podfile post_install] Patched #{file} for Xcode C++ template syntax"

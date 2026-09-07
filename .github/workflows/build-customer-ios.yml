@@ -90,26 +90,6 @@ jobs:
           cp $PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles/d19bc656-22c1-4961-84f7-a9b7ba0c00fb.mobileprovision
           cp $PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles/MartFood_AppStore_Profile.mobileprovision
 
-      # ── PRE-INSTALL PODS & PATCH gRPC FOR XCODE 26 ─────────────────
-      - name: Pre-install CocoaPods and Patch gRPC
-        run: |
-          cd ios
-          pod install --repo-update || pod install
-          python3 -c "
-          import glob, re
-          count = 0
-          for path in glob.glob('Pods/**/basic_seq.h', recursive=True):
-              with open(path, 'r') as f:
-                  content = f.read()
-              if 'Traits::template CallSeqFactory' in content:
-                  content = re.sub(r'Traits::template\s+CallSeqFactory\s*(?!<)\(', 'Traits::template CallSeqFactory<>(', content)
-                  with open(path, 'w') as f:
-                      f.write(content)
-                  print(f'Patched: {path}')
-                  count += 1
-          print(f'Done patching gRPC basic_seq.h files ({count} files patched)')
-          "
-          cd ..
 
       # ── BUILD SIGNED IPA (OR UNSIGNED FALLBACK) ───────────────────────────
       - name: Build Signed iOS IPA
