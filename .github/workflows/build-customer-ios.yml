@@ -68,7 +68,8 @@ jobs:
 
           # Install Provisioning Profile
           mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
-          cp $PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles
+          cp $PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles/d19bc656-22c1-4961-84f7-a9b7ba0c00fb.mobileprovision
+          cp $PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles/MartFood_AppStore_Profile.mobileprovision
 
       # ── BUILD SIGNED IPA (OR UNSIGNED FALLBACK) ───────────────────────────
       - name: Build Signed iOS IPA
