@@ -90,12 +90,20 @@ jobs:
             customer_app/build/ios/archive/Runner.xcarchive
           retention-days: 14
 
+      # ── LOCATE GENERATED IPA ─────────────────────────────────────────────
+      - name: Locate IPA Path
+        id: find_ipa
+        run: |
+          IPA_FILE=$(find customer_app/build/ios/ipa -name "*.ipa" | head -n 1)
+          echo "Found IPA: $IPA_FILE"
+          echo "ipa_path=$IPA_FILE" >> "$GITHUB_OUTPUT"
+
       # ── UPLOAD TO TESTFLIGHT / APP STORE CONNECT ─────────────────────────
       - name: Upload to TestFlight / App Store Connect
         if: env.APP_STORE_CONNECT_PRIVATE_KEY != '' && env.APP_STORE_CONNECT_KEY_ID != '' && env.APP_STORE_CONNECT_ISSUER_ID != '' && env.BUILD_CERTIFICATE_BASE64 != ''
         uses: apple-actions/upload-testflight-build@v1
         with:
-          app-path: 'customer_app/build/ios/ipa/*.ipa'
+          app-path: ${{ steps.find_ipa.outputs.ipa_path }}
           issuer-id: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
           api-key-id: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
           api-private-key: ${{ secrets.APP_STORE_CONNECT_PRIVATE_KEY }}
