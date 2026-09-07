@@ -90,19 +90,25 @@ jobs:
           cp $PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles/d19bc656-22c1-4961-84f7-a9b7ba0c00fb.mobileprovision
           cp $PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles/MartFood_AppStore_Profile.mobileprovision
 
-      # ── PRE-INSTALL PODS & PATCH gRPC-Core FOR XCODE 26 ─────────────────
-      - name: Pre-install CocoaPods and Patch gRPC-Core
+      # ── PRE-INSTALL PODS & PATCH gRPC FOR XCODE 26 ─────────────────
+      - name: Pre-install CocoaPods and Patch gRPC
         run: |
           cd ios
           pod install --repo-update || pod install
-          # Patch gRPC-Core template keyword issue for Xcode 26 strict C++ compiler
-          GRPC_FILE="Pods/gRPC-Core/src/core/lib/promise/detail/basic_seq.h"
-          if [ -f "$GRPC_FILE" ]; then
-            sed -i '' 's/Traits::template CallSeqFactory/Traits::CallSeqFactory/g' "$GRPC_FILE"
-            echo "Patched gRPC-Core basic_seq.h"
-          else
-            echo "gRPC-Core file not found, skipping patch"
-          fi
+          python3 -c "
+          import glob, re
+          count = 0
+          for path in glob.glob('Pods/**/basic_seq.h', recursive=True):
+              with open(path, 'r') as f:
+                  content = f.read()
+              if 'Traits::template CallSeqFactory' in content:
+                  content = re.sub(r'Traits::template\s+CallSeqFactory\s*(?!<)\(', 'Traits::template CallSeqFactory<>(', content)
+                  with open(path, 'w') as f:
+                      f.write(content)
+                  print(f'Patched: {path}')
+                  count += 1
+          print(f'Done patching gRPC basic_seq.h files ({count} files patched)')
+          "
           cd ..
 
       # ── BUILD SIGNED IPA (OR UNSIGNED FALLBACK) ───────────────────────────
