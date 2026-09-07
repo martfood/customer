@@ -1,4 +1,4 @@
-name: Build Customer App iOS
+name: Build & Sign Customer App iOS
 
 on:
   push:
@@ -9,22 +9,18 @@ on:
       - 'customer_app/**'
       - 'shared_widgets/**'
       - '.github/workflows/build-customer-ios.yml'
-  pull_request:
-    paths:
-      - 'customer_app/**'
-      - 'shared_widgets/**'
   workflow_dispatch:
 
 jobs:
-  build-ios:
-    name: Build Customer iOS
+  build-and-sign-ios:
+    name: Build & Auto-Sign iOS IPA
     runs-on: macos-14
     defaults:
       run:
         working-directory: customer_app
 
     steps:
-      - name: Checkout Monorepo
+      - name: Checkout Repository
         uses: actions/checkout@v4
 
       - name: Setup Flutter SDK
@@ -37,15 +33,65 @@ jobs:
       - name: Install Dependencies
         run: flutter pub get
 
-      - name: Run Tests
+      - name: Run Smoke Tests
         run: flutter test test/widget_test.dart
 
-      - name: Build iOS App (Unsigned IPA / Archive)
+      # ── INSTALL APPLE CERTIFICATE & PROVISIONING PROFILE ──────────────────
+      - name: Install Apple Certificate and Provisioning Profile
+        if: ${{ secrets.BUILD_CERTIFICATE_BASE64 != '' && secrets.BUILD_PROVISION_PROFILE_BASE64 != '' }}
+        env:
+          BUILD_CERTIFICATE_BASE64: ${{ secrets.BUILD_CERTIFICATE_BASE64 }}
+          P12_PASSWORD: ${{ secrets.P12_PASSWORD }}
+          BUILD_PROVISION_PROFILE_BASE64: ${{ secrets.BUILD_PROVISION_PROFILE_BASE64 }}
+          KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
+        run: |
+          CERTIFICATE_PATH=$RUNNER_TEMP/build_certificate.p12
+          PP_PATH=$RUNNER_TEMP/build_pp.mobileprovision
+          KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
+
+          # Decode certificate and profile from secrets
+          echo -n "$BUILD_CERTIFICATE_BASE64" | base64 --decode -o $CERTIFICATE_PATH
+          echo -n "$BUILD_PROVISION_PROFILE_BASE64" | base64 --decode -o $PP_PATH
+
+          # Create temporary keychain
+          security create-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+          security set-keychain-settings -lut 21600 $KEYCHAIN_PATH
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+
+          # Import certificate into keychain
+          security import $CERTIFICATE_PATH -P "$P12_PASSWORD" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
+          security set-key-partition-list -S apple-tool:,apple: -s -k "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+          security list-keychain -d user -s $KEYCHAIN_PATH
+
+          # Install Provisioning Profile
+          mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
+          cp $PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles
+
+      # ── BUILD SIGNED IPA (OR UNSIGNED FALLBACK) ───────────────────────────
+      - name: Build Signed iOS IPA
+        if: ${{ secrets.BUILD_CERTIFICATE_BASE64 != '' && secrets.BUILD_PROVISION_PROFILE_BASE64 != '' }}
+        run: flutter build ipa --release --export-options-plist=ios/ExportOptions.plist
+
+      - name: Build Unsigned IPA (Fallback if secrets not yet set)
+        if: ${{ secrets.BUILD_CERTIFICATE_BASE64 == '' || secrets.BUILD_PROVISION_PROFILE_BASE64 == '' }}
         run: flutter build ipa --no-codesign
 
-      - name: Upload iOS Build Artifact
+      # ── UPLOAD BUILD ARTIFACTS ────────────────────────────────────────────
+      - name: Upload IPA Artifact to GitHub Actions
         uses: actions/upload-artifact@v4
         with:
-          name: customer-app-ios-archive
-          path: customer_app/build/ios/archive/Runner.xcarchive
+          name: customer-app-ios-ipa
+          path: |
+            customer_app/build/ios/ipa/*.ipa
+            customer_app/build/ios/archive/Runner.xcarchive
           retention-days: 14
+
+      # ── UPLOAD TO TESTFLIGHT / APP STORE CONNECT ─────────────────────────
+      - name: Upload to TestFlight / App Store Connect
+        if: ${{ secrets.APP_STORE_CONNECT_PRIVATE_KEY != '' && secrets.APP_STORE_CONNECT_KEY_ID != '' && secrets.APP_STORE_CONNECT_ISSUER_ID != '' && secrets.BUILD_CERTIFICATE_BASE64 != '' }}
+        uses: apple-actions/upload-testflight-build@v1
+        with:
+          app-path: 'customer_app/build/ios/ipa/*.ipa'
+          issuer-id: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+          api-key-id: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
+          api-private-key: ${{ secrets.APP_STORE_CONNECT_PRIVATE_KEY }}
