@@ -90,6 +90,21 @@ jobs:
           cp $PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles/d19bc656-22c1-4961-84f7-a9b7ba0c00fb.mobileprovision
           cp $PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles/MartFood_AppStore_Profile.mobileprovision
 
+      # ── PRE-INSTALL PODS & PATCH gRPC-Core FOR XCODE 26 ─────────────────
+      - name: Pre-install CocoaPods and Patch gRPC-Core
+        run: |
+          cd ios
+          pod install --repo-update || pod install
+          # Patch gRPC-Core template keyword issue for Xcode 26 strict C++ compiler
+          GRPC_FILE="Pods/gRPC-Core/src/core/lib/promise/detail/basic_seq.h"
+          if [ -f "$GRPC_FILE" ]; then
+            sed -i '' 's/Traits::template CallSeqFactory/Traits::CallSeqFactory/g' "$GRPC_FILE"
+            echo "Patched gRPC-Core basic_seq.h"
+          else
+            echo "gRPC-Core file not found, skipping patch"
+          fi
+          cd ..
+
       # ── BUILD SIGNED IPA (OR UNSIGNED FALLBACK) ───────────────────────────
       - name: Build Signed iOS IPA
         if: env.BUILD_CERTIFICATE_BASE64 != '' && env.BUILD_PROVISION_PROFILE_BASE64 != ''
