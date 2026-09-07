@@ -66,6 +66,7 @@ key.properties
 *.p8
 *.mobileprovision
 p12_base64.txt
+profile_base64.txt
 
 # Environment Variables
 .env
