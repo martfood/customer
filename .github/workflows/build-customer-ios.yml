@@ -63,8 +63,8 @@ jobs:
 
           # Import certificate into keychain
           security import $CERTIFICATE_PATH -P "$P12_PASSWORD" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
-          security set-key-partition-list -S apple-tool:,apple: -s -k "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
-          security list-keychain -d user -s $KEYCHAIN_PATH
+          security list-keychains -d user -s $KEYCHAIN_PATH $(security list-keychains -d user | tr -d '"')
+          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
 
           # Install Provisioning Profile
           mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
