@@ -48,6 +48,7 @@ post_install do |installer|
         'PERMISSION_NOTIFICATIONS=1',
       ]
       config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '14.0'
+      config.build_settings['CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES'] = 'YES'
     end
     if target.respond_to?(:source_build_phase) && target.source_build_phase
       target.source_build_phase.files.each do |file|
