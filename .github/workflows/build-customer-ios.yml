@@ -76,8 +76,18 @@ jobs:
 
           # Import certificate into keychain
           security import $CERTIFICATE_PATH -P "$P12_PASSWORD" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
+
+          # Download and import Apple Worldwide Developer Relations intermediate cert (ensures cert chain is trusted)
+          curl -fSL "https://www.apple.com/certificateauthority/AppleWWDRCAG3.cer" -o $RUNNER_TEMP/AppleWWDRCAG3.cer
+          security import $RUNNER_TEMP/AppleWWDRCAG3.cer -k $KEYCHAIN_PATH -T /usr/bin/codesign || true
+
+          # Set default keychain and user keychain search list
+          security default-keychain -s $KEYCHAIN_PATH
           security list-keychains -d user -s $KEYCHAIN_PATH $(security list-keychains -d user | tr -d '"')
           security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+
+          # Print detected valid code signing identities
+          security find-identity -v -p codesigning $KEYCHAIN_PATH
 
           # Install Provisioning Profile
           mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
