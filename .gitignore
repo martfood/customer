@@ -75,6 +75,7 @@ profile_base64.txt
 
 # Exclude other MartFood apps and desktop assets from customer repo
 rider_app/
+rider/
 vendor_app/
 martfood_admin_dashboard/
 website/
