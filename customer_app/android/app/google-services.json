@@ -23,6 +23,14 @@
           }
         },
         {
+          "client_id": "45361321160-fj2aqg7du44f5552g1bq244vep1s7ggp.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.martfood.app",
+            "certificate_hash": "92220d0d6e103d93800f5f2508e1dc92d647af43"
+          }
+        },
+        {
           "client_id": "45361321160-9ofs6jkpgbk539bjl5bdro0fnknhavtl.apps.googleusercontent.com",
           "client_type": 3
         }

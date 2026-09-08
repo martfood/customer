@@ -543,7 +543,9 @@ class _SignupScreenState extends State<SignupScreen> {
                         _isLoading = true;
                       });
                       try {
-                        final googleSignIn = GoogleSignIn();
+                        final googleSignIn = GoogleSignIn(
+                          serverClientId: '45361321160-9ofs6jkpgbk539bjl5bdro0fnknhavtl.apps.googleusercontent.com',
+                        );
                         final googleUser = await googleSignIn.signIn();
                         if (googleUser == null) {
                           setState(() {
