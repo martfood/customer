@@ -65,7 +65,7 @@ class RiderBottomNavBar extends StatelessWidget {
                 badgeText,
                 style: TextStyle(
                   color: Colors.white,
-                  fontSize: AppTypography.font(9),
+                  fontSize: AppTypography.font(11.5),
                   fontWeight: FontWeight.bold,
                 ),
                 textAlign: TextAlign.center,
@@ -142,7 +142,7 @@ class RiderBottomNavBar extends StatelessWidget {
         ),
         unselectedLabelStyle: TextStyle(
           fontSize: AppTypography.font(AppFontSizes.bodySmall),
-          fontWeight: FontWeight.w500,
+          fontWeight: FontWeight.w600,
         ),
         items: [
           BottomNavigationBarItem(

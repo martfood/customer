@@ -125,66 +125,97 @@ class AppTheme {
 
   static TextTheme _buildTextTheme(TextTheme base) {
     return base.copyWith(
-      displayLarge: base.displayLarge
-          ?.copyWith(fontSize: AppTypography.font(AppFontSizes.displayLarge)),
-      displayMedium: base.displayMedium
-          ?.copyWith(fontSize: AppTypography.font(AppFontSizes.displayMedium)),
-      displaySmall: base.displaySmall
-          ?.copyWith(fontSize: AppTypography.font(AppFontSizes.displaySmall)),
-      headlineLarge: base.headlineLarge
-          ?.copyWith(fontSize: AppTypography.font(AppFontSizes.headlineLarge)),
-      headlineMedium: base.headlineMedium
-          ?.copyWith(fontSize: AppTypography.font(AppFontSizes.headlineMedium)),
-      headlineSmall: base.headlineSmall
-          ?.copyWith(fontSize: AppTypography.font(AppFontSizes.headlineSmall)),
-      titleLarge: base.titleLarge
-          ?.copyWith(fontSize: AppTypography.font(AppFontSizes.titleLarge)),
-      titleMedium: base.titleMedium
-          ?.copyWith(fontSize: AppTypography.font(AppFontSizes.titleMedium)),
-      titleSmall: base.titleSmall
-          ?.copyWith(fontSize: AppTypography.font(AppFontSizes.titleSmall)),
-      bodyLarge: base.bodyLarge
-          ?.copyWith(fontSize: AppTypography.font(AppFontSizes.bodyLarge)),
-      bodyMedium: base.bodyMedium
-          ?.copyWith(fontSize: AppTypography.font(AppFontSizes.bodyMedium)),
-      bodySmall: base.bodySmall
-          ?.copyWith(fontSize: AppTypography.font(AppFontSizes.bodySmall)),
-      labelLarge: base.labelLarge
-          ?.copyWith(fontSize: AppTypography.font(AppFontSizes.bodyMedium)),
-      labelMedium: base.labelMedium
-          ?.copyWith(fontSize: AppTypography.font(AppFontSizes.bodySmall)),
-      labelSmall: base.labelSmall
-          ?.copyWith(fontSize: AppTypography.font(AppFontSizes.caption)),
+      displayLarge: base.displayLarge?.copyWith(
+        fontSize: AppTypography.font(AppFontSizes.displayLarge),
+        fontWeight: FontWeight.bold,
+      ),
+      displayMedium: base.displayMedium?.copyWith(
+        fontSize: AppTypography.font(AppFontSizes.displayMedium),
+        fontWeight: FontWeight.bold,
+      ),
+      displaySmall: base.displaySmall?.copyWith(
+        fontSize: AppTypography.font(AppFontSizes.displaySmall),
+        fontWeight: FontWeight.bold,
+      ),
+      headlineLarge: base.headlineLarge?.copyWith(
+        fontSize: AppTypography.font(AppFontSizes.headlineLarge),
+        fontWeight: FontWeight.bold,
+      ),
+      headlineMedium: base.headlineMedium?.copyWith(
+        fontSize: AppTypography.font(AppFontSizes.headlineMedium),
+        fontWeight: FontWeight.bold,
+      ),
+      headlineSmall: base.headlineSmall?.copyWith(
+        fontSize: AppTypography.font(AppFontSizes.headlineSmall),
+        fontWeight: FontWeight.bold,
+      ),
+      titleLarge: base.titleLarge?.copyWith(
+        fontSize: AppTypography.font(AppFontSizes.titleLarge),
+        fontWeight: FontWeight.w600,
+      ),
+      titleMedium: base.titleMedium?.copyWith(
+        fontSize: AppTypography.font(AppFontSizes.titleMedium),
+        fontWeight: FontWeight.w600,
+      ),
+      titleSmall: base.titleSmall?.copyWith(
+        fontSize: AppTypography.font(AppFontSizes.titleSmall),
+        fontWeight: FontWeight.w600,
+      ),
+      bodyLarge: base.bodyLarge?.copyWith(
+        fontSize: AppTypography.font(AppFontSizes.bodyLarge),
+        fontWeight: FontWeight.w500,
+      ),
+      bodyMedium: base.bodyMedium?.copyWith(
+        fontSize: AppTypography.font(AppFontSizes.bodyMedium),
+        fontWeight: FontWeight.w500,
+      ),
+      bodySmall: base.bodySmall?.copyWith(
+        fontSize: AppTypography.font(AppFontSizes.bodySmall),
+        fontWeight: FontWeight.w500,
+      ),
+      labelLarge: base.labelLarge?.copyWith(
+        fontSize: AppTypography.font(AppFontSizes.bodyMedium),
+        fontWeight: FontWeight.w600,
+      ),
+      labelMedium: base.labelMedium?.copyWith(
+        fontSize: AppTypography.font(AppFontSizes.bodySmall),
+        fontWeight: FontWeight.w600,
+      ),
+      labelSmall: base.labelSmall?.copyWith(
+        fontSize: AppTypography.font(AppFontSizes.caption),
+        fontWeight: FontWeight.w500,
+      ),
     );
   }
 }
 
 class AppFontSizes {
-  static const double displayLarge = 32;
-  static const double displayMedium = 28;
-  static const double displaySmall = 24;
-  static const double authHeader = 27;
+  static const double displayLarge = 34;
+  static const double displayMedium = 30;
+  static const double displaySmall = 26;
+  static const double authHeader = 28;
 
-  static const double headlineLarge = 22;
-  static const double headlineMedium = 20;
-  static const double headlineSmall = 18;
+  static const double headlineLarge = 24;
+  static const double headlineMedium = 22;
+  static const double headlineSmall = 20;
 
-  static const double titleLarge = 16;
-  static const double titleMedium = 14;
-  static const double titleSmall = 12;
+  static const double titleLarge = 18;
+  static const double titleMedium = 16;
+  static const double titleSmall = 14;
 
-  static const double bodyLarge = 16;
-  static const double bodyMedium = 14;
-  static const double bodySmall = 12;
+  static const double bodyLarge = 17;
+  static const double bodyMedium = 15.5;
+  static const double bodySmall = 13.5;
 
-  static const double caption = 11;
+  static const double caption = 12.5;
 }
 
 class AppTypography {
   static double scale = 1.0;
 
   static double font(double size) {
-    return size * scale;
+    final effectiveSize = size < 12.0 ? 12.0 : size;
+    return effectiveSize * scale;
   }
 }
 
@@ -231,19 +262,19 @@ class AppTextStyles {
       );
   static TextStyle get bodyLarge => TextStyle(
         fontSize: AppTypography.font(AppFontSizes.bodyLarge),
-        fontWeight: FontWeight.normal,
+        fontWeight: FontWeight.w500,
       );
   static TextStyle get bodyMedium => TextStyle(
         fontSize: AppTypography.font(AppFontSizes.bodyMedium),
-        fontWeight: FontWeight.normal,
+        fontWeight: FontWeight.w500,
       );
   static TextStyle get bodySmall => TextStyle(
         fontSize: AppTypography.font(AppFontSizes.bodySmall),
-        fontWeight: FontWeight.normal,
+        fontWeight: FontWeight.w500,
       );
   static TextStyle get caption => TextStyle(
         fontSize: AppTypography.font(AppFontSizes.caption),
-        fontWeight: FontWeight.normal,
+        fontWeight: FontWeight.w500,
       );
 }
 
