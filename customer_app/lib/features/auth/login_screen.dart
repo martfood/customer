@@ -303,7 +303,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       decoration: InputDecoration(
                         hintText: 'Enter email address',
                         hintStyle: TextStyle(
-                          color: Colors.grey[400],
+                          color: AppTheme.hintColorFor(isDark),
                           fontSize: AppTypography.font(AppFontSizes.bodyMedium),
                         ),
                         border: InputBorder.none,
@@ -423,7 +423,7 @@ class _LoginScreenState extends State<LoginScreen> {
     final fieldBg = isDark ? AppTheme.darkSurface : AppTheme.lightInputFill;
     final fieldBorder = isDark ? AppTheme.darkBorder : AppTheme.lightInputBorder;
     final textColor = isDark ? Colors.white : const Color(0xFF1E1E1E);
-    final subtextColor = isDark ? Colors.grey[400] : const Color(0xFF555555);
+    final subtextColor = AppTheme.mutedTextColorFor(isDark);
 
     Widget content = SafeArea(
       child: SingleChildScrollView(
@@ -479,7 +479,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 decoration: InputDecoration(
                   hintText: 'Enter email or phone number',
                   hintStyle: TextStyle(
-                    color: Colors.grey[400],
+                    color: AppTheme.hintColorFor(isDark),
                     fontSize: AppTypography.font(AppFontSizes.bodyMedium),
                   ),
                   border: InputBorder.none,
@@ -759,6 +759,7 @@ class _PasswordTextFieldState extends State<_PasswordTextField> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       decoration: BoxDecoration(
         color: widget.fieldBg,
@@ -775,7 +776,7 @@ class _PasswordTextFieldState extends State<_PasswordTextField> {
         decoration: InputDecoration(
           hintText: 'Enter password',
           hintStyle: TextStyle(
-            color: Colors.grey[400],
+            color: AppTheme.hintColorFor(isDark),
             fontSize: AppTypography.font(AppFontSizes.bodyMedium),
           ),
           border: InputBorder.none,

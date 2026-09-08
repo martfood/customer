@@ -465,7 +465,7 @@ class _RestaurantFoodDetailsScreenState
         isDark ? AppTheme.darkSurface : AppTheme.lightInputFill;
     final surfaceColor = isDark ? AppTheme.darkSurface : Colors.white;
     final primaryTextColor = isDark ? Colors.white : const Color(0xFF15161A);
-    final mutedTextColor = isDark ? Colors.grey[400]! : const Color(0xFF6E7191);
+    final mutedTextColor = AppTheme.mutedTextColorFor(isDark);
     final borderColor =
         isDark ? AppTheme.darkBorder : AppTheme.lightInputBorder;
 
@@ -1207,9 +1207,7 @@ class _RestaurantFoodDetailsScreenState
                           border: Border.all(
                             color: isSelected
                                 ? purpleColor
-                                : (isDark
-                                    ? Colors.white.withValues(alpha: 0.24)
-                                    : Colors.grey[400]!),
+                                : AppTheme.hintColorFor(isDark),
                             width: isSelected ? 6 : 2,
                           ),
                           color: isSelected ? Colors.white : Colors.transparent,
@@ -1376,7 +1374,7 @@ class _RestaurantFoodDetailsScreenState
                                         : const Color(0xFF1E1E1E))
                                     : (isDark
                                         ? Colors.white24
-                                        : Colors.grey[400]!),
+                                        : AppTheme.hintColorFor(isDark)),
                               ),
                             ),
                           ),
@@ -1971,7 +1969,7 @@ class _RestaurantFoodDetailsScreenState
           final border =
               isDark ? AppTheme.darkBorder : AppTheme.lightInputBorder;
           final textClr = isDark ? Colors.white : const Color(0xFF15161A);
-          final mutedClr = isDark ? Colors.grey[400]! : const Color(0xFF6E7191);
+          final mutedClr = AppTheme.mutedTextColorFor(isDark);
 
           return Container(
             padding: EdgeInsets.all(24.w),

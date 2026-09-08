@@ -176,7 +176,7 @@ class _HelpCenterScreenState extends State<HelpCenterScreen>
             insets: EdgeInsets.symmetric(horizontal: 28.w),
           ),
           labelColor: purpleColor,
-          unselectedLabelColor: isDark ? Colors.grey[400] : Colors.grey[600],
+          unselectedLabelColor: AppTheme.mutedTextColorFor(isDark),
           labelStyle: TextStyle(
             fontSize: AppTypography.font(AppFontSizes.bodyLarge),
             fontWeight: FontWeight.w800,
@@ -199,7 +199,7 @@ class _HelpCenterScreenState extends State<HelpCenterScreen>
 
   Widget _buildFAQTab(bool isDark, Color purpleColor) {
     final primaryTextColor = isDark ? Colors.white : const Color(0xFF15161A);
-    final mutedTextColor = isDark ? Colors.grey[400]! : const Color(0xFF6E7191);
+    final mutedTextColor = AppTheme.mutedTextColorFor(isDark);
     final cardBg = isDark ? AppTheme.darkSurface : Colors.white;
     final borderColor =
         isDark ? AppTheme.darkBorder : AppTheme.lightInputBorder;
@@ -349,7 +349,7 @@ class _HelpCenterScreenState extends State<HelpCenterScreen>
   Widget _buildFAQItem(
       String question, String answer, bool isDark, Color purpleColor) {
     final primaryTextColor = isDark ? Colors.white : const Color(0xFF15161A);
-    final mutedTextColor = isDark ? Colors.grey[400]! : const Color(0xFF6E7191);
+    final mutedTextColor = AppTheme.mutedTextColorFor(isDark);
     final cardBg = isDark ? AppTheme.darkSurface : Colors.white;
     final borderColor =
         isDark ? AppTheme.darkBorder : AppTheme.lightInputBorder;
@@ -558,8 +558,7 @@ class _HelpCenterScreenState extends State<HelpCenterScreen>
                           EdgeInsets.symmetric(horizontal: 18.w, vertical: 6.h),
                       childrenPadding: EdgeInsets.fromLTRB(18.w, 0, 18.w, 18.h),
                       iconColor: purpleColor,
-                      collapsedIconColor:
-                          isDark ? Colors.grey[500] : Colors.grey[400],
+                      collapsedIconColor: AppTheme.hintColorFor(isDark),
                       title: Row(
                         children: [
                           Container(

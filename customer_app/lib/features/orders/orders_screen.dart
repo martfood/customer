@@ -67,7 +67,7 @@ class _OrdersScreenState extends State<OrdersScreen>
   void _showPayForMeCreatedPopup({String? orderId, String? token}) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final primaryTextColor = isDark ? Colors.white : Colors.black87;
-    final mutedTextColor = isDark ? Colors.grey[400]! : Colors.grey[600]!;
+    final mutedTextColor = AppTheme.mutedTextColorFor(isDark);
     final surfaceColor = isDark ? AppTheme.darkSurface : Colors.white;
     final purpleColor = AppTheme.primaryPurpleFor(isDark);
     final borderColor = isDark ? AppTheme.darkBorder : AppTheme.lightInputBorder;
@@ -240,7 +240,7 @@ class _OrdersScreenState extends State<OrdersScreen>
   void _showPaymentSuccessPopup() {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final primaryTextColor = isDark ? Colors.white : const Color(0xFF15161A);
-    final mutedTextColor = isDark ? Colors.grey[400]! : const Color(0xFF4B5563);
+    final mutedTextColor = AppTheme.mutedTextColorFor(isDark);
     final surfaceColor = isDark ? AppTheme.darkSurface : Colors.white;
     final purpleColor = AppTheme.primaryPurpleFor(isDark);
 
@@ -370,7 +370,7 @@ class _OrdersScreenState extends State<OrdersScreen>
         bottom: TabBar(
           controller: _tabController,
           labelColor: isDark ? Colors.white : purpleColor,
-          unselectedLabelColor: isDark ? Colors.grey[400] : Colors.grey[600],
+          unselectedLabelColor: AppTheme.mutedTextColorFor(isDark),
           indicator: UnderlineTabIndicator(
             borderSide: BorderSide(
               width: 2.5,
@@ -516,7 +516,7 @@ class _OrdersScreenState extends State<OrdersScreen>
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: AppTypography.font(AppFontSizes.bodyMedium),
-                      color: isDark ? Colors.grey[400] : Colors.grey[600],
+                      color: AppTheme.mutedTextColorFor(isDark),
                       fontWeight: FontWeight.w500,
                       height: 1.45,
                     ),
@@ -797,7 +797,7 @@ class _OrdersScreenState extends State<OrdersScreen>
                                 style: TextStyle(
                                   fontSize: AppTypography.font(AppFontSizes.bodySmall),
                                   fontWeight: FontWeight.w600,
-                                  color: isDark ? Colors.grey[400] : Colors.grey[600],
+                                  color: AppTheme.mutedTextColorFor(isDark),
                                 ),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
@@ -819,7 +819,7 @@ class _OrdersScreenState extends State<OrdersScreen>
                                 .where((label) => label.toString().isNotEmpty)
                                 .join(' • '),
                             style: TextStyle(
-                              color: isDark ? Colors.grey[400] : Colors.grey[600],
+                              color: AppTheme.mutedTextColorFor(isDark),
                               fontSize: AppTypography.font(AppFontSizes.caption),
                               fontWeight: FontWeight.w500,
                             ),
@@ -832,7 +832,7 @@ class _OrdersScreenState extends State<OrdersScreen>
                           Text(
                             'Add-ons: ${selectedAddOns.map((addon) => (((addon['quantity'] as num?)?.toInt() ?? 1) > 1) ? '${addon['name'] ?? addon['title']} (x${addon['quantity']})' : '${addon['name'] ?? addon['title']}').where((name) => name.isNotEmpty).join(', ')}',
                             style: TextStyle(
-                              color: isDark ? Colors.grey[400] : Colors.grey[600],
+                              color: AppTheme.mutedTextColorFor(isDark),
                               fontSize: AppTypography.font(AppFontSizes.caption),
                               fontWeight: FontWeight.w500,
                             ),
@@ -1101,7 +1101,7 @@ class _OrdersScreenState extends State<OrdersScreen>
   }) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final primaryTextColor = isDark ? Colors.white : Colors.black87;
-    final mutedTextColor = isDark ? Colors.grey[400]! : Colors.grey[600]!;
+    final mutedTextColor = AppTheme.mutedTextColorFor(isDark);
     final purpleColor = AppTheme.primaryPurpleFor(isDark);
     final borderColor = isDark ? AppTheme.darkBorder : AppTheme.lightInputBorder;
     final statusColor =
@@ -1418,7 +1418,7 @@ class _OrdersScreenState extends State<OrdersScreen>
 
   Widget _buildEmptyState(bool isDark, OrderType type) {
     final primaryTextColor = isDark ? Colors.white : Colors.black87;
-    final mutedTextColor = isDark ? Colors.grey[400]! : Colors.grey[600]!;
+    final mutedTextColor = AppTheme.mutedTextColorFor(isDark);
     final purpleColor = AppTheme.primaryPurpleFor(isDark);
 
     return Center(
@@ -1598,7 +1598,7 @@ class _OrdersScreenState extends State<OrdersScreen>
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final surfaceColor = isDark ? AppTheme.darkSurface : Colors.white;
     final primaryTextColor = isDark ? Colors.white : Colors.black87;
-    final mutedTextColor = isDark ? Colors.grey[400]! : Colors.grey[600]!;
+    final mutedTextColor = AppTheme.mutedTextColorFor(isDark);
     final purpleColor = AppTheme.primaryPurpleFor(isDark);
     final borderColor = isDark ? AppTheme.darkBorder : AppTheme.lightInputBorder;
 

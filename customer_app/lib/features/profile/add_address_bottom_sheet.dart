@@ -189,7 +189,7 @@ class _AddNewAddressSheetState extends State<_AddNewAddressSheet> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final surfaceColor = isDark ? AppTheme.darkSurface : Colors.white;
     final primaryText = isDark ? Colors.white : const Color(0xFF1E1E1E);
-    final mutedText = isDark ? Colors.grey[400]! : const Color(0xFF4A4A4A);
+    final mutedText = AppTheme.mutedTextColorFor(isDark);
     final purple = AppTheme.primaryPurpleFor(isDark);
     final inputBorderColor = isDark
         ? AppTheme.darkBorder
@@ -542,7 +542,7 @@ class _AddNewAddressSheetState extends State<_AddNewAddressSheet> {
     return InputDecoration(
       hintText: hint,
       hintStyle: TextStyle(
-        color: isDark ? Colors.grey[600] : Colors.grey[400],
+        color: AppTheme.hintColorFor(isDark),
         fontSize: AppTypography.font(AppFontSizes.bodyMedium),
         fontWeight: FontWeight.w500,
       ),

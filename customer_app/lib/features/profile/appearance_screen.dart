@@ -45,7 +45,7 @@ class _AppearanceScreenState extends State<AppearanceScreen> {
     final purpleColor = AppTheme.primaryPurpleFor(isDark);
     final cardBg = isDark ? AppTheme.darkSurface : Colors.white;
     final primaryTextColor = isDark ? Colors.white : const Color(0xFF15161A);
-    final mutedTextColor = isDark ? Colors.grey[400]! : const Color(0xFF6E7191);
+    final mutedTextColor = AppTheme.mutedTextColorFor(isDark);
     final optionBg = isDark ? const Color(0xFF27272A) : const Color(0xFFF7F8FC);
     final optionBorder = isDark ? AppTheme.darkBorder : AppTheme.lightInputBorder;
 
@@ -263,7 +263,7 @@ class _AppearanceScreenState extends State<AppearanceScreen> {
                     'Enter your email address and we will send you a 6-digit OTP code to reset your password.',
                     style: TextStyle(
                       fontSize: AppTypography.font(AppFontSizes.bodySmall),
-                      color: isDark ? Colors.grey[400] : Colors.grey[600],
+                      color: AppTheme.mutedTextColorFor(isDark),
                       height: 1.4,
                     ),
                   ),
@@ -293,7 +293,7 @@ class _AppearanceScreenState extends State<AppearanceScreen> {
                       decoration: InputDecoration(
                         hintText: 'Enter email address',
                         hintStyle: TextStyle(
-                          color: isDark ? Colors.grey[500] : Colors.grey[400],
+                          color: AppTheme.hintColorFor(isDark),
                           fontSize: AppTypography.font(AppFontSizes.bodyMedium),
                         ),
                         border: InputBorder.none,
@@ -423,7 +423,7 @@ class _AppearanceScreenState extends State<AppearanceScreen> {
     final purpleColor = AppTheme.primaryPurpleFor(isDark);
     final sheetBg = isDark ? AppTheme.darkSurface : Colors.white;
     final primaryTextColor = isDark ? Colors.white : const Color(0xFF15161A);
-    final mutedTextColor = isDark ? Colors.grey[400]! : const Color(0xFF6E7191);
+    final mutedTextColor = AppTheme.mutedTextColorFor(isDark);
 
     showModalBottomSheet(
       context: context,
@@ -547,7 +547,7 @@ class _AppearanceScreenState extends State<AppearanceScreen> {
     final dialogBg = isDark ? AppTheme.darkSurface : Colors.white;
     final borderColor = isDark ? AppTheme.darkBorder : AppTheme.lightInputBorder;
     final primaryTextColor = isDark ? Colors.white : const Color(0xFF15161A);
-    final mutedTextColor = isDark ? Colors.grey[400]! : const Color(0xFF6E7191);
+    final mutedTextColor = AppTheme.mutedTextColorFor(isDark);
 
     showDialog<void>(
       context: context,

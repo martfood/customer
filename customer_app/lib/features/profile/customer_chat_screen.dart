@@ -220,7 +220,7 @@ class _CustomerChatScreenState extends State<CustomerChatScreen> {
   }
 
   Color _mutedTextColor(bool isDark) {
-    return isDark ? Colors.grey[400]! : const Color(0xFF6E7191);
+    return AppTheme.mutedTextColorFor(isDark);
   }
 
   @override

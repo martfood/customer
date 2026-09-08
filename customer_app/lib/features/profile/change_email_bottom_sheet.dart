@@ -331,7 +331,7 @@ class _ChangeEmailBottomSheetState extends State<ChangeEmailBottomSheet> {
     final purpleColor = AppTheme.primaryPurpleFor(isDark);
     final cardBg = isDark ? AppTheme.darkSurface : Colors.white;
     final primaryTextColor = isDark ? Colors.white : const Color(0xFF15161A);
-    final mutedTextColor = isDark ? Colors.grey[400]! : const Color(0xFF6E7191);
+    final mutedTextColor = AppTheme.mutedTextColorFor(isDark);
     final fieldBg = isDark ? AppTheme.darkSurface : AppTheme.lightInputFill;
     final fieldBorder = isDark ? AppTheme.darkBorder : AppTheme.lightInputBorder;
 
@@ -653,7 +653,7 @@ class _ChangeEmailBottomSheetState extends State<ChangeEmailBottomSheet> {
           counterText: '',
           hintText: '••••••',
           hintStyle: TextStyle(
-            color: Colors.grey[400],
+            color: AppTheme.hintColorFor(Theme.of(context).brightness == Brightness.dark),
             fontSize: AppTypography.font(24),
             letterSpacing: 10.w,
           ),

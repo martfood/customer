@@ -68,7 +68,7 @@ class _SpecialOfferScreenState extends State<SpecialOfferScreen> {
     final cardBg = isDark ? AppTheme.darkSurface : Colors.white;
     final borderColor = isDark ? AppTheme.darkBorder : AppTheme.lightInputBorder;
     final primaryTextColor = isDark ? Colors.white : const Color(0xFF15161A);
-    final mutedTextColor = isDark ? Colors.grey[400]! : const Color(0xFF6E7191);
+    final mutedTextColor = AppTheme.mutedTextColorFor(isDark);
 
     return Scaffold(
       backgroundColor: backgroundColor,
@@ -420,7 +420,7 @@ class _SpecialOfferScreenState extends State<SpecialOfferScreen> {
                                                 : Icons.radio_button_off,
                                             color: isSelected
                                                 ? purpleColor
-                                                : (isDark ? Colors.grey[600] : Colors.grey[400]),
+                                                : AppTheme.hintColorFor(isDark),
                                             size: 22.sp,
                                           ),
                                         ],

@@ -56,7 +56,7 @@ class BulkMealCard extends StatelessWidget {
     final surfaceColor = isDark ? AppTheme.darkSurface : Colors.white;
     final borderColor = isDark ? AppTheme.darkBorder : const Color(0xFFF0E6FF);
     final primaryTextColor = isDark ? Colors.white : const Color(0xFF15161A);
-    final mutedTextColor = isDark ? Colors.grey[400]! : const Color(0xFF6E7191);
+    final mutedTextColor = AppTheme.mutedTextColorFor(isDark);
 
     final isTablet = MediaQuery.of(context).size.width >= 600;
     final double cardWidth = width ?? (isTablet ? 136.w : 160.w);

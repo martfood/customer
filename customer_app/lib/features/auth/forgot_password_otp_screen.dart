@@ -149,7 +149,7 @@ class _ForgotPasswordOtpScreenState extends State<ForgotPasswordOtpScreen> {
     final fieldBg = isDark ? AppTheme.darkSurface : Colors.white;
     final fieldBorder = isDark ? AppTheme.darkBorder : AppTheme.lightInputBorder;
     final textColor = isDark ? Colors.white : const Color(0xFF1E1E1E);
-    final subtextColor = isDark ? Colors.grey[400]! : Colors.grey[600]!;
+    final subtextColor = AppTheme.mutedTextColorFor(isDark);
 
     return Scaffold(
       backgroundColor: backgroundColor,
@@ -235,7 +235,7 @@ class _ForgotPasswordOtpScreenState extends State<ForgotPasswordOtpScreen> {
                         border: InputBorder.none,
                         hintText: '*',
                         hintStyle: TextStyle(
-                          color: isDark ? Colors.grey[500] : Colors.grey[400],
+                          color: AppTheme.hintColorFor(isDark),
                           fontSize: AppTypography.font(AppFontSizes.headlineSmall),
                           fontWeight: FontWeight.bold,
                         ),

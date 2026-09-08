@@ -272,8 +272,7 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
                             decoration: InputDecoration(
                               hintText: 'Enter name',
                               hintStyle: TextStyle(
-                                color:
-                                    isDark ? Colors.grey[500] : Colors.grey[400],
+                                color: AppTheme.hintColorFor(isDark),
                                 fontSize: AppTypography.font(AppFontSizes.bodyMedium),
                               ),
                               border: InputBorder.none,
@@ -317,8 +316,7 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
                             decoration: InputDecoration(
                               hintText: 'Enter name',
                               hintStyle: TextStyle(
-                                color:
-                                    isDark ? Colors.grey[500] : Colors.grey[400],
+                                color: AppTheme.hintColorFor(isDark),
                                 fontSize: AppTypography.font(AppFontSizes.bodyMedium),
                               ),
                               border: InputBorder.none,
@@ -362,7 +360,7 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
                   decoration: InputDecoration(
                     hintText: 'Enter phone number',
                     hintStyle: TextStyle(
-                      color: isDark ? Colors.grey[500] : Colors.grey[400],
+                      color: AppTheme.hintColorFor(isDark),
                       fontSize: AppTypography.font(AppFontSizes.bodyMedium),
                     ),
                     border: InputBorder.none,
@@ -395,13 +393,13 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
                   controller: _emailController,
                   readOnly: true,
                   style: TextStyle(
-                    color: isDark ? Colors.grey[400] : Colors.grey[600],
+                    color: AppTheme.mutedTextColorFor(isDark),
                     fontSize: AppTypography.font(AppFontSizes.bodyMedium),
                   ),
                   decoration: InputDecoration(
                     hintText: 'Email address',
                     hintStyle: TextStyle(
-                      color: isDark ? Colors.grey[500] : Colors.grey[400],
+                      color: AppTheme.hintColorFor(isDark),
                       fontSize: AppTypography.font(AppFontSizes.bodyMedium),
                     ),
                     border: InputBorder.none,
@@ -452,9 +450,7 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
                                         : _dobController.text,
                                     style: TextStyle(
                                       color: _dobController.text.isEmpty
-                                          ? (isDark
-                                              ? Colors.grey[500]
-                                              : Colors.grey[400])
+                                          ? AppTheme.hintColorFor(isDark)
                                           : textColor,
                                       fontSize: AppTypography.font(AppFontSizes.bodyMedium),
                                     ),

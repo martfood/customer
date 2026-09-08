@@ -239,7 +239,7 @@ class _SearchScreenState extends State<SearchScreen> {
   Widget _buildServiceUnavailableView(bool isDark) {
     const primaryColor = AppTheme.primaryColor;
     final primaryTextColor = isDark ? Colors.white : const Color(0xFF15161A);
-    final mutedTextColor = isDark ? Colors.grey[400]! : const Color(0xFF6E7191);
+    final mutedTextColor = AppTheme.mutedTextColorFor(isDark);
 
     return Container(
       width: double.infinity,
@@ -313,7 +313,7 @@ class _SearchScreenState extends State<SearchScreen> {
     final purpleColor = AppTheme.primaryPurpleFor(isDark);
     final cardBg = isDark ? AppTheme.darkSurface : Colors.white;
     final primaryTextColor = isDark ? Colors.white : const Color(0xFF15161A);
-    final mutedTextColor = isDark ? Colors.grey[400]! : const Color(0xFF6E7191);
+    final mutedTextColor = AppTheme.mutedTextColorFor(isDark);
     final unselectedChipBg = isDark ? const Color(0xFF27272A) : Colors.white;
     final unselectedBorderColor =
         isDark ? AppTheme.darkBorder : const Color(0xFFE2E4EA);
@@ -739,7 +739,7 @@ class _SearchScreenState extends State<SearchScreen> {
     final borderColor =
         isDark ? AppTheme.darkBorder : AppTheme.lightInputBorder;
     final primaryTextColor = isDark ? Colors.white : Colors.black87;
-    final mutedTextColor = isDark ? Colors.grey[400]! : Colors.grey[600]!;
+    final mutedTextColor = AppTheme.mutedTextColorFor(isDark);
 
     final isTablet = MediaQuery.of(context).size.width >= 600;
     final circleSize = isTablet ? 54.w : 46.w;
@@ -812,7 +812,7 @@ class _SearchScreenState extends State<SearchScreen> {
         isDark ? const Color(0xFF050505) : const Color(0xFFF6F7FB);
     final surfaceColor = isDark ? const Color(0xFF121212) : Colors.white;
     final primaryTextColor = isDark ? Colors.white : const Color(0xFF15161A);
-    final mutedTextColor = isDark ? Colors.grey[400]! : const Color(0xFF6E7191);
+    final mutedTextColor = AppTheme.mutedTextColorFor(isDark);
     final borderColor =
         isDark ? Colors.white.withAlpha(15) : const Color(0xFFE9EAF0);
 

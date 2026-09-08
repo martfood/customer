@@ -96,7 +96,7 @@ class _ProfilePaymentMethodsScreenState extends State<ProfilePaymentMethodsScree
       final isDark = Theme.of(context).brightness == Brightness.dark;
       final sheetBg = isDark ? AppTheme.darkSurface : Colors.white;
       final primaryTextColor = isDark ? Colors.white : const Color(0xFF15161A);
-      final mutedTextColor = isDark ? Colors.grey[400]! : const Color(0xFF6E7191);
+      final mutedTextColor = AppTheme.mutedTextColorFor(isDark);
 
       final confirm = await showModalBottomSheet<bool>(
         context: context,
@@ -429,7 +429,7 @@ class _ProfilePaymentMethodsScreenState extends State<ProfilePaymentMethodsScree
   }) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final primaryTextColor = isDark ? Colors.white : const Color(0xFF15161A);
-    final mutedTextColor = isDark ? Colors.grey[400]! : const Color(0xFF6E7191);
+    final mutedTextColor = AppTheme.mutedTextColorFor(isDark);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -479,7 +479,7 @@ class _ProfilePaymentMethodsScreenState extends State<ProfilePaymentMethodsScree
   Widget _buildEmptyCardsState(BuildContext context, Color purpleColor) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final primaryTextColor = isDark ? Colors.white : const Color(0xFF15161A);
-    final mutedTextColor = isDark ? Colors.grey[400]! : const Color(0xFF6E7191);
+    final mutedTextColor = AppTheme.mutedTextColorFor(isDark);
 
     return _buildSurface(
       context: context,
@@ -534,7 +534,7 @@ class _ProfilePaymentMethodsScreenState extends State<ProfilePaymentMethodsScree
   }) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final primaryTextColor = isDark ? Colors.white : const Color(0xFF15161A);
-    final mutedTextColor = isDark ? Colors.grey[400]! : const Color(0xFF6E7191);
+    final mutedTextColor = AppTheme.mutedTextColorFor(isDark);
 
     return Container(
       padding: EdgeInsets.all(16.w),

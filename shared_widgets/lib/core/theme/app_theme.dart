@@ -41,6 +41,25 @@ class AppTheme {
   static const Color lightPurpleBorder = Color(0xFFE9D5FF);
   static const Color onboardingBackground = Color(0xFFE4E1DA);
 
+  // High contrast text tokens (Eliminates faint/dull 20% opacity look in light mode)
+  static const Color lightMutedText = Color(0xFF374151); // Deep crisp slate (9.5:1 contrast against white)
+  static const Color darkMutedText = Color(0xFF9CA3AF); // High-visibility light slate for dark mode
+  static const Color lightHintText = Color(0xFF6B7280); // Clear, readable placeholder for light mode
+  static const Color darkHintText = Color(0xFF9CA3AF);
+
+  static Color getMutedTextColor(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return isDark ? darkMutedText : lightMutedText;
+  }
+
+  static Color mutedTextColorFor(bool isDark) {
+    return isDark ? darkMutedText : lightMutedText;
+  }
+
+  static Color hintColorFor(bool isDark) {
+    return isDark ? darkHintText : lightHintText;
+  }
+
   static ThemeData lightTheme = ThemeData(
     useMaterial3: true,
     brightness: Brightness.light,

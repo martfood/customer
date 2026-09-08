@@ -202,7 +202,7 @@ class _CustomerServiceChatScreenState
     final purpleColor = AppTheme.primaryPurpleFor(isDark);
     final sheetBg = isDark ? AppTheme.darkSurface : Colors.white;
     final primaryTextColor = isDark ? Colors.white : const Color(0xFF15161A);
-    final mutedTextColor = isDark ? Colors.grey[400]! : const Color(0xFF6E7191);
+    final mutedTextColor = AppTheme.mutedTextColorFor(isDark);
     final borderColor = isDark ? AppTheme.darkBorder : AppTheme.lightInputBorder;
 
     showModalBottomSheet(
@@ -460,7 +460,7 @@ class _CustomerServiceChatScreenState
   }
 
   Color _mutedTextColor(bool isDark) {
-    return isDark ? Colors.grey[400]! : const Color(0xFF6E7191);
+    return AppTheme.mutedTextColorFor(isDark);
   }
 
   Widget _buildAvatarStack(bool isDark) {
@@ -634,7 +634,7 @@ class _CustomerServiceChatScreenState
                           Icon(
                             LucideIcons.chevronRight,
                             size: 18.sp,
-                            color: isDark ? Colors.grey[600] : Colors.grey[400],
+                            color: AppTheme.hintColorFor(isDark),
                           ),
                         ],
                       ),
@@ -916,7 +916,7 @@ class _CustomerServiceChatScreenState
                 trailing: Icon(
                   LucideIcons.chevronRight,
                   size: 18.sp,
-                  color: isDark ? Colors.grey[600] : Colors.grey[400],
+                  color: AppTheme.hintColorFor(isDark),
                 ),
               ),
             ),

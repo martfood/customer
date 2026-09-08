@@ -238,7 +238,7 @@ class _DiscountGuaranteedScreenState extends State<DiscountGuaranteedScreen> {
     final purpleColor = AppTheme.primaryPurpleFor(isDark);
     final surfaceColor = isDark ? AppTheme.darkSurface : Colors.white;
     final primaryTextColor = isDark ? Colors.white : const Color(0xFF15161A);
-    final mutedTextColor = isDark ? Colors.grey[400]! : const Color(0xFF6E7191);
+    final mutedTextColor = AppTheme.mutedTextColorFor(isDark);
     final borderColor =
         isDark ? AppTheme.darkBorder : AppTheme.lightInputBorder;
 
@@ -376,7 +376,7 @@ class _DiscountGuaranteedScreenState extends State<DiscountGuaranteedScreen> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final backgroundColor = isDark ? AppTheme.darkSurface : Colors.white;
     final primaryTextColor = isDark ? Colors.white : const Color(0xFF15161A);
-    final mutedTextColor = isDark ? Colors.grey[400]! : const Color(0xFF6E7191);
+    final mutedTextColor = AppTheme.mutedTextColorFor(isDark);
     final borderColor =
         isDark ? AppTheme.darkBorder : AppTheme.lightInputBorder;
     final purpleColor = AppTheme.primaryPurpleFor(isDark);

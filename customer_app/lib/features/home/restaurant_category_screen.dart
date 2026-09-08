@@ -219,7 +219,7 @@ class _RestaurantCategoryScreenState extends State<RestaurantCategoryScreen> {
     final backgroundColor = isDark ? AppTheme.darkSurface : Colors.white;
     final surfaceColor = isDark ? AppTheme.darkSurface : Colors.white;
     final primaryTextColor = isDark ? Colors.white : const Color(0xFF15161A);
-    final mutedTextColor = isDark ? Colors.grey[400]! : const Color(0xFF6E7191);
+    final mutedTextColor = AppTheme.mutedTextColorFor(isDark);
     final purpleColor = AppTheme.primaryPurpleFor(isDark);
     final borderColor = isDark ? AppTheme.darkBorder : AppTheme.lightInputBorder;
 
@@ -795,7 +795,7 @@ class _RestaurantCategoryScreenState extends State<RestaurantCategoryScreen> {
                                         ),
                                         child: Icon(
                                           LucideIcons.heart,
-                                          color: isFav ? Colors.red : (isDark ? Colors.grey[400] : Colors.grey[600]),
+                                          color: isFav ? Colors.red : AppTheme.hintColorFor(isDark),
                                           size: 16.sp,
                                         ),
                                       ),

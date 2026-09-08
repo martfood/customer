@@ -561,9 +561,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                                         fontSize: AppTypography
                                                             .font(AppFontSizes
                                                                 .bodyMedium),
-                                                        color: isDark
-                                                            ? Colors.grey[400]
-                                                            : Colors.grey[600],
+                                                        color: AppTheme.mutedTextColorFor(isDark),
                                                         fontWeight:
                                                             FontWeight.w500,
                                                       ),
@@ -671,7 +669,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildNoVendorsBottomSheetOverlay(bool isDark) {
     final primaryTextColor = isDark ? Colors.white : const Color(0xFF15161A);
-    final mutedTextColor = isDark ? Colors.grey[400]! : const Color(0xFF6E7191);
+    final mutedTextColor = AppTheme.mutedTextColorFor(isDark);
     final sheetBg = isDark ? AppTheme.darkSurface : Colors.white;
     final purpleColor = AppTheme.primaryPurpleFor(isDark);
     final borderColor =
@@ -815,7 +813,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildHeader(bool isDark) {
     final purpleColor = AppTheme.primaryPurpleFor(isDark);
     final textColor = isDark ? Colors.white : const Color(0xFF1E1E1E);
-    final subtextColor = isDark ? Colors.grey[400] : const Color(0xFF6E7191);
+    final subtextColor = AppTheme.mutedTextColorFor(isDark);
 
     return StreamBuilder<DocumentSnapshot>(
       stream: _userStream,
@@ -1032,7 +1030,7 @@ class _HomeScreenState extends State<HomeScreen> {
               Text(
                 'Search',
                 style: TextStyle(
-                  color: Colors.grey[400],
+                  color: AppTheme.hintColorFor(isDark),
                   fontSize: AppTypography.font(AppFontSizes.bodyMedium),
                 ),
               ),
@@ -1528,7 +1526,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final purpleColor = AppTheme.primaryPurpleFor(isDark);
-    final mutedTextColor = isDark ? Colors.grey[400]! : const Color(0xFF6E7191);
+    final mutedTextColor = AppTheme.mutedTextColorFor(isDark);
 
     return Padding(
       padding: EdgeInsets.fromLTRB(20.w, 0.h, 20.w, 6.h),

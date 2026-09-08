@@ -169,7 +169,7 @@ class NotificationScreen extends StatelessWidget {
                       time,
                       style: TextStyle(
                         fontSize: AppTypography.font(AppFontSizes.bodyMedium),
-                        color: Colors.grey[600],
+                        color: AppTheme.mutedTextColorFor(isDark),
                       ),
                     ),
                   ],
@@ -182,7 +182,7 @@ class NotificationScreen extends StatelessWidget {
             description,
             style: TextStyle(
               fontSize: AppTypography.font(AppFontSizes.bodyMedium),
-              color: isDark ? Colors.grey[400] : Colors.grey[700],
+              color: AppTheme.mutedTextColorFor(isDark),
               height: 1.5,
             ),
           ),

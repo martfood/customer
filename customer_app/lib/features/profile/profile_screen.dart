@@ -342,7 +342,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               Icon(
                 LucideIcons.chevronRight,
                 size: 18.sp,
-                color: isDark ? Colors.grey[600] : Colors.grey[400],
+                color: AppTheme.hintColorFor(isDark),
               ),
             ],
           ),

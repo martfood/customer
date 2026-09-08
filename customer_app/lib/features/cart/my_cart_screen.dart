@@ -50,7 +50,7 @@ class _MyCartScreenState extends State<MyCartScreen> {
     final surface = isDark ? AppTheme.darkSurface : Colors.white;
     final border = isDark ? AppTheme.darkBorder : AppTheme.lightInputBorder;
     final textClr = isDark ? Colors.white : const Color(0xFF15161A);
-    final mutedClr = isDark ? Colors.grey[400]! : const Color(0xFF6E7191);
+    final mutedClr = AppTheme.mutedTextColorFor(isDark);
 
     return showModalBottomSheet<bool>(
       context: context,
@@ -287,7 +287,7 @@ class _MyCartScreenState extends State<MyCartScreen> {
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: AppTypography.font(AppFontSizes.bodyMedium),
-                        color: isDark ? Colors.grey[400] : const Color(0xFF6E7191),
+                        color: AppTheme.mutedTextColorFor(isDark),
                         fontWeight: FontWeight.w500,
                         height: 1.45,
                       ),
@@ -571,7 +571,7 @@ class _MyCartScreenState extends State<MyCartScreen> {
                                 style: TextStyle(
                                   fontSize: AppTypography.font(AppFontSizes.bodySmall),
                                   fontWeight: FontWeight.w600,
-                                  color: isDark ? Colors.grey[400] : Colors.grey[600],
+                                  color: AppTheme.mutedTextColorFor(isDark),
                                 ),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
@@ -587,7 +587,7 @@ class _MyCartScreenState extends State<MyCartScreen> {
                                 .where((label) => label.toString().isNotEmpty)
                                 .join(' • '),
                             style: TextStyle(
-                              color: isDark ? Colors.grey[400] : Colors.grey[600],
+                              color: AppTheme.mutedTextColorFor(isDark),
                               fontSize: AppTypography.font(AppFontSizes.caption),
                               fontWeight: FontWeight.w500,
                             ),
@@ -600,7 +600,7 @@ class _MyCartScreenState extends State<MyCartScreen> {
                           Text(
                             'Add-ons: ${selectedAddOns.map((addon) => (((addon['quantity'] as num?)?.toInt() ?? 1) > 1) ? '${addon['name'] ?? addon['title']} (x${addon['quantity']})' : '${addon['name'] ?? addon['title']}').where((name) => name.isNotEmpty).join(', ')}',
                             style: TextStyle(
-                              color: isDark ? Colors.grey[400] : Colors.grey[600],
+                              color: AppTheme.mutedTextColorFor(isDark),
                               fontSize: AppTypography.font(AppFontSizes.caption),
                               fontWeight: FontWeight.w500,
                             ),

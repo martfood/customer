@@ -137,7 +137,7 @@ class _ResetForgottenPasswordScreenState
               Text(
                 'Your password has been successfully reset. You can now log in with your new credentials.',
                 style: TextStyle(
-                  color: isDark ? Colors.grey[400] : Colors.grey[600],
+                  color: AppTheme.mutedTextColorFor(isDark),
                   fontSize: AppTypography.font(14),
                 ),
                 textAlign: TextAlign.center,
@@ -184,7 +184,7 @@ class _ResetForgottenPasswordScreenState
     final fieldBg = isDark ? AppTheme.darkSurface : Colors.white;
     final fieldBorder = isDark ? AppTheme.darkBorder : AppTheme.lightInputBorder;
     final textColor = isDark ? Colors.white : const Color(0xFF1E1E1E);
-    final subtextColor = isDark ? Colors.grey[400]! : Colors.grey[600]!;
+    final subtextColor = AppTheme.mutedTextColorFor(isDark);
 
     return Scaffold(
       backgroundColor: backgroundColor,
@@ -250,7 +250,7 @@ class _ResetForgottenPasswordScreenState
                   decoration: InputDecoration(
                     hintText: 'Enter new password',
                     hintStyle: TextStyle(
-                      color: isDark ? Colors.grey[500] : Colors.grey[400],
+                      color: AppTheme.hintColorFor(isDark),
                       fontSize: AppTypography.font(AppFontSizes.bodyMedium),
                     ),
                     border: InputBorder.none,
@@ -288,7 +288,7 @@ class _ResetForgottenPasswordScreenState
                   decoration: InputDecoration(
                     hintText: 'Re-enter new password',
                     hintStyle: TextStyle(
-                      color: isDark ? Colors.grey[500] : Colors.grey[400],
+                      color: AppTheme.hintColorFor(isDark),
                       fontSize: AppTypography.font(AppFontSizes.bodyMedium),
                     ),
                     border: InputBorder.none,

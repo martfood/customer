@@ -194,7 +194,7 @@ class _OtpScreenState extends State<OtpScreen> {
     final surfaceColor = isDark ? AppTheme.darkSurface : Colors.white;
     final borderColor = isDark ? AppTheme.darkBorder : AppTheme.lightInputBorder;
     final textColor = isDark ? Colors.white : Colors.black87;
-    final mutedTextColor = isDark ? Colors.grey[400]! : Colors.grey[600]!;
+    final mutedTextColor = AppTheme.mutedTextColorFor(isDark);
     final purpleColor = AppTheme.primaryPurpleFor(isDark);
 
     return Scaffold(

@@ -97,7 +97,7 @@ class _LanguageScreenState extends State<LanguageScreen> {
                           : Icons.radio_button_off,
                       color: isSelected
                           ? purpleColor
-                          : (isDark ? Colors.grey[600] : Colors.grey[400]),
+                          : AppTheme.hintColorFor(isDark),
                       size: 22.sp,
                     ),
                   ],

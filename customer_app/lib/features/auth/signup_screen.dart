@@ -139,7 +139,7 @@ class _SignupScreenState extends State<SignupScreen> {
     final fieldBg = isDark ? AppTheme.darkSurface : AppTheme.lightInputFill;
     final fieldBorder = isDark ? AppTheme.darkBorder : AppTheme.lightInputBorder;
     final textColor = isDark ? Colors.white : const Color(0xFF1E1E1E);
-    final subtextColor = isDark ? Colors.grey[400] : const Color(0xFF555555);
+    final subtextColor = AppTheme.mutedTextColorFor(isDark);
 
     return Scaffold(
       backgroundColor: isDark ? Colors.black : Colors.white,
@@ -226,7 +226,7 @@ class _SignupScreenState extends State<SignupScreen> {
                   decoration: InputDecoration(
                     hintText: 'Enter your full name',
                     hintStyle: TextStyle(
-                      color: Colors.grey[400],
+                      color: AppTheme.hintColorFor(isDark),
                       fontSize: AppTypography.font(AppFontSizes.bodyMedium),
                     ),
                     border: InputBorder.none,
@@ -299,7 +299,7 @@ class _SignupScreenState extends State<SignupScreen> {
                         decoration: InputDecoration(
                           hintText: 'Enter phone number',
                           hintStyle: TextStyle(
-                            color: Colors.grey[400],
+                            color: AppTheme.hintColorFor(isDark),
                             fontSize: AppTypography.font(AppFontSizes.bodyMedium),
                           ),
                           border: InputBorder.none,
@@ -338,7 +338,7 @@ class _SignupScreenState extends State<SignupScreen> {
                   decoration: InputDecoration(
                     hintText: 'Enter email address',
                     hintStyle: TextStyle(
-                      color: Colors.grey[400],
+                      color: AppTheme.hintColorFor(isDark),
                       fontSize: AppTypography.font(AppFontSizes.bodyMedium),
                     ),
                     border: InputBorder.none,
@@ -416,7 +416,7 @@ class _SignupScreenState extends State<SignupScreen> {
                         text: 'I agree to MartFood ',
                         style: TextStyle(
                           fontSize: AppTypography.font(AppFontSizes.bodySmall),
-                          color: isDark ? Colors.grey[400] : Colors.grey[600],
+                          color: AppTheme.mutedTextColorFor(isDark),
                           height: 1.3,
                         ),
                         children: [
@@ -670,6 +670,7 @@ class _SignupPasswordTextFieldState extends State<_SignupPasswordTextField> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       decoration: BoxDecoration(
         color: widget.fieldBg,
@@ -686,7 +687,7 @@ class _SignupPasswordTextFieldState extends State<_SignupPasswordTextField> {
         decoration: InputDecoration(
           hintText: widget.hintText,
           hintStyle: TextStyle(
-            color: Colors.grey[400],
+            color: AppTheme.hintColorFor(isDark),
             fontSize: AppTypography.font(AppFontSizes.bodyMedium),
           ),
           border: InputBorder.none,

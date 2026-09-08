@@ -171,7 +171,7 @@ class _VendorScreenState extends State<VendorScreen> {
     final cardBackgroundColor =
         isDark ? AppTheme.darkSurface : AppTheme.lightSurface;
     final primaryTextColor = isDark ? Colors.white : Colors.black87;
-    final mutedTextColor = isDark ? Colors.grey[400]! : Colors.grey[600]!;
+    final mutedTextColor = AppTheme.mutedTextColorFor(isDark);
     final purpleColor = AppTheme.primaryPurpleFor(isDark);
     final borderColor =
         isDark ? AppTheme.darkBorder : AppTheme.lightInputBorder;
@@ -1250,7 +1250,7 @@ class _VendorScreenState extends State<VendorScreen> {
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: AppTypography.font(14),
-                color: isDark ? Colors.grey[400] : Colors.grey[600],
+                color: AppTheme.mutedTextColorFor(isDark),
                 height: 1.5,
               ),
             ),

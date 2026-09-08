@@ -124,7 +124,7 @@ class _TrackDriverScreenState extends State<TrackDriverScreen> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final surfaceColor = isDark ? AppTheme.darkSurface : Colors.white;
     final primaryTextColor = isDark ? Colors.white : Colors.black87;
-    final mutedTextColor = isDark ? Colors.grey[400]! : Colors.grey[600]!;
+    final mutedTextColor = AppTheme.mutedTextColorFor(isDark);
     final purpleColor = AppTheme.primaryPurpleFor(isDark);
 
     showModalBottomSheet(
@@ -216,7 +216,7 @@ class _TrackDriverScreenState extends State<TrackDriverScreen> {
     final backgroundColor = isDark ? AppTheme.darkSurface : AppTheme.lightInputFill;
     final surfaceColor = isDark ? AppTheme.darkSurface : Colors.white;
     final primaryTextColor = isDark ? Colors.white : Colors.black87;
-    final mutedTextColor = isDark ? Colors.grey[400]! : Colors.grey[600]!;
+    final mutedTextColor = AppTheme.mutedTextColorFor(isDark);
     final purpleColor = AppTheme.primaryPurpleFor(isDark);
     final borderColor = isDark ? AppTheme.darkBorder : AppTheme.lightInputBorder;
 

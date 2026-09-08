@@ -71,7 +71,7 @@ class FoodCardHorizontal extends StatelessWidget {
     final borderColor =
         isDark ? AppTheme.darkBorder : AppTheme.lightInputBorder;
     final primaryTextColor = isDark ? Colors.white : Colors.black87;
-    final mutedTextColor = isDark ? Colors.grey[400]! : Colors.grey[600]!;
+    final mutedTextColor = AppTheme.mutedTextColorFor(isDark);
 
     final bool hasPromo = promoPrice != null && promoPrice! > 0;
     final bool hasBase = basePrice != null && basePrice! > 0;

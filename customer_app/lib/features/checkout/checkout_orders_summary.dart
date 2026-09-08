@@ -662,7 +662,7 @@ class _CheckoutOrdersSummaryScreenState
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final surfaceColor = isDark ? AppTheme.darkSurface : Colors.white;
     final primaryTextColor = isDark ? Colors.white : Colors.black87;
-    final mutedTextColor = isDark ? Colors.grey[400]! : Colors.grey[600]!;
+    final mutedTextColor = AppTheme.mutedTextColorFor(isDark);
     final purpleColor = AppTheme.primaryPurpleFor(isDark);
 
     final addrTitle = (addr['title'] ?? 'Address').toString();
@@ -1437,7 +1437,7 @@ class _CheckoutOrdersSummaryScreenState
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final surfaceColor = isDark ? AppTheme.darkSurface : Colors.white;
     final primaryTextColor = isDark ? Colors.white : Colors.black87;
-    final mutedTextColor = isDark ? Colors.grey[400]! : Colors.grey[600]!;
+    final mutedTextColor = AppTheme.mutedTextColorFor(isDark);
     final purpleColor = AppTheme.primaryPurpleFor(isDark);
     final borderColor = isDark ? AppTheme.darkBorder : AppTheme.lightInputBorder;
 
@@ -1457,7 +1457,7 @@ class _CheckoutOrdersSummaryScreenState
             20.w,
             16.h,
             20.w,
-            MediaQuery.of(context).viewInsets.bottom + 24.h,
+            MediaQuery.of(sheetContext).viewInsets.bottom + 24.h,
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -1475,16 +1475,16 @@ class _CheckoutOrdersSummaryScreenState
               ),
               SizedBox(height: 20.h),
               Text(
-                'Leave a note for the restaurant',
+                'Note for Restaurant',
                 style: TextStyle(
                   color: primaryTextColor,
-                  fontSize: AppTypography.font(AppFontSizes.bodyLarge),
+                  fontSize: AppTypography.font(AppFontSizes.headlineSmall),
                   fontWeight: FontWeight.w800,
                 ),
               ),
-              SizedBox(height: 8.h),
+              SizedBox(height: 6.h),
               Text(
-                'This will be shared with $_restaurantName along with your order.',
+                'Add any special instructions for the restaurant about your meal preparation.',
                 style: TextStyle(
                   color: mutedTextColor,
                   fontSize: AppTypography.font(AppFontSizes.bodySmall),
@@ -1493,18 +1493,16 @@ class _CheckoutOrdersSummaryScreenState
               ),
               SizedBox(height: 16.h),
               Container(
-                width: double.infinity,
-                padding: EdgeInsets.all(16.w),
                 decoration: BoxDecoration(
-                  color: isDark ? AppTheme.darkSurface : AppTheme.lightInputFill,
-                  borderRadius: BorderRadius.circular(20.r),
+                  color: isDark ? const Color(0xFF1E1E2E) : const Color(0xFFF9FAFB),
+                  borderRadius: BorderRadius.circular(16.r),
                   border: Border.all(color: borderColor, width: 1),
                 ),
+                padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
                 child: TextField(
                   controller: _restaurantNoteController,
-                  maxLines: 5,
-                  minLines: 4,
-                  maxLength: 150,
+                  maxLines: 4,
+                  maxLength: 200,
                   onChanged: (_) => setSheetState(() {}),
                   style: TextStyle(
                     color: primaryTextColor,
@@ -1513,7 +1511,7 @@ class _CheckoutOrdersSummaryScreenState
                   decoration: InputDecoration(
                     hintText: 'Extra spicy, Please. I like it with extra mayo too',
                     hintStyle: TextStyle(
-                      color: isDark ? Colors.grey[500] : Colors.grey[400],
+                      color: AppTheme.hintColorFor(isDark),
                       fontSize: AppTypography.font(AppFontSizes.bodySmall),
                     ),
                     border: InputBorder.none,
@@ -1574,7 +1572,7 @@ class _CheckoutOrdersSummaryScreenState
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final surfaceColor = isDark ? AppTheme.darkSurface : Colors.white;
     final primaryTextColor = isDark ? Colors.white : Colors.black87;
-    final mutedTextColor = isDark ? Colors.grey[400]! : Colors.grey[600]!;
+    final mutedTextColor = AppTheme.mutedTextColorFor(isDark);
     final purpleColor = AppTheme.primaryPurpleFor(isDark);
     final borderColor = isDark ? AppTheme.darkBorder : AppTheme.lightInputBorder;
 
@@ -1650,7 +1648,7 @@ class _CheckoutOrdersSummaryScreenState
                   decoration: InputDecoration(
                     hintText: 'Please ring the bell or leave at the front desk',
                     hintStyle: TextStyle(
-                      color: isDark ? Colors.grey[500] : Colors.grey[400],
+                      color: AppTheme.hintColorFor(isDark),
                       fontSize: AppTypography.font(AppFontSizes.bodySmall),
                     ),
                     border: InputBorder.none,
@@ -1775,7 +1773,7 @@ class _CheckoutOrdersSummaryScreenState
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   border: Border.all(
-                    color: isSelected ? purpleColor : Colors.grey[400]!,
+                    color: isSelected ? purpleColor : (isDark ? Colors.grey[600]! : AppTheme.hintColorFor(isDark)),
                     width: isSelected ? 6.w : 1.5.w,
                   ),
                 ),
@@ -1791,7 +1789,7 @@ class _CheckoutOrdersSummaryScreenState
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final surfaceColor = isDark ? AppTheme.darkSurface : Colors.white;
     final primaryTextColor = isDark ? Colors.white : Colors.black87;
-    final mutedTextColor = isDark ? Colors.grey[400]! : Colors.grey[600]!;
+    final mutedTextColor = AppTheme.mutedTextColorFor(isDark);
     final purpleColor = AppTheme.primaryPurpleFor(isDark);
     final borderColor = isDark ? AppTheme.darkBorder : AppTheme.lightInputBorder;
 
@@ -2121,7 +2119,7 @@ class _CheckoutOrdersSummaryScreenState
   }) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final primaryTextColor = isDark ? Colors.white : const Color(0xFF15161A);
-    final mutedTextColor = isDark ? Colors.grey[400]! : const Color(0xFF6B7280);
+    final mutedTextColor = AppTheme.mutedTextColorFor(isDark);
     final surfaceColor = isDark ? AppTheme.darkSurface : Colors.white;
     final purpleColor = AppTheme.primaryPurpleFor(isDark);
     final cardBgColor = isDark ? const Color(0xFF1E1E2E) : const Color(0xFFF3F4F6);
@@ -2479,7 +2477,7 @@ class _CheckoutOrdersSummaryScreenState
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final surfaceColor = isDark ? AppTheme.darkSurface : Colors.white;
     final primaryTextColor = isDark ? Colors.white : Colors.black87;
-    final mutedTextColor = isDark ? Colors.grey[400]! : Colors.grey[600]!;
+    final mutedTextColor = AppTheme.mutedTextColorFor(isDark);
     final purpleColor = AppTheme.primaryPurpleFor(isDark);
     final borderColor = isDark ? AppTheme.darkBorder : AppTheme.lightInputBorder;
 
@@ -2674,8 +2672,8 @@ class _CheckoutOrdersSummaryScreenState
                             'View details',
                             style: TextStyle(
                               color: mutedTextColor,
-                              fontSize: AppTypography.font(AppFontSizes.caption),
-                              fontWeight: FontWeight.w500,
+                              fontSize: AppTypography.font(AppFontSizes.bodySmall),
+                              fontWeight: FontWeight.w700,
                             ),
                           ),
                           SizedBox(width: 4.w),
@@ -2962,7 +2960,7 @@ class _CheckoutOrdersSummaryScreenState
                               color: mutedTextColor,
                               fontSize:
                                   AppTypography.font(AppFontSizes.bodySmall),
-                              fontWeight: FontWeight.w500,
+                              fontWeight: FontWeight.w600,
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,

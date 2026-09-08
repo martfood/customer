@@ -448,7 +448,7 @@ class _AddressLocationScreenState extends State<AddressLocationScreen> {
     final isTablet = MediaQuery.of(context).size.width >= 600;
     final surfaceColor = isDark ? AppTheme.darkSurface : Colors.white;
     final primaryText = isDark ? Colors.white : const Color(0xFF1E1E1E);
-    final mutedText = isDark ? Colors.grey[400]! : const Color(0xFF6E7191);
+    final mutedText = AppTheme.mutedTextColorFor(isDark);
     final purple = AppTheme.primaryPurpleFor(isDark);
     final inputBorderColor = isDark ? AppTheme.darkBorder : const Color(0xFFE9D5FF);
     final inactivePillBg = isDark ? const Color(0xFF27272A) : const Color(0xFFF3F4F6);

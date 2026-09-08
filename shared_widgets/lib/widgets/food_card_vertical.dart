@@ -52,7 +52,7 @@ class FoodCardVertical extends StatelessWidget {
     final surfaceColor = isDark ? AppTheme.darkSurface : Colors.white;
     final borderColor = isDark ? AppTheme.darkBorder : AppTheme.lightInputBorder;
     final primaryTextColor = isDark ? Colors.white : Colors.black87;
-    final mutedTextColor = isDark ? Colors.grey[400]! : Colors.grey[600]!;
+    final mutedTextColor = AppTheme.mutedTextColorFor(isDark);
 
     final isTablet = MediaQuery.of(context).size.width >= 600;
     final double cardWidth = isTablet ? 182.w : 230.w;

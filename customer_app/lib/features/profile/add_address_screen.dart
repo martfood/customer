@@ -411,7 +411,7 @@ class _AddAddressScreenState extends State<AddAddressScreen> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final surfaceColor = isDark ? AppTheme.darkSurface : Colors.white;
     final primaryTextColor = isDark ? Colors.white : Colors.black87;
-    final mutedTextColor = isDark ? Colors.grey[400]! : Colors.grey[600]!;
+    final mutedTextColor = AppTheme.mutedTextColorFor(isDark);
     final purpleColor = AppTheme.primaryPurpleFor(isDark);
 
     final result = await showModalBottomSheet<bool>(
@@ -652,7 +652,7 @@ class _AddAddressScreenState extends State<AddAddressScreen> {
     final cardBg = isDark ? AppTheme.darkSurface : Colors.white;
     final borderColor = isDark ? AppTheme.darkBorder : AppTheme.lightInputBorder;
     final primaryTextColor = isDark ? Colors.white : const Color(0xFF15161A);
-    final mutedTextColor = isDark ? Colors.grey[400]! : const Color(0xFF6E7191);
+    final mutedTextColor = AppTheme.mutedTextColorFor(isDark);
 
     return Scaffold(
       backgroundColor: backgroundColor,
@@ -759,9 +759,7 @@ class _AddAddressScreenState extends State<AddAddressScreen> {
                                           Text(
                                             'Full address',
                                             style: TextStyle(
-                                              color: isDark
-                                                  ? Colors.grey[400]!
-                                                  : const Color(0xFF6E7191),
+                                              color: AppTheme.mutedTextColorFor(isDark),
                                               fontSize: AppTypography.font(
                                                   AppFontSizes.bodySmall),
                                               fontWeight: FontWeight.w700,
@@ -840,9 +838,7 @@ class _AddAddressScreenState extends State<AddAddressScreen> {
                                                 )
                                               : null,
                                           hintStyle: TextStyle(
-                                            color: isDark
-                                                ? Colors.grey[500]
-                                                : const Color(0xFF6E7191),
+                                            color: AppTheme.hintColorFor(isDark),
                                           ),
                                           filled: true,
                                           fillColor: isDark
@@ -1341,7 +1337,7 @@ class _AddAddressScreenState extends State<AddAddressScreen> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final purpleColor = AppTheme.primaryPurpleFor(isDark);
     final borderColor = isDark ? AppTheme.darkBorder : AppTheme.lightInputBorder;
-    final labelColor = isDark ? Colors.grey[400]! : const Color(0xFF6E7191);
+    final labelColor = AppTheme.mutedTextColorFor(isDark);
     final primaryTextColor = isDark ? Colors.white : const Color(0xFF15161A);
 
     return Column(

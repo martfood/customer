@@ -297,14 +297,14 @@ class VendorRatingsScreen extends StatelessWidget {
                                               : Colors.black87,
                                         ),
                                       ),
-                                      if (dateStr.isNotEmpty)
-                                        Text(
-                                          dateStr,
-                                          style: TextStyle(
-                                              fontSize: AppTypography.font(AppFontSizes.caption),
-                                              fontWeight: FontWeight.w500,
-                                              color: Colors.grey[500]),
-                                        ),
+                                        if (dateStr.isNotEmpty)
+                                          Text(
+                                            dateStr,
+                                            style: TextStyle(
+                                                fontSize: AppTypography.font(AppFontSizes.caption),
+                                                fontWeight: FontWeight.w500,
+                                                color: isDark ? const Color(0xFF9CA3AF) : AppTheme.lightMutedText),
+                                          ),
                                     ],
                                   ),
                                 ),
@@ -360,7 +360,7 @@ class VendorRatingsScreen extends StatelessWidget {
                                   style: TextStyle(
                                       fontSize: AppTypography.font(AppFontSizes.caption),
                                       fontWeight: FontWeight.w500,
-                                      color: Colors.grey[500]),
+                                      color: AppTheme.lightMutedText),
                                 ),
                               ),
                             ],
@@ -396,20 +396,20 @@ class VendorRatingsScreen extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Icon(Icons.rate_review_outlined,
-                            size: 64.sp, color: Colors.grey[400]),
+                            size: 64.sp, color: AppTheme.hintColorFor(isDark)),
                         SizedBox(height: 16.h),
                         Text(
                           'No reviews yet',
                           style: TextStyle(
                               fontSize: AppTypography.font(AppFontSizes.bodyLarge),
                               fontWeight: FontWeight.w600,
-                              color: Colors.grey[500]),
+                              color: AppTheme.mutedTextColorFor(isDark)),
                         ),
                         SizedBox(height: 8.h),
                         Text(
                           'Be the first to leave a review!',
                           style: TextStyle(
-                              fontSize: AppTypography.font(13), color: Colors.grey[400]),
+                              fontSize: AppTypography.font(13), color: AppTheme.hintColorFor(isDark)),
                         ),
                       ],
                     ),

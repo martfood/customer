@@ -38,7 +38,7 @@ class _EWalletScreenState extends State<EWalletScreen> {
   void _showTopUpSuccessBottomSheet() {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final primaryTextColor = isDark ? Colors.white : Colors.black87;
-    final mutedTextColor = isDark ? Colors.grey[400]! : Colors.grey[600]!;
+    final mutedTextColor = AppTheme.mutedTextColorFor(isDark);
     final sheetBg = isDark ? AppTheme.darkSurface : Colors.white;
     final purpleColor = AppTheme.primaryPurpleFor(isDark);
 
@@ -165,7 +165,7 @@ class _EWalletScreenState extends State<EWalletScreen> {
     final backgroundColor =
         isDark ? AppTheme.darkSurface : AppTheme.lightInputFill;
     final surfaceColor = isDark ? AppTheme.darkSurface : Colors.white;
-    final mutedTextColor = isDark ? Colors.grey[400]! : const Color(0xFF6E7191);
+    final mutedTextColor = AppTheme.mutedTextColorFor(isDark);
     final primaryTextColor = isDark ? Colors.white : const Color(0xFF15161A);
     final purpleColor = AppTheme.primaryPurpleFor(isDark);
     final user = _auth.currentUser;
@@ -687,7 +687,7 @@ class _EWalletScreenState extends State<EWalletScreen> {
   }) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final primaryTextColor = isDark ? Colors.white : const Color(0xFF15161A);
-    final mutedTextColor = isDark ? Colors.grey[400]! : const Color(0xFF6E7191);
+    final mutedTextColor = AppTheme.mutedTextColorFor(isDark);
     final chipBackground =
         (iconColor ?? purpleColor).withValues(alpha: 0.12);
 

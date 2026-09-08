@@ -342,7 +342,7 @@ class _AddCardSheetState extends State<_AddCardSheet> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final surfaceColor = isDark ? AppTheme.darkSurface : Colors.white;
     final primaryText = isDark ? Colors.white : const Color(0xFF15161A);
-    final mutedText = isDark ? Colors.grey[400]! : const Color(0xFF6B7280);
+    final mutedText = AppTheme.mutedTextColorFor(isDark);
     final purple = AppTheme.primaryPurpleFor(isDark);
     final inputFill = isDark ? const Color(0xFF1E1E2E) : const Color(0xFFF3F4F6);
     final borderColor = isDark ? AppTheme.darkBorder : AppTheme.lightInputBorder;
@@ -1012,7 +1012,7 @@ class _AddCardSheetState extends State<_AddCardSheet> {
     return InputDecoration(
       hintText: hint,
       hintStyle: TextStyle(
-        color: isDark ? Colors.grey[600] : Colors.grey[400],
+        color: AppTheme.hintColorFor(isDark),
         fontSize: AppTypography.font(AppFontSizes.bodyMedium),
         fontWeight: FontWeight.w500,
         letterSpacing: 0,

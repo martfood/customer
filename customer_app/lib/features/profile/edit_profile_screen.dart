@@ -188,7 +188,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   Widget _buildSuccessBottomSheet(
       BuildContext context, bool isDark, Color purpleColor) {
     final primaryTextColor = isDark ? Colors.white : const Color(0xFF15161A);
-    final mutedTextColor = isDark ? Colors.grey[400]! : const Color(0xFF6E7191);
+    final mutedTextColor = AppTheme.mutedTextColorFor(isDark);
 
     return SafeArea(
       child: Padding(
@@ -390,7 +390,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                             decoration: InputDecoration(
                               hintText: 'Enter your full name',
                               hintStyle: TextStyle(
-                                color: Colors.grey[400],
+                                color: AppTheme.hintColorFor(isDark),
                                 fontSize: AppTypography.font(14),
                               ),
                               border: InputBorder.none,
@@ -447,14 +447,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                             controller: _emailController,
                             readOnly: true,
                             style: TextStyle(
-                              color: isDark ? Colors.grey[400] : Colors.grey[600],
+                              color: AppTheme.mutedTextColorFor(isDark),
                               fontSize: AppTypography.font(14),
                               fontWeight: FontWeight.w500,
                             ),
                             decoration: InputDecoration(
                               hintText: 'Email address',
                               hintStyle: TextStyle(
-                                color: Colors.grey[400],
+                                color: AppTheme.hintColorFor(isDark),
                                 fontSize: AppTypography.font(14),
                               ),
                               border: InputBorder.none,
@@ -518,9 +518,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                     const SizedBox(width: 4),
                                     Icon(
                                       Icons.arrow_drop_down,
-                                      color: isDark
-                                          ? Colors.grey[400]
-                                          : Colors.grey[600],
+                                      color: AppTheme.hintColorFor(isDark),
                                     ),
                                   ],
                                 ),
@@ -546,7 +544,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                   decoration: InputDecoration(
                                     hintText: 'Enter phone number',
                                     hintStyle: TextStyle(
-                                      color: Colors.grey[400],
+                                      color: AppTheme.hintColorFor(isDark),
                                       fontSize: AppTypography.font(14),
                                     ),
                                     border: InputBorder.none,

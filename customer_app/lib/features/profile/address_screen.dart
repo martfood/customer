@@ -56,7 +56,7 @@ class _AddressScreenState extends State<AddressScreen> {
     final purpleColor = AppTheme.primaryPurpleFor(isDark);
     final sheetBg = isDark ? AppTheme.darkSurface : Colors.white;
     final primaryTextColor = isDark ? Colors.white : const Color(0xFF15161A);
-    final mutedTextColor = isDark ? Colors.grey[400]! : const Color(0xFF6E7191);
+    final mutedTextColor = AppTheme.mutedTextColorFor(isDark);
 
     showModalBottomSheet(
       context: context,
@@ -147,7 +147,7 @@ class _AddressScreenState extends State<AddressScreen> {
     final backgroundColor =
         isDark ? AppTheme.darkSurface : AppTheme.lightInputFill;
     final primaryTextColor = isDark ? Colors.white : const Color(0xFF15161A);
-    final mutedTextColor = isDark ? Colors.grey[400]! : const Color(0xFF6E7191);
+    final mutedTextColor = AppTheme.mutedTextColorFor(isDark);
     final cardBg = isDark ? AppTheme.darkSurface : Colors.white;
     final borderColor = isDark ? AppTheme.darkBorder : AppTheme.lightInputBorder;
     final user = _auth.currentUser;
@@ -355,9 +355,7 @@ class _AddressScreenState extends State<AddressScreen> {
                                                   : Icons.circle_outlined,
                                               color: isSelected || isDefault
                                                   ? purpleColor
-                                                  : (isDark
-                                                      ? Colors.grey[600]
-                                                      : Colors.grey[400]),
+                                                  : AppTheme.hintColorFor(isDark),
                                               size: 22.sp,
                                             ),
                                           ],
@@ -460,7 +458,7 @@ class _AddressScreenState extends State<AddressScreen> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final purpleColor = AppTheme.primaryPurpleFor(isDark);
     final primaryTextColor = isDark ? Colors.white : const Color(0xFF15161A);
-    final mutedTextColor = isDark ? Colors.grey[400]! : const Color(0xFF6E7191);
+    final mutedTextColor = AppTheme.mutedTextColorFor(isDark);
     final cardBg = isDark ? AppTheme.darkSurface : Colors.white;
     final borderColor = isDark ? AppTheme.darkBorder : AppTheme.lightInputBorder;
 

@@ -145,7 +145,7 @@ class _MessageScreenState extends State<MessageScreen> {
                     children: [
                       Icon(
                         LucideIcons.search,
-                        color: isDark ? Colors.grey[400] : const Color(0xFF6E7191),
+                        color: AppTheme.hintColorFor(isDark),
                         size: 20.sp,
                       ),
                       SizedBox(width: 12.w),
@@ -162,9 +162,7 @@ class _MessageScreenState extends State<MessageScreen> {
                           decoration: InputDecoration(
                             hintText: 'Search conversations...',
                             hintStyle: TextStyle(
-                              color: isDark
-                                  ? Colors.grey[400]
-                                  : const Color(0xFF6E7191),
+                              color: AppTheme.hintColorFor(isDark),
                               fontSize: AppTypography.font(AppFontSizes.bodyMedium),
                             ),
                             border: InputBorder.none,
@@ -180,8 +178,7 @@ class _MessageScreenState extends State<MessageScreen> {
                           },
                           child: Icon(
                             Icons.close_rounded,
-                            color:
-                                isDark ? Colors.grey[400] : const Color(0xFF6E7191),
+                            color: AppTheme.hintColorFor(isDark),
                             size: 20.sp,
                           ),
                         ),
@@ -213,7 +210,7 @@ class _MessageScreenState extends State<MessageScreen> {
 
   Widget _buildActiveChatsList(String userId, bool isDark, Color purpleColor) {
     final primaryTextColor = isDark ? Colors.white : const Color(0xFF15161A);
-    final mutedTextColor = isDark ? Colors.grey[400]! : const Color(0xFF6E7191);
+    final mutedTextColor = AppTheme.mutedTextColorFor(isDark);
     final cardBg = isDark ? AppTheme.darkSurface : Colors.white;
     final borderColor =
         isDark ? AppTheme.darkBorder : AppTheme.lightInputBorder;

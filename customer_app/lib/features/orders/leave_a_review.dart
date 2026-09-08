@@ -112,7 +112,7 @@ class _LeaveAReviewScreenState extends State<LeaveAReviewScreen> {
     final nav = Navigator.of(context);
     final surfaceColor = isDark ? AppTheme.darkSurface : Colors.white;
     final primaryTextColor = isDark ? Colors.white : Colors.black87;
-    final mutedTextColor = isDark ? Colors.grey[400]! : Colors.grey[600]!;
+    final mutedTextColor = AppTheme.mutedTextColorFor(isDark);
     final purpleColor = AppTheme.primaryPurpleFor(isDark);
 
     showModalBottomSheet(
@@ -217,7 +217,7 @@ class _LeaveAReviewScreenState extends State<LeaveAReviewScreen> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final surfaceColor = isDark ? AppTheme.darkSurface : Colors.white;
     final primaryTextColor = isDark ? Colors.white : Colors.black87;
-    final mutedTextColor = isDark ? Colors.grey[400]! : Colors.grey[600]!;
+    final mutedTextColor = AppTheme.mutedTextColorFor(isDark);
     final purpleColor = AppTheme.primaryPurpleFor(isDark);
     final borderColor = isDark ? AppTheme.darkBorder : AppTheme.lightInputBorder;
 
@@ -500,7 +500,7 @@ class _LeaveAReviewScreenState extends State<LeaveAReviewScreen> {
                           decoration: InputDecoration(
                             hintText: 'Excellent quality. Arrived on time. Very reliable',
                             hintStyle: TextStyle(
-                              color: isDark ? Colors.grey[500] : Colors.grey[400],
+                              color: AppTheme.hintColorFor(isDark),
                               fontSize: AppTypography.font(AppFontSizes.bodySmall),
                             ),
                             border: InputBorder.none,

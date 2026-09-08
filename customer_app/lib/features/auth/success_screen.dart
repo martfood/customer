@@ -12,7 +12,7 @@ class SuccessScreen extends StatelessWidget {
     final backgroundColor =
         isDark ? AppTheme.darkSurface : AppTheme.lightInputFill;
     final primaryTextColor = isDark ? Colors.white : Colors.black87;
-    final mutedTextColor = isDark ? Colors.grey[400]! : Colors.grey[600]!;
+    final mutedTextColor = AppTheme.mutedTextColorFor(isDark);
     final purpleColor = AppTheme.primaryPurpleFor(isDark);
 
     return Scaffold(
