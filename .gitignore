@@ -80,9 +80,15 @@ martfood_admin_dashboard/
 website/
 MartFood/
 images/
-*.png
-*.jpg
-*.jpeg
+# Only root level temporary screenshots
+/*.png
+/*.jpg
+/*.jpeg
+!customer_app/assets/**
+!customer_app/ios/Runner/Assets.xcassets/**
+!customer_app/ios/Runner/*.png
+!customer_app/android/app/src/main/res/**
+!customer_app/android/app/src/main/kotlin/**
 .agents/
 MartFood_SRS.md
 qa_test_cases.md
