@@ -41,9 +41,8 @@ class CustomSnackBar {
         icon = Icons.error_outline_rounded;
         break;
       case SnackBarType.info:
-      default:
         backgroundColor = isDark ? const Color(0xFF1E152A) : const Color(0xFFF3E8FF);
-        borderColor = isDark ? Colors.white.withOpacity(0.08) : const Color(0xFFE9D5FF);
+        borderColor = isDark ? Colors.white.withValues(alpha: 0.08) : const Color(0xFFE9D5FF);
         textColor = isDark ? const Color(0xFFE9D5FF) : const Color(0xFF6B21A8);
         iconColor = textColor;
         icon = Icons.info_outline_rounded;
@@ -73,7 +72,7 @@ class CustomSnackBar {
                 style: TextStyle(
                   color: textColor,
                   fontWeight: FontWeight.bold,
-                  fontSize: 13.5,
+                  fontSize: AppTypography.font(AppFontSizes.bodyMedium),
                 ),
               ),
             ),

@@ -1555,7 +1555,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     style: TextStyle(
                       fontSize: AppTypography.font(AppFontSizes.bodySmall),
                       color: mutedTextColor,
-                      fontWeight: FontWeight.w400,
+                      fontWeight: FontWeight.w500,
                       height: 1.3,
                     ),
                   ),

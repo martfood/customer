@@ -1952,7 +1952,7 @@ class _CheckoutOrdersSummaryScreenState
                               'Conceal food items and choices from the payment link',
                               style: TextStyle(
                                 color: mutedTextColor,
-                                fontSize: AppTypography.font(11),
+                                fontSize: AppTypography.font(AppFontSizes.caption),
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
@@ -3100,7 +3100,7 @@ class _CheckoutOrdersSummaryScreenState
                           'Out of Coverage',
                           style: TextStyle(
                             color: const Color(0xFFDC2626),
-                            fontSize: AppTypography.font(10),
+                            fontSize: AppTypography.font(AppFontSizes.caption),
                             fontWeight: FontWeight.w800,
                           ),
                         ),
@@ -3116,7 +3116,7 @@ class _CheckoutOrdersSummaryScreenState
                           'In Coverage · ${_deliveryDistanceKm.toStringAsFixed(1)} km',
                           style: TextStyle(
                             color: const Color(0xFF15803D),
-                            fontSize: AppTypography.font(10),
+                            fontSize: AppTypography.font(AppFontSizes.caption),
                             fontWeight: FontWeight.w800,
                           ),
                         ),
@@ -3393,7 +3393,7 @@ class _CheckoutOrdersSummaryScreenState
                                 'Conceal food items and choices from the payment link',
                                 style: TextStyle(
                                   color: mutedTextColor,
-                                  fontSize: AppTypography.font(11),
+                                  fontSize: AppTypography.font(AppFontSizes.caption),
                                   fontWeight: FontWeight.w500,
                                 ),
                               ),

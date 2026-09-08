@@ -1058,7 +1058,7 @@ class _AddAddressScreenState extends State<AddAddressScreen> {
                   'Address Suggestions',
                   style: TextStyle(
                     color: purpleColor,
-                    fontSize: AppTypography.font(11),
+                    fontSize: AppTypography.font(AppFontSizes.caption),
                     fontWeight: FontWeight.w700,
                   ),
                 ),

@@ -301,7 +301,8 @@ class VendorRatingsScreen extends StatelessWidget {
                                         Text(
                                           dateStr,
                                           style: TextStyle(
-                                              fontSize: AppTypography.font(10),
+                                              fontSize: AppTypography.font(AppFontSizes.caption),
+                                              fontWeight: FontWeight.w500,
                                               color: Colors.grey[500]),
                                         ),
                                     ],
@@ -357,7 +358,8 @@ class VendorRatingsScreen extends StatelessWidget {
                                 child: Text(
                                   orderSummary,
                                   style: TextStyle(
-                                      fontSize: AppTypography.font(10),
+                                      fontSize: AppTypography.font(AppFontSizes.caption),
+                                      fontWeight: FontWeight.w500,
                                       color: Colors.grey[500]),
                                 ),
                               ),

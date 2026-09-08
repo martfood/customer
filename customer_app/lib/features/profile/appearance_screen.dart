@@ -177,7 +177,7 @@ class _AppearanceScreenState extends State<AppearanceScreen> {
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: AppTypography.font(AppFontSizes.bodyMedium),
-                      fontWeight: FontWeight.w400,
+                      fontWeight: FontWeight.w500,
                       color: mutedTextColor,
                       height: 1.4,
                     ),

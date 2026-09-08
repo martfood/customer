@@ -342,9 +342,9 @@ class _TrackDriverScreenState extends State<TrackDriverScreen> {
                                         Text(
                                           'Delivery PIN',
                                           style: TextStyle(
-                                            fontSize: AppTypography.font(11),
+                                            fontSize: AppTypography.font(AppFontSizes.caption),
                                             color: mutedTextColor,
-                                            fontWeight: FontWeight.w500,
+                                            fontWeight: FontWeight.w600,
                                           ),
                                         ),
                                         SizedBox(height: 4.h),

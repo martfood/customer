@@ -100,19 +100,12 @@ class _RestaurantFoodDetailsScreenState
   // Add-ons list and map of selected add-on quantities (id -> quantity)
   List<_AddOnOption> _addOns = [];
   final Map<String, int> _selectedAddOnQuantities = {};
-  Set<String> get _selectedAddOnIds => _selectedAddOnQuantities.entries
-      .where((e) => e.value > 0)
-      .map((e) => e.key)
-      .toSet();
 
   // Full restaurant post metadata fields
   String _orderType = 'single';
-  int? _prepTimeMinutes;
   int? _spicyLevel;
   List<String> _allergens = [];
   List<String> _dietaryTags = [];
-  String _mealCategory = '';
-  String _restaurantType = '';
 
   int _quantity = 1;
   int? _stockQuantity;
@@ -399,9 +392,6 @@ class _RestaurantFoodDetailsScreenState
 
     final String orderTypeVal =
         (docData['orderType'] ?? 'single').toString().trim();
-    final int? prepTimeVal = docData['prepTimeMinutes'] != null
-        ? (docData['prepTimeMinutes'] as num).toInt()
-        : null;
     final int? spicyLevelVal = docData['spicyLevel'] != null
         ? (docData['spicyLevel'] as num).toInt()
         : null;
@@ -415,10 +405,6 @@ class _RestaurantFoodDetailsScreenState
             .where((s) => s.isNotEmpty)
             .toList() ??
         [];
-    final String mealCategoryVal =
-        (docData['mealCategory'] ?? '').toString().trim();
-    final String restaurantTypeVal =
-        (docData['restaurantType'] ?? '').toString().trim();
 
     setState(() {
       _basePrice = activePrice;
@@ -432,12 +418,9 @@ class _RestaurantFoodDetailsScreenState
       _addOns = parsedAddOns;
       _selectedAddOnQuantities.clear();
       _orderType = orderTypeVal;
-      _prepTimeMinutes = prepTimeVal;
       _spicyLevel = spicyLevelVal;
       _allergens = allergensVal;
       _dietaryTags = dietaryVal;
-      _mealCategory = mealCategoryVal;
-      _restaurantType = restaurantTypeVal;
       _stockQuantity = stockQty;
       _isAvailable = isAvail;
       _loading = false;
@@ -620,7 +603,7 @@ class _RestaurantFoodDetailsScreenState
                                 'PROMO',
                                 style: TextStyle(
                                   color: Colors.white,
-                                  fontSize: AppTypography.font(10),
+                                  fontSize: AppTypography.font(AppFontSizes.caption),
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
@@ -642,7 +625,7 @@ class _RestaurantFoodDetailsScreenState
                               child: Text(
                                 'Out of Stock',
                                 style: TextStyle(
-                                  fontSize: AppTypography.font(11),
+                                  fontSize: AppTypography.font(AppFontSizes.caption),
                                   fontWeight: FontWeight.bold,
                                   color: Colors.red,
                                 ),
@@ -1525,8 +1508,8 @@ class _RestaurantFoodDetailsScreenState
                   child: Text(
                     '✓ $tag',
                     style: TextStyle(
-                      fontSize: AppTypography.font(11),
-                      fontWeight: FontWeight.w500,
+                      fontSize: AppTypography.font(AppFontSizes.caption),
+                      fontWeight: FontWeight.w700,
                       color: isDark ? Colors.grey[300] : const Color(0xFF475569),
                     ),
                   ),
@@ -1563,7 +1546,7 @@ class _RestaurantFoodDetailsScreenState
                     child: Text(
                       'Allergens: Contains ${_allergens.join(', ')}',
                       style: TextStyle(
-                        fontSize: AppTypography.font(11.5),
+                        fontSize: AppTypography.font(AppFontSizes.caption),
                         fontWeight: FontWeight.w600,
                         color: isDark ? Colors.amber[300] : const Color(0xFF92400E),
                       ),

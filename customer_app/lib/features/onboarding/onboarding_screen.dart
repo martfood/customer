@@ -71,7 +71,7 @@ class OnboardingScreen extends StatelessWidget {
                       textAlign: TextAlign.left,
                       style: TextStyle(
                         fontSize: AppTypography.font(AppFontSizes.bodyMedium),
-                        fontWeight: FontWeight.normal,
+                        fontWeight: FontWeight.w500,
                         color: subtextColor,
                         height: 1.4,
                       ),

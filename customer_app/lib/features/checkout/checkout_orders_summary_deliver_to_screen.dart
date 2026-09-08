@@ -186,7 +186,7 @@ class _DeliverToScreenState extends State<DeliverToScreen> {
                                             'Default',
                                             style: TextStyle(
                                               color: Colors.green,
-                                              fontSize: AppTypography.font(10),
+                                              fontSize: AppTypography.font(AppFontSizes.caption),
                                               fontWeight: FontWeight.bold,
                                             ),
                                           ),

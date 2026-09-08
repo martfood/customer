@@ -708,9 +708,9 @@ class _VendorScreenState extends State<VendorScreen> {
                                               'Delivery Fee',
                                               style: TextStyle(
                                                 fontSize:
-                                                    AppTypography.font(10.sp),
+                                                    AppTypography.font(AppFontSizes.caption),
                                                 color: mutedTextColor,
-                                                fontWeight: FontWeight.w500,
+                                                fontWeight: FontWeight.w600,
                                               ),
                                             ),
                                             SizedBox(height: 3.h),
@@ -718,7 +718,7 @@ class _VendorScreenState extends State<VendorScreen> {
                                               formattedFee,
                                               style: TextStyle(
                                                 fontSize:
-                                                    AppTypography.font(13.sp),
+                                                    AppTypography.font(AppFontSizes.bodySmall),
                                                 fontWeight: FontWeight.bold,
                                                 color: primaryTextColor,
                                               ),
@@ -742,9 +742,9 @@ class _VendorScreenState extends State<VendorScreen> {
                                                 'Preparation time',
                                                 style: TextStyle(
                                                   fontSize:
-                                                      AppTypography.font(10.sp),
+                                                      AppTypography.font(AppFontSizes.caption),
                                                   color: mutedTextColor,
-                                                  fontWeight: FontWeight.w500,
+                                                  fontWeight: FontWeight.w600,
                                                 ),
                                               ),
                                               SizedBox(height: 3.h),

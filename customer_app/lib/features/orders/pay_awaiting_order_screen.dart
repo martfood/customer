@@ -847,7 +847,7 @@ class _PayAwaitingOrderScreenState extends State<PayAwaitingOrderScreen> {
                                         'The customer chose to keep the items and meal choices in this order private.',
                                         style: TextStyle(
                                           color: mutedTextColor,
-                                          fontSize: AppTypography.font(11),
+                                          fontSize: AppTypography.font(AppFontSizes.bodySmall),
                                           fontWeight: FontWeight.w500,
                                         ),
                                       ),
@@ -1199,9 +1199,9 @@ class _PayAwaitingOrderScreenState extends State<PayAwaitingOrderScreen> {
                   Text(
                     isInsufficient ? '$subtitle (Insufficient balance)' : subtitle,
                     style: TextStyle(
-                      fontSize: AppTypography.font(12),
+                      fontSize: AppTypography.font(AppFontSizes.bodySmall),
                       color: isInsufficient ? Colors.red : mutedTextColor,
-                      fontWeight: isInsufficient ? FontWeight.bold : FontWeight.normal,
+                      fontWeight: isInsufficient ? FontWeight.bold : FontWeight.w500,
                     ),
                   ),
                 ],

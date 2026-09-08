@@ -1722,7 +1722,7 @@ class _OrdersScreenState extends State<OrdersScreen>
                             'Conceal food items and choices from the payment link',
                             style: TextStyle(
                               color: mutedTextColor,
-                              fontSize: AppTypography.font(11),
+                              fontSize: AppTypography.font(AppFontSizes.caption),
                               fontWeight: FontWeight.w500,
                             ),
                           ),

@@ -642,7 +642,7 @@ class _CustomerChatScreenState extends State<CustomerChatScreen> {
                   color: isMe
                       ? Colors.white.withValues(alpha: 0.72)
                       : _mutedTextColor(isDark),
-                  fontSize: AppTypography.font(10),
+                  fontSize: AppTypography.font(AppFontSizes.caption),
                   fontWeight: FontWeight.w600,
                 ),
               ),

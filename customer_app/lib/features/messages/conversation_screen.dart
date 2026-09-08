@@ -405,8 +405,9 @@ class _ConversationScreenState extends State<ConversationScreen> {
             Text(
               time,
               style: TextStyle(
-                fontSize: AppTypography.font(10),
+                fontSize: AppTypography.font(AppFontSizes.caption),
                 color: Colors.grey[600],
+                fontWeight: FontWeight.w500,
               ),
             ),
           ],
@@ -446,8 +447,9 @@ class _ConversationScreenState extends State<ConversationScreen> {
                 Text(
                   time,
                   style: TextStyle(
-                    fontSize: AppTypography.font(10),
+                    fontSize: AppTypography.font(AppFontSizes.caption),
                     color: Colors.white.withValues(alpha: 0.8),
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
                 SizedBox(width: 4.w),

@@ -97,9 +97,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           Text(
                             fullName.isNotEmpty ? fullName : 'MartFood User',
                             style: TextStyle(
-                              fontSize: AppTypography.font(15),
-                              fontWeight: FontWeight.w800,
+                              fontSize: AppTypography.font(AppFontSizes.headlineLarge),
+                              fontWeight: FontWeight.w900,
                               color: primaryTextColor,
+                              letterSpacing: -0.5,
                             ),
                           ),
                           SizedBox(height: 28.h),
@@ -276,7 +277,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             totalUnread > 99 ? '99+' : '$totalUnread',
             style: TextStyle(
               color: Colors.white,
-              fontSize: AppTypography.font(11),
+              fontSize: AppTypography.font(AppFontSizes.caption),
               fontWeight: FontWeight.w800,
             ),
           ),
@@ -331,7 +332,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 child: Text(
                   title,
                   style: TextStyle(
-                    fontSize: AppTypography.font(15),
+                    fontSize: AppTypography.font(AppFontSizes.bodyMedium),
                     fontWeight: FontWeight.w600,
                     color: textColor ?? primaryTextColor,
                   ),

@@ -386,7 +386,7 @@ class _SpecialOfferScreenState extends State<SpecialOfferScreen> {
                                                           'Limit reached for this account',
                                                           style: TextStyle(
                                                             color: Colors.red,
-                                                            fontSize: AppTypography.font(11),
+                                                            fontSize: AppTypography.font(AppFontSizes.caption),
                                                             fontWeight: FontWeight.bold,
                                                           ),
                                                         ),
@@ -400,7 +400,7 @@ class _SpecialOfferScreenState extends State<SpecialOfferScreen> {
                                                           'Fully redeemed (no longer available)',
                                                           style: TextStyle(
                                                             color: Colors.red,
-                                                            fontSize: AppTypography.font(11),
+                                                            fontSize: AppTypography.font(AppFontSizes.caption),
                                                             fontWeight: FontWeight.bold,
                                                           ),
                                                         ),

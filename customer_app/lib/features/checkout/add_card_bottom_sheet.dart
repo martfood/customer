@@ -1014,7 +1014,7 @@ class _AddCardSheetState extends State<_AddCardSheet> {
       hintStyle: TextStyle(
         color: isDark ? Colors.grey[600] : Colors.grey[400],
         fontSize: AppTypography.font(AppFontSizes.bodyMedium),
-        fontWeight: FontWeight.w400,
+        fontWeight: FontWeight.w500,
         letterSpacing: 0,
       ),
       filled: true,
@@ -1100,7 +1100,7 @@ class _CardBrandBadge extends StatelessWidget {
         Text(
           brand,
           style: TextStyle(
-            fontSize: AppTypography.font(11),
+            fontSize: AppTypography.font(AppFontSizes.caption),
             fontWeight: FontWeight.w700,
             color: color,
           ),

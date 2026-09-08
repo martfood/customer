@@ -156,7 +156,7 @@ Users must not engage in fraudulent ordering, abusive conduct towards riders or 
                             fontSize: AppTypography.font(AppFontSizes.bodyMedium),
                             color: primaryTextColor.withValues(alpha: 0.90),
                             height: 1.65,
-                            fontWeight: FontWeight.w400,
+                            fontWeight: FontWeight.w500,
                           ),
                         ),
                       ],

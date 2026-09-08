@@ -845,7 +845,7 @@ class _AddressLocationScreenState extends State<AddressLocationScreen> {
                                               child: Text(
                                                 'Default',
                                                 style: TextStyle(
-                                                  fontSize: AppTypography.font(11),
+                                                  fontSize: AppTypography.font(AppFontSizes.caption),
                                                   fontWeight: FontWeight.w700,
                                                   color: purple,
                                                 ),

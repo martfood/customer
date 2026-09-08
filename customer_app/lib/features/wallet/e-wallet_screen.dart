@@ -533,7 +533,7 @@ class _EWalletScreenState extends State<EWalletScreen> {
                           style: TextStyle(
                             color: Colors.white.withValues(alpha: 0.6),
                             fontSize: AppTypography.font(AppFontSizes.bodyMedium),
-                            fontWeight: FontWeight.w400,
+                            fontWeight: FontWeight.w500,
                           ),
                         ),
                       ),

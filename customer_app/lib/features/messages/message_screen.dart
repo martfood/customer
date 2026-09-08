@@ -424,8 +424,8 @@ class _MessageScreenState extends State<MessageScreen> {
                                     ? primaryTextColor
                                     : mutedTextColor,
                                 fontWeight: unread > 0
-                                    ? FontWeight.w600
-                                    : FontWeight.w400,
+                                    ? FontWeight.w700
+                                    : FontWeight.w500,
                               ),
                             ),
                           ],
@@ -441,7 +441,8 @@ class _MessageScreenState extends State<MessageScreen> {
                           Text(
                             formattedTime,
                             style: TextStyle(
-                              fontSize: AppTypography.font(11),
+                              fontSize:
+                                  AppTypography.font(AppFontSizes.caption),
                               color: unread > 0 ? purpleColor : mutedTextColor,
                               fontWeight: unread > 0
                                   ? FontWeight.w700
@@ -461,7 +462,8 @@ class _MessageScreenState extends State<MessageScreen> {
                                 '$unread',
                                 style: TextStyle(
                                   color: Colors.white,
-                                  fontSize: AppTypography.font(11),
+                                  fontSize:
+                                      AppTypography.font(AppFontSizes.caption),
                                   fontWeight: FontWeight.w800,
                                 ),
                               ),

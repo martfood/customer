@@ -543,8 +543,8 @@ class _AddNewAddressSheetState extends State<_AddNewAddressSheet> {
       hintText: hint,
       hintStyle: TextStyle(
         color: isDark ? Colors.grey[600] : Colors.grey[400],
-        fontSize: AppTypography.font(14),
-        fontWeight: FontWeight.w400,
+        fontSize: AppTypography.font(AppFontSizes.bodyMedium),
+        fontWeight: FontWeight.w500,
       ),
       filled: true,
       fillColor: isDark ? const Color(0xFF18181B) : Colors.white,
