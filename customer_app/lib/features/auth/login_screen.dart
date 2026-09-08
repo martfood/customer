@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shared_widgets/core/theme/app_theme.dart';
@@ -587,126 +588,128 @@ class _LoginScreenState extends State<LoginScreen> {
               ],
             ),
 
-            SizedBox(height: 20.h),
+            if (defaultTargetPlatform != TargetPlatform.iOS) ...[
+              SizedBox(height: 20.h),
 
-            // ── 7. Or Divider ────────────────────────────────────────────────
-            Row(
-              children: [
-                Expanded(child: Divider(color: Colors.grey[300], thickness: 1)),
-                Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 16.w),
-                  child: Text(
-                    'Or',
-                    style: TextStyle(
-                      color: Colors.grey[600],
-                      fontSize: AppTypography.font(AppFontSizes.bodyMedium),
+              // ── 7. Or Divider ────────────────────────────────────────────────
+              Row(
+                children: [
+                  Expanded(child: Divider(color: Colors.grey[300], thickness: 1)),
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 16.w),
+                    child: Text(
+                      'Or',
+                      style: TextStyle(
+                        color: Colors.grey[600],
+                        fontSize: AppTypography.font(AppFontSizes.bodyMedium),
+                      ),
+                    ),
+                  ),
+                  Expanded(child: Divider(color: Colors.grey[300], thickness: 1)),
+                ],
+              ),
+
+              SizedBox(height: 20.h),
+
+              // ── 8. Previous Google Account Quick Login (If available) ─────────
+              if (_hasPreviousGoogleLogin) ...[
+                GestureDetector(
+                  onTap: () => _handleGoogleSignIn(switchAccount: false),
+                  child: Container(
+                    width: double.infinity,
+                    padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+                    decoration: BoxDecoration(
+                      color: purpleColor.withValues(alpha: 0.05),
+                      borderRadius: BorderRadius.circular(28.r),
+                      border: Border.all(
+                        color: purpleColor.withValues(alpha: 0.2),
+                        width: 1,
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        CircleAvatar(
+                          radius: 20.r,
+                          backgroundColor: purpleColor.withValues(alpha: 0.1),
+                          backgroundImage: _lastGooglePhoto != null && _lastGooglePhoto!.isNotEmpty
+                              ? NetworkImage(_lastGooglePhoto!)
+                              : null,
+                          child: _lastGooglePhoto == null || _lastGooglePhoto!.isEmpty
+                              ? Icon(Icons.person, color: purpleColor)
+                              : null,
+                        ),
+                        SizedBox(width: 12.w),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Continue as ${_lastGoogleName ?? "Google User"}',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: AppTypography.font(AppFontSizes.bodyMedium),
+                                  color: textColor,
+                                ),
+                              ),
+                              Text(
+                                _lastGoogleEmail ?? '',
+                                style: TextStyle(
+                                  color: Colors.grey[600],
+                                  fontSize: AppTypography.font(AppFontSizes.bodySmall),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Icon(Icons.arrow_forward_ios, size: 14.sp, color: purpleColor),
+                      ],
                     ),
                   ),
                 ),
-                Expanded(child: Divider(color: Colors.grey[300], thickness: 1)),
+                SizedBox(height: 16.h),
               ],
-            ),
 
-            SizedBox(height: 20.h),
-
-            // ── 8. Previous Google Account Quick Login (If available) ─────────
-            if (_hasPreviousGoogleLogin) ...[
-              GestureDetector(
-                onTap: () => _handleGoogleSignIn(switchAccount: false),
-                child: Container(
-                  width: double.infinity,
-                  padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
-                  decoration: BoxDecoration(
-                    color: purpleColor.withValues(alpha: 0.05),
-                    borderRadius: BorderRadius.circular(28.r),
-                    border: Border.all(
-                      color: purpleColor.withValues(alpha: 0.2),
-                      width: 1,
+              // ── 9. Google Sign In Button ──────────────────────────────────────
+              SizedBox(
+                width: double.infinity,
+                height: 52.h,
+                child: OutlinedButton(
+                  onPressed: () => _handleGoogleSignIn(switchAccount: _hasPreviousGoogleLogin),
+                  style: OutlinedButton.styleFrom(
+                    side: BorderSide(
+                      color: isDark ? AppTheme.darkBorder : const Color(0xFFE9D5FF),
+                      width: 1.2,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(28.r),
                     ),
                   ),
                   child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      CircleAvatar(
-                        radius: 20.r,
-                        backgroundColor: purpleColor.withValues(alpha: 0.1),
-                        backgroundImage: _lastGooglePhoto != null && _lastGooglePhoto!.isNotEmpty
-                            ? NetworkImage(_lastGooglePhoto!)
-                            : null,
-                        child: _lastGooglePhoto == null || _lastGooglePhoto!.isEmpty
-                            ? Icon(Icons.person, color: purpleColor)
-                            : null,
-                      ),
-                      SizedBox(width: 12.w),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Continue as ${_lastGoogleName ?? "Google User"}',
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: AppTypography.font(AppFontSizes.bodyMedium),
-                                color: textColor,
-                              ),
-                            ),
-                            Text(
-                              _lastGoogleEmail ?? '',
-                              style: TextStyle(
-                                color: Colors.grey[600],
-                                fontSize: AppTypography.font(AppFontSizes.bodySmall),
-                              ),
-                            ),
-                          ],
+                      Image.network(
+                        'https://pngimg.com/uploads/google/google_PNG19635.png',
+                        height: 22.h,
+                        errorBuilder: (context, error, stackTrace) => Icon(
+                          Icons.g_mobiledata,
+                          size: 24.sp,
+                          color: Colors.redAccent,
                         ),
                       ),
-                      Icon(Icons.arrow_forward_ios, size: 14.sp, color: purpleColor),
+                      SizedBox(width: 12.w),
+                      Text(
+                        'Sign in with Google',
+                        style: TextStyle(
+                          color: textColor,
+                          fontSize: AppTypography.font(AppFontSizes.titleMedium),
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
                     ],
                   ),
                 ),
               ),
-              SizedBox(height: 16.h),
             ],
-
-            // ── 9. Google Sign In Button ──────────────────────────────────────
-            SizedBox(
-              width: double.infinity,
-              height: 52.h,
-              child: OutlinedButton(
-                onPressed: () => _handleGoogleSignIn(switchAccount: _hasPreviousGoogleLogin),
-                style: OutlinedButton.styleFrom(
-                  side: BorderSide(
-                    color: isDark ? AppTheme.darkBorder : const Color(0xFFE9D5FF),
-                    width: 1.2,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(28.r),
-                  ),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Image.network(
-                      'https://pngimg.com/uploads/google/google_PNG19635.png',
-                      height: 22.h,
-                      errorBuilder: (context, error, stackTrace) => Icon(
-                        Icons.g_mobiledata,
-                        size: 24.sp,
-                        color: Colors.redAccent,
-                      ),
-                    ),
-                    SizedBox(width: 12.w),
-                    Text(
-                      'Sign in with Google',
-                      style: TextStyle(
-                        color: textColor,
-                        fontSize: AppTypography.font(AppFontSizes.titleMedium),
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
 
             SizedBox(height: 20.h),
           ],

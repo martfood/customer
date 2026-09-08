@@ -60,12 +60,12 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions ios = FirebaseOptions(
     apiKey: 'AIzaSyBu6QGUlJKrywRVPx9065ukpOI6u6tKnlI',
-    appId: '1:45361321160:ios:ae993c6c5aee9900f241fd',
+    appId: '1:45361321160:ios:e6ae40d2dfa17130f241fd',
     messagingSenderId: '45361321160',
     projectId: 'martfood-app',
     databaseURL: 'https://martfood-app-default-rtdb.europe-west1.firebasedatabase.app',
     storageBucket: 'martfood-app.firebasestorage.app',
-    iosClientId: '45361321160-p954one99nmsgnvmrt0ev8k5e0d6sg82.apps.googleusercontent.com',
+    iosClientId: '45361321160-isflqc9c0lblgdane16vqhj26st7amo3.apps.googleusercontent.com',
     iosBundleId: 'com.martfood.app',
   );
 
