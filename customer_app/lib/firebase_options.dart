@@ -66,7 +66,7 @@ class DefaultFirebaseOptions {
     databaseURL: 'https://martfood-app-default-rtdb.europe-west1.firebasedatabase.app',
     storageBucket: 'martfood-app.firebasestorage.app',
     iosClientId: '45361321160-p954one99nmsgnvmrt0ev8k5e0d6sg82.apps.googleusercontent.com',
-    iosBundleId: 'co',
+    iosBundleId: 'com.martfood.app',
   );
 
 }

@@ -77,62 +77,88 @@ class ThemeManager {
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await SystemChrome.setPreferredOrientations([
-    DeviceOrientation.portraitUp,
-    DeviceOrientation.portraitDown,
-  ]);
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
 
-  await PriceHelper.initialize();
+  try {
+    await SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+    ]);
+  } catch (e) {
+    debugPrint('PreferredOrientations error: $e');
+  }
+
+  try {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+  } catch (e) {
+    debugPrint('Firebase.initializeApp error: $e');
+  }
+
+  try {
+    await PriceHelper.initialize();
+  } catch (e) {
+    debugPrint('PriceHelper.initialize error: $e');
+  }
 
   // ── Offline persistence: data loads from disk instantly on revisit ──────────
   // 50 MB cache keeps vendor menus, profiles and food items available offline.
-  FirebaseFirestore.instance.settings = const Settings(
-    persistenceEnabled: true,
-    cacheSizeBytes: 52428800, // 50 MB
-  );
+  try {
+    FirebaseFirestore.instance.settings = const Settings(
+      persistenceEnabled: true,
+      cacheSizeBytes: 52428800, // 50 MB
+    );
+  } catch (e) {
+    debugPrint('Firestore persistence settings error: $e');
+  }
 
-  await NotificationService.initialize();
+  try {
+    await NotificationService.initialize();
+  } catch (e) {
+    debugPrint('NotificationService.initialize error: $e');
+  }
 
-  FirebaseAuth.instance.authStateChanges().listen((user) {
-    if (user != null) {
-      NotificationService.registerCustomerToken(user.uid);
-      NotificationService.listenToFirestoreNotifications(user.uid);
-      FirebaseFirestore.instance
-          .collection('customers')
-          .doc(user.uid)
-          .snapshots()
-          .listen((snap) {
-        if (snap.exists) {
-          final data = snap.data();
-          if (AccountStatusService.isSuspended(data)) {
-            final info = AccountStatusService.parseSuspension(data);
-            FirebaseAuth.instance.signOut();
-            _router.go('/login', extra: {
-              'suspensionReason': info.reason,
-              'suspendedUntil': info.suspendedUntil,
-            });
-            return;
-          }
-
-          final themeStr = data?['themeMode'] as String?;
-          if (themeStr != null) {
-            ThemeMode mode;
-            if (themeStr == 'light') {
-              mode = ThemeMode.light;
-            } else if (themeStr == 'dark') {
-              mode = ThemeMode.dark;
-            } else {
-              mode = ThemeMode.system;
+  try {
+    FirebaseAuth.instance.authStateChanges().listen((user) {
+      if (user != null) {
+        NotificationService.registerCustomerToken(user.uid);
+        NotificationService.listenToFirestoreNotifications(user.uid);
+        FirebaseFirestore.instance
+            .collection('customers')
+            .doc(user.uid)
+            .snapshots()
+            .listen((snap) {
+          if (snap.exists) {
+            final data = snap.data();
+            if (AccountStatusService.isSuspended(data)) {
+              final info = AccountStatusService.parseSuspension(data);
+              FirebaseAuth.instance.signOut();
+              _router.go('/login', extra: {
+                'suspensionReason': info.reason,
+                'suspendedUntil': info.suspendedUntil,
+              });
+              return;
             }
-            ThemeManager.themeModeNotifier.value = mode;
+
+            final themeStr = data?['themeMode'] as String?;
+            if (themeStr != null) {
+              ThemeMode mode;
+              if (themeStr == 'light') {
+                mode = ThemeMode.light;
+              } else if (themeStr == 'dark') {
+                mode = ThemeMode.dark;
+              } else {
+                mode = ThemeMode.system;
+              }
+              ThemeManager.themeModeNotifier.value = mode;
+            }
           }
-        }
-      });
-    }
-  });
+        });
+      }
+    });
+  } catch (e) {
+    debugPrint('Auth listener setup error: $e');
+  }
 
   runApp(const MartFoodApp());
 }
