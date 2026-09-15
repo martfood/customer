@@ -934,36 +934,9 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     ],
                   ),
-                  Row(
-                    children: [
-                      if (isGuest) ...[
-                        TextButton(
-                          onPressed: () => context.push('/login'),
-                          style: TextButton.styleFrom(
-                            foregroundColor: purpleColor,
-                            padding: EdgeInsets.symmetric(
-                                horizontal: 12.w, vertical: 6.h),
-                            backgroundColor:
-                                purpleColor.withValues(alpha: 0.12),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16.r),
-                            ),
-                          ),
-                          child: Text(
-                            'Sign In',
-                            style: TextStyle(
-                              color: purpleColor,
-                              fontSize:
-                                  AppTypography.font(AppFontSizes.bodySmall),
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                        ),
-                        SizedBox(width: 8.w),
-                      ],
-                      _buildHeaderAction(Icons.shopping_bag_rounded,
-                          () => context.push('/cart')),
-                    ],
+                  _buildHeaderAction(
+                    Icons.shopping_bag_rounded,
+                    () => context.push('/cart'),
                   ),
                 ],
               ),
@@ -1241,7 +1214,8 @@ class _HomeScreenState extends State<HomeScreen> {
             _buildSectionHeader(
                 'Discount', () => context.push('/discount-guaranteed')),
             SizedBox(
-              height: 208.h,
+              height:
+                  MediaQuery.of(context).size.width >= 600 ? 220.h : 228.h,
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
                 padding: EdgeInsets.symmetric(horizontal: 20.w),

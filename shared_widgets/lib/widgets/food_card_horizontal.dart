@@ -112,8 +112,8 @@ class FoodCardHorizontal extends StatelessWidget {
             Container(
               width: cardWidth,
               padding: isTablet
-                  ? EdgeInsets.symmetric(horizontal: 7.w, vertical: 6.h)
-                  : EdgeInsets.symmetric(horizontal: 8.w, vertical: 6.h),
+                  ? EdgeInsets.symmetric(horizontal: 7.w, vertical: 4.h)
+                  : EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
               decoration: BoxDecoration(
                 color: surfaceColor,
                 borderRadius: BorderRadius.circular(16.r),
@@ -185,20 +185,20 @@ class FoodCardHorizontal extends StatelessWidget {
                         ),
                     ],
                   ),
-                  SizedBox(height: isTablet ? 5.h : 6.h),
+                  SizedBox(height: isTablet ? 4.h : 5.h),
 
                   // ── Title ──────────────────────────────────────────────────
                   Text(
                     title,
                     style: TextStyle(
-                      fontSize: isTablet ? 15 : 14,
+                      fontSize: isTablet ? 13.5 : 13.5,
                       fontWeight: FontWeight.bold,
                       color: primaryTextColor,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  SizedBox(height: isTablet ? 4.h : 4.h),
+                  SizedBox(height: isTablet ? 2.h : 3.h),
 
                   // ── Price / Add Button ──────────────────────────────────────
                   if (showPrice) ...[
@@ -211,7 +211,7 @@ class FoodCardHorizontal extends StatelessWidget {
                                 ? _priceLabel(promoPrice!)
                                 : _priceLabel(basePrice!),
                             style: TextStyle(
-                              fontSize: isTablet ? 15.5 : 14.5,
+                              fontSize: isTablet ? 14 : 14,
                               fontWeight: FontWeight.w800,
                               color: isDark ? Colors.white : purpleColor,
                             ),
@@ -230,7 +230,7 @@ class FoodCardHorizontal extends StatelessWidget {
                             ),
                             child: Icon(Icons.add,
                                 color: Colors.white,
-                                size: isTablet ? 15 : 13),
+                                size: isTablet ? 14 : 13),
                           ),
                         ),
                       ],
@@ -239,11 +239,11 @@ class FoodCardHorizontal extends StatelessWidget {
 
                   // ── Category / Vendor Subline ─────────────────────────────
                   if (categoryName != null && categoryName!.isNotEmpty) ...[
-                    SizedBox(height: isTablet ? 3.h : 3.h),
+                    SizedBox(height: isTablet ? 2.h : 2.h),
                     Text(
                       categoryName!,
                       style: TextStyle(
-                        fontSize: isTablet ? 12 : 11.5,
+                        fontSize: isTablet ? 11.5 : 11,
                         color: mutedTextColor,
                         fontWeight: FontWeight.w600,
                       ),
@@ -251,14 +251,14 @@ class FoodCardHorizontal extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                     ),
                   ] else if (vendorName != null && vendorName!.isNotEmpty) ...[
-                    SizedBox(height: isTablet ? 3.h : 3.h),
+                    SizedBox(height: isTablet ? 2.h : 2.h),
                     Row(
                       children: [
                         Flexible(
                           child: Text(
                             vendorName!,
                             style: TextStyle(
-                              fontSize: isTablet ? 12 : 11.5,
+                              fontSize: isTablet ? 11.5 : 11,
                               color: mutedTextColor,
                               fontWeight: FontWeight.w500,
                             ),

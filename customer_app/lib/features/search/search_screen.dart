@@ -742,64 +742,67 @@ class _SearchScreenState extends State<SearchScreen> {
     final mutedTextColor = AppTheme.mutedTextColorFor(isDark);
 
     final isTablet = MediaQuery.of(context).size.width >= 600;
-    final circleSize = isTablet ? 54.w : 46.w;
-    final iconSize = isTablet ? 40.w : 34.w;
+    final circleSize = isTablet ? 48.r : 44.r;
+    final iconSize = isTablet ? 34.r : 30.r;
 
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(32.r),
       child: Padding(
         padding: EdgeInsets.symmetric(horizontal: 2.w),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Container(
-              width: circleSize,
-              height: circleSize,
-              decoration: BoxDecoration(
-                color: isSelected
-                    ? purpleColor.withValues(alpha: 0.12)
-                    : surfaceColor,
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: isSelected ? purpleColor : borderColor,
-                  width: isSelected ? 2.0 : 1.0,
+        child: SingleChildScrollView(
+          physics: const NeverScrollableScrollPhysics(),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Container(
+                width: circleSize,
+                height: circleSize,
+                decoration: BoxDecoration(
+                  color: isSelected
+                      ? purpleColor.withValues(alpha: 0.12)
+                      : surfaceColor,
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: isSelected ? purpleColor : borderColor,
+                    width: isSelected ? 2.0 : 1.0,
+                  ),
                 ),
-              ),
-              alignment: Alignment.center,
-              child: imageUrl.isNotEmpty
-                  ? Image.asset(
-                      imageUrl,
-                      width: iconSize,
-                      height: iconSize,
-                      fit: BoxFit.contain,
-                      errorBuilder: (_, __, ___) => Icon(
-                        LucideIcons.store,
+                alignment: Alignment.center,
+                child: imageUrl.isNotEmpty
+                    ? Image.asset(
+                        imageUrl,
+                        width: iconSize,
+                        height: iconSize,
+                        fit: BoxFit.contain,
+                        errorBuilder: (_, __, ___) => Icon(
+                          LucideIcons.store,
+                          size: iconSize * 0.8,
+                          color: isSelected ? purpleColor : mutedTextColor,
+                        ),
+                      )
+                    : Icon(
+                        iconData ?? LucideIcons.layoutGrid,
                         size: iconSize * 0.8,
                         color: isSelected ? purpleColor : mutedTextColor,
                       ),
-                    )
-                  : Icon(
-                      iconData ?? LucideIcons.layoutGrid,
-                      size: iconSize * 0.8,
-                      color: isSelected ? purpleColor : mutedTextColor,
-                    ),
-            ),
-            SizedBox(height: 4.h),
-            Text(
-              title,
-              style: TextStyle(
-                fontSize: isTablet ? 12.sp : 11.sp,
-                fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
-                color: isSelected ? purpleColor : primaryTextColor,
               ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              textAlign: TextAlign.center,
-            ),
-          ],
+              SizedBox(height: 4.h),
+              Text(
+                title,
+                style: TextStyle(
+                  fontSize: AppTypography.font(isTablet ? 12 : 11),
+                  fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
+                  color: isSelected ? purpleColor : primaryTextColor,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -955,8 +958,8 @@ class _SearchScreenState extends State<SearchScreen> {
                     padding: EdgeInsets.symmetric(horizontal: 20.w),
                     child: SizedBox(
                       height: MediaQuery.of(context).size.width >= 600
-                          ? 96.h
-                          : 86.h,
+                          ? 104.h
+                          : 88.h,
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: _categories.map((cat) {
@@ -1252,9 +1255,14 @@ class _SearchScreenState extends State<SearchScreen> {
                                   crossAxisSpacing: 14.w,
                                   mainAxisSpacing: 10.h,
                                   childAspectRatio:
-                                      MediaQuery.of(context).size.width >= 600
-                                          ? 0.72
-                                          : 0.80,
+                                      MediaQuery.of(context).size.width >= 900
+                                          ? 0.74
+                                          : (MediaQuery.of(context)
+                                                      .size
+                                                      .width >=
+                                                  600
+                                              ? 0.70
+                                              : 0.69),
                                 ),
                                 itemCount: filteredItems.length,
                                 itemBuilder: (context, index) {

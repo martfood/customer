@@ -436,34 +436,14 @@ class _LoginScreenState extends State<LoginScreen> {
             SizedBox(height: 16.h),
 
             // ── 1. Header ───────────────────────────────────────────────────
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'Welcome Back',
-                  style: TextStyle(
-                    fontSize: AppTypography.font(AppFontSizes.authHeader),
-                    fontWeight: FontWeight.w800,
-                    color: textColor,
-                    letterSpacing: -0.5,
-                  ),
-                ),
-                TextButton(
-                  onPressed: () => context.go('/home'),
-                  style: TextButton.styleFrom(
-                    foregroundColor: purpleColor,
-                    padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 4.h),
-                  ),
-                  child: Text(
-                    'Skip to Menu',
-                    style: TextStyle(
-                      fontSize: AppTypography.font(AppFontSizes.bodyMedium),
-                      fontWeight: FontWeight.w600,
-                      color: purpleColor,
-                    ),
-                  ),
-                ),
-              ],
+            Text(
+              'Welcome Back',
+              style: TextStyle(
+                fontSize: AppTypography.font(AppFontSizes.authHeader),
+                fontWeight: FontWeight.w800,
+                color: textColor,
+                letterSpacing: -0.5,
+              ),
             ),
             SizedBox(height: 6.h),
             Text(
@@ -610,164 +590,61 @@ class _LoginScreenState extends State<LoginScreen> {
               ],
             ),
 
-            if (defaultTargetPlatform != TargetPlatform.iOS) ...[
-              SizedBox(height: 20.h),
+            SizedBox(height: 20.h),
 
-              // ── 7. Or Divider ────────────────────────────────────────────────
-              Row(
-                children: [
-                  Expanded(child: Divider(color: Colors.grey[300], thickness: 1)),
-                  Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 16.w),
-                    child: Text(
-                      'Or',
-                      style: TextStyle(
-                        color: Colors.grey[600],
-                        fontSize: AppTypography.font(AppFontSizes.bodyMedium),
-                      ),
-                    ),
-                  ),
-                  Expanded(child: Divider(color: Colors.grey[300], thickness: 1)),
-                ],
-              ),
-
-              SizedBox(height: 20.h),
-
-              // ── 8. Previous Google Account Quick Login (If available) ─────────
-              if (_hasPreviousGoogleLogin) ...[
-                GestureDetector(
-                  onTap: () => _handleGoogleSignIn(switchAccount: false),
-                  child: Container(
-                    width: double.infinity,
-                    padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
-                    decoration: BoxDecoration(
-                      color: purpleColor.withValues(alpha: 0.05),
-                      borderRadius: BorderRadius.circular(28.r),
-                      border: Border.all(
-                        color: purpleColor.withValues(alpha: 0.2),
-                        width: 1,
-                      ),
-                    ),
-                    child: Row(
-                      children: [
-                        CircleAvatar(
-                          radius: 20.r,
-                          backgroundColor: purpleColor.withValues(alpha: 0.1),
-                          backgroundImage: _lastGooglePhoto != null && _lastGooglePhoto!.isNotEmpty
-                              ? NetworkImage(_lastGooglePhoto!)
-                              : null,
-                          child: _lastGooglePhoto == null || _lastGooglePhoto!.isEmpty
-                              ? Icon(Icons.person, color: purpleColor)
-                              : null,
-                        ),
-                        SizedBox(width: 12.w),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Continue as ${_lastGoogleName ?? "Google User"}',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: AppTypography.font(AppFontSizes.bodyMedium),
-                                  color: textColor,
-                                ),
-                              ),
-                              Text(
-                                _lastGoogleEmail ?? '',
-                                style: TextStyle(
-                                  color: Colors.grey[600],
-                                  fontSize: AppTypography.font(AppFontSizes.bodySmall),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        Icon(Icons.arrow_forward_ios, size: 14.sp, color: purpleColor),
-                      ],
+            // ── 7. Or Divider ────────────────────────────────────────────────
+            Row(
+              children: [
+                Expanded(child: Divider(color: Colors.grey[300], thickness: 1)),
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 16.w),
+                  child: Text(
+                    'Or',
+                    style: TextStyle(
+                      color: Colors.grey[600],
+                      fontSize: AppTypography.font(AppFontSizes.bodyMedium),
                     ),
                   ),
                 ),
-                SizedBox(height: 16.h),
+                Expanded(child: Divider(color: Colors.grey[300], thickness: 1)),
               ],
+            ),
 
-              // ── 9. Google Sign In Button ──────────────────────────────────────
-              SizedBox(
-                width: double.infinity,
-                height: 52.h,
-                child: OutlinedButton(
-                  onPressed: () => _handleGoogleSignIn(switchAccount: _hasPreviousGoogleLogin),
-                  style: OutlinedButton.styleFrom(
-                    side: BorderSide(
-                      color: isDark ? AppTheme.darkBorder : const Color(0xFFE9D5FF),
-                      width: 1.2,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(28.r),
-                    ),
+            SizedBox(height: 20.h),
+
+            // ── 8. Continue as Guest Button ──────────────────────────────────
+            SizedBox(
+              width: double.infinity,
+              height: 50.h,
+              child: OutlinedButton(
+                onPressed: () => context.go('/home'),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: purpleColor,
+                  side: BorderSide(
+                    color: purpleColor,
+                    width: 1.2,
                   ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Image.network(
-                        'https://pngimg.com/uploads/google/google_PNG19635.png',
-                        height: 22.h,
-                        errorBuilder: (context, error, stackTrace) => Icon(
-                          Icons.g_mobiledata,
-                          size: 24.sp,
-                          color: Colors.redAccent,
-                        ),
-                      ),
-                      SizedBox(width: 12.w),
-                      Text(
-                        'Sign in with Google',
-                        style: TextStyle(
-                          color: textColor,
-                          fontSize: AppTypography.font(AppFontSizes.titleMedium),
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ],
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(28.r),
                   ),
                 ),
-              ),
-
-              SizedBox(height: 12.h),
-
-              // ── 10. Continue as Guest Button ──────────────────────────────────
-              SizedBox(
-                width: double.infinity,
-                height: 50.h,
-                child: OutlinedButton(
-                  onPressed: () => context.go('/home'),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: purpleColor,
-                    side: BorderSide(
-                      color: purpleColor,
-                      width: 1.2,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(28.r),
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        'Continue as Guest',
-                        style: TextStyle(
-                          color: purpleColor,
-                          fontSize: AppTypography.font(AppFontSizes.titleMedium),
-                          fontWeight: FontWeight.w600,
-                        ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      'Continue as Guest',
+                      style: TextStyle(
+                        color: purpleColor,
+                        fontSize: AppTypography.font(AppFontSizes.titleMedium),
+                        fontWeight: FontWeight.w600,
                       ),
-                      SizedBox(width: 6.w),
-                      Icon(Icons.arrow_forward, size: 18.sp, color: purpleColor),
-                    ],
-                  ),
+                    ),
+                    SizedBox(width: 6.w),
+                    Icon(Icons.arrow_forward, size: 18.sp, color: purpleColor),
+                  ],
                 ),
               ),
-            ],
+            ),
 
             SizedBox(height: 20.h),
           ],

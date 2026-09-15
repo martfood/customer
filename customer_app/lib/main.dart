@@ -70,13 +70,29 @@ import 'core/services/notification_service.dart';
 import 'core/services/price_helper.dart';
 import 'core/services/account_status_service.dart';
 
+import 'package:shared_preferences/shared_preferences.dart';
+
 class ThemeManager {
   static final ValueNotifier<ThemeMode> themeModeNotifier =
-      ValueNotifier(ThemeMode.system);
+      ValueNotifier(ThemeMode.light);
 }
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  try {
+    final prefs = await SharedPreferences.getInstance();
+    final savedTheme = prefs.getString('themeMode');
+    if (savedTheme == 'dark') {
+      ThemeManager.themeModeNotifier.value = ThemeMode.dark;
+    } else if (savedTheme == 'system') {
+      ThemeManager.themeModeNotifier.value = ThemeMode.system;
+    } else {
+      ThemeManager.themeModeNotifier.value = ThemeMode.light;
+    }
+  } catch (e) {
+    debugPrint('Error loading cached themeMode: $e');
+  }
 
   try {
     await SystemChrome.setPreferredOrientations([
@@ -143,12 +159,12 @@ void main() async {
             final themeStr = data?['themeMode'] as String?;
             if (themeStr != null) {
               ThemeMode mode;
-              if (themeStr == 'light') {
-                mode = ThemeMode.light;
-              } else if (themeStr == 'dark') {
+              if (themeStr == 'dark') {
                 mode = ThemeMode.dark;
-              } else {
+              } else if (themeStr == 'system') {
                 mode = ThemeMode.system;
+              } else {
+                mode = ThemeMode.light;
               }
               ThemeManager.themeModeNotifier.value = mode;
             }

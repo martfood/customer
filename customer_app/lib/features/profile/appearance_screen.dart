@@ -5,6 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shared_widgets/core/theme/app_theme.dart';
 import '../../main.dart';
 import '../auth/auth_error_handler.dart';
@@ -24,12 +25,20 @@ class _AppearanceScreenState extends State<AppearanceScreen> {
     setState(() {});
     ThemeManager.themeModeNotifier.value = mode;
 
+    final modeStr = mode == ThemeMode.dark
+        ? 'dark'
+        : (mode == ThemeMode.system ? 'system' : 'light');
+
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('themeMode', modeStr);
+    } catch (e) {
+      debugPrint('Error saving theme to SharedPreferences: $e');
+    }
+
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
       try {
-        final modeStr = mode == ThemeMode.dark
-            ? 'dark'
-            : (mode == ThemeMode.light ? 'light' : 'system');
         await FirebaseFirestore.instance
             .collection('customers')
             .doc(user.uid)
@@ -184,7 +193,7 @@ class _AppearanceScreenState extends State<AppearanceScreen> {
                   ),
                   SizedBox(height: 24.h),
                   buildOptionTile(
-                    title: 'Light Mode',
+                    title: 'Light Mode (Default)',
                     icon: Icons.light_mode_outlined,
                     mode: ThemeMode.light,
                   ),
@@ -683,6 +692,7 @@ class _AppearanceScreenState extends State<AppearanceScreen> {
     final borderColor = isDark ? AppTheme.darkBorder : const Color(0xFFF0E6FF);
     final dividerColor = isDark ? AppTheme.darkBorder : const Color(0xFFF5EEFF);
     final primaryTextColor = isDark ? Colors.white : const Color(0xFF15161A);
+    final mutedTextColor = AppTheme.mutedTextColorFor(isDark);
 
     return Scaffold(
       backgroundColor: backgroundColor,
@@ -762,14 +772,40 @@ class _AppearanceScreenState extends State<AppearanceScreen> {
                               ),
                               SizedBox(width: 16.w),
                               Expanded(
-                                child: Text(
-                                  'Appearance Mode',
-                                  style: TextStyle(
-                                    fontSize:
-                                        AppTypography.font(AppFontSizes.bodyLarge),
-                                    fontWeight: FontWeight.w800,
-                                    color: primaryTextColor,
-                                  ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Appearance Mode',
+                                      style: TextStyle(
+                                        fontSize:
+                                            AppTypography.font(AppFontSizes.bodyLarge),
+                                        fontWeight: FontWeight.w800,
+                                        color: primaryTextColor,
+                                      ),
+                                    ),
+                                    SizedBox(height: 2.h),
+                                    ValueListenableBuilder<ThemeMode>(
+                                      valueListenable:
+                                          ThemeManager.themeModeNotifier,
+                                      builder: (context, mode, _) {
+                                        final label = mode == ThemeMode.dark
+                                            ? 'Dark Mode'
+                                            : (mode == ThemeMode.system
+                                                ? 'System Default'
+                                                : 'Light Mode');
+                                        return Text(
+                                          label,
+                                          style: TextStyle(
+                                            fontSize: AppTypography.font(
+                                                AppFontSizes.bodySmall),
+                                            color: mutedTextColor,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                  ],
                                 ),
                               ),
                               Icon(

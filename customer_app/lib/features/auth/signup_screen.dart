@@ -152,34 +152,14 @@ class _SignupScreenState extends State<SignupScreen> {
               SizedBox(height: 16.h),
 
               // ── 1. Header ───────────────────────────────────────────────────
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Create Account',
-                    style: TextStyle(
-                      fontSize: AppTypography.font(AppFontSizes.authHeader),
-                      fontWeight: FontWeight.w800,
-                      color: textColor,
-                      letterSpacing: -0.5,
-                    ),
-                  ),
-                  TextButton(
-                    onPressed: () => context.go('/home'),
-                    style: TextButton.styleFrom(
-                      foregroundColor: purpleColor,
-                      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 4.h),
-                    ),
-                    child: Text(
-                      'Skip to Menu',
-                      style: TextStyle(
-                        fontSize: AppTypography.font(AppFontSizes.bodyMedium),
-                        fontWeight: FontWeight.w600,
-                        color: purpleColor,
-                      ),
-                    ),
-                  ),
-                ],
+              Text(
+                'Create Account',
+                style: TextStyle(
+                  fontSize: AppTypography.font(AppFontSizes.authHeader),
+                  fontWeight: FontWeight.w800,
+                  color: textColor,
+                  letterSpacing: -0.5,
+                ),
               ),
               SizedBox(height: 6.h),
               Text(
@@ -530,167 +510,61 @@ class _SignupScreenState extends State<SignupScreen> {
                 ],
               ),
 
-              if (defaultTargetPlatform != TargetPlatform.iOS) ...[
-                SizedBox(height: 20.h),
+              SizedBox(height: 20.h),
 
-                // ── 10. Or Divider ───────────────────────────────────────────────
-                Row(
-                  children: [
-                    Expanded(child: Divider(color: Colors.grey[300], thickness: 1)),
-                    Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 16.w),
-                      child: Text(
-                        'Or',
+              // ── 10. Or Divider ───────────────────────────────────────────────
+              Row(
+                children: [
+                  Expanded(child: Divider(color: Colors.grey[300], thickness: 1)),
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 16.w),
+                    child: Text(
+                      'Or',
+                      style: TextStyle(
+                        color: Colors.grey[600],
+                        fontSize: AppTypography.font(AppFontSizes.bodyMedium),
+                      ),
+                    ),
+                  ),
+                  Expanded(child: Divider(color: Colors.grey[300], thickness: 1)),
+                ],
+              ),
+
+              SizedBox(height: 20.h),
+
+              // ── Continue as Guest Button ──────────────────────────────
+              SizedBox(
+                width: double.infinity,
+                height: 50.h,
+                child: OutlinedButton(
+                  onPressed: () => context.go('/home'),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: purpleColor,
+                    side: BorderSide(
+                      color: purpleColor,
+                      width: 1.2,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(28.r),
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        'Continue as Guest',
                         style: TextStyle(
-                          color: Colors.grey[600],
-                          fontSize: AppTypography.font(AppFontSizes.bodyMedium),
+                          color: purpleColor,
+                          fontSize: AppTypography.font(AppFontSizes.titleMedium),
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
-                    ),
-                    Expanded(child: Divider(color: Colors.grey[300], thickness: 1)),
-                  ],
-                ),
-
-                SizedBox(height: 20.h),
-
-                // ── 11. Social Sign Up Button ────────────────────────────────────
-                SizedBox(
-                  width: double.infinity,
-                  height: 52.h,
-                  child: OutlinedButton(
-                    onPressed: () async {
-                      setState(() {
-                        _isLoading = true;
-                      });
-                      try {
-                        final googleSignIn = GoogleSignIn(
-                          serverClientId: '45361321160-9ofs6jkpgbk539bjl5bdro0fnknhavtl.apps.googleusercontent.com',
-                        );
-                        final googleUser = await googleSignIn.signIn();
-                        if (googleUser == null) {
-                          setState(() {
-                            _isLoading = false;
-                          });
-                          return;
-                        }
-
-                        final googleAuth = await googleUser.authentication;
-                        final credential = GoogleAuthProvider.credential(
-                          accessToken: googleAuth.accessToken,
-                          idToken: googleAuth.idToken,
-                        );
-
-                        final userCredential = await FirebaseAuth.instance
-                            .signInWithCredential(credential)
-                            .timeout(const Duration(seconds: 10));
-
-                        final user = userCredential.user;
-                        if (user != null) {
-                          await _saveGoogleAccount(user);
-                          final docRef = FirebaseFirestore.instance
-                              .collection('customers')
-                              .doc(user.uid);
-                          final docSnap = await docRef.get();
-
-                          if (!docSnap.exists) {
-                            await docRef.set({
-                              'uid': user.uid,
-                              'email': user.email ?? '',
-                              'fullName': user.displayName ?? 'Google User',
-                              'phoneNumber': user.phoneNumber ?? '',
-                              'profilePic': user.photoURL ?? '',
-                              'balance': 0.0,
-                              'createdAt': FieldValue.serverTimestamp(),
-                            }).timeout(const Duration(seconds: 5));
-                          }
-                        }
-
-                        if (context.mounted) {
-                          context.go('/home');
-                        }
-                      } catch (e) {
-                        if (context.mounted) {
-                          AuthErrorHandler.showError(context, e);
-                        }
-                      } finally {
-                        if (mounted) {
-                          setState(() {
-                            _isLoading = false;
-                          });
-                        }
-                      }
-                    },
-                    style: OutlinedButton.styleFrom(
-                      side: BorderSide(
-                        color: isDark ? AppTheme.darkBorder : const Color(0xFFE9D5FF),
-                        width: 1.2,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(28),
-                      ),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Image.network(
-                          'https://pngimg.com/uploads/google/google_PNG19635.png',
-                          height: 22,
-                          errorBuilder: (context, error, stackTrace) => const Icon(
-                            Icons.g_mobiledata,
-                            size: 24,
-                            color: Colors.redAccent,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Text(
-                          'Sign up with Google',
-                          style: TextStyle(
-                            color: textColor,
-                            fontSize: AppTypography.font(AppFontSizes.titleMedium),
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ],
-                    ),
+                      SizedBox(width: 6.w),
+                      Icon(Icons.arrow_forward, size: 18.sp, color: purpleColor),
+                    ],
                   ),
                 ),
-
-                SizedBox(height: 12.h),
-
-                // ── Continue as Guest Button ──────────────────────────────
-                SizedBox(
-                  width: double.infinity,
-                  height: 50.h,
-                  child: OutlinedButton(
-                    onPressed: () => context.go('/home'),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: purpleColor,
-                      side: BorderSide(
-                        color: purpleColor,
-                        width: 1.2,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(28.r),
-                      ),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          'Continue as Guest',
-                          style: TextStyle(
-                            color: purpleColor,
-                            fontSize: AppTypography.font(AppFontSizes.titleMedium),
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        SizedBox(width: 6.w),
-                        Icon(Icons.arrow_forward, size: 18.sp, color: purpleColor),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
+              ),
 
               SizedBox(height: 20.h),
             ],
