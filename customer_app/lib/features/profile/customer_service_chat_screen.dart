@@ -12,6 +12,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:shared_widgets/core/theme/app_theme.dart';
 import 'package:shared_widgets/widgets/bottom_nav_bar.dart';
+import '../../core/widgets/guest_auth_prompt_sheet.dart';
 
 class CustomerServiceChatScreen extends StatefulWidget {
   final String chatId;
@@ -659,17 +660,35 @@ class _CustomerServiceChatScreenState
     if (user == null) {
       return Scaffold(
         backgroundColor: backgroundColor,
-        body: SafeArea(
-          child: Center(
-            child: Text(
-              'Please log in to chat with support.',
-              style: TextStyle(
-                color: _primaryTextColor(isDark),
-                fontSize: AppTypography.font(AppFontSizes.bodyLarge),
-                fontWeight: FontWeight.w600,
-              ),
+        appBar: AppBar(
+          scrolledUnderElevation: 0,
+          backgroundColor: backgroundColor,
+          elevation: 0,
+          automaticallyImplyLeading: false,
+          centerTitle: true,
+          title: Text(
+            'Customer Support',
+            style: TextStyle(
+              color: _primaryTextColor(isDark),
+              fontSize: AppTypography.font(AppFontSizes.displaySmall),
+              fontWeight: FontWeight.w800,
             ),
           ),
+        ),
+        body: const GuestPlaceholderView(
+          icon: LucideIcons.messageSquare,
+          title: 'Sign In for Support',
+          subtitle: 'Sign in or register an account to chat with customer support and view help history.',
+          primaryButtonText: 'Sign In / Register',
+        ),
+        bottomNavigationBar: MartFoodBottomNavBar(
+          currentIndex: 3,
+          onTap: (index) {
+            if (index == 0) context.go('/home');
+            if (index == 1) context.go('/search');
+            if (index == 2) context.go('/orders');
+            if (index == 4) context.go('/profile');
+          },
         ),
       );
     }

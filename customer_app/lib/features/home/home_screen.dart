@@ -818,8 +818,10 @@ class _HomeScreenState extends State<HomeScreen> {
     return StreamBuilder<DocumentSnapshot>(
       stream: _userStream,
       builder: (context, snapshot) {
-        String firstName = 'John';
-        if (snapshot.hasData && snapshot.data!.exists) {
+        final currentUser = FirebaseAuth.instance.currentUser;
+        final isGuest = currentUser == null;
+        String firstName = isGuest ? 'Guest' : 'John';
+        if (!isGuest && snapshot.hasData && snapshot.data!.exists) {
           final data = snapshot.data!.data() as Map<String, dynamic>?;
           final name = data?['firstName'] ?? data?['fullName'] ?? 'John';
           if (name.toString().trim().isNotEmpty) {
@@ -910,7 +912,9 @@ class _HomeScreenState extends State<HomeScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        '${_getGreeting()}, $firstName',
+                        isGuest
+                            ? 'Welcome to MartFood'
+                            : '${_getGreeting()}, $firstName',
                         style: TextStyle(
                           fontSize:
                               AppTypography.font(AppFontSizes.headlineMedium),
@@ -920,7 +924,9 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                       SizedBox(height: 2.h),
                       Text(
-                        'Welcome back',
+                        isGuest
+                            ? 'Explore meals & daily essentials'
+                            : 'Welcome back',
                         style: TextStyle(
                           fontSize: AppTypography.font(AppFontSizes.bodySmall),
                           color: subtextColor,
@@ -928,8 +934,37 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     ],
                   ),
-                  _buildHeaderAction(
-                      Icons.shopping_bag_rounded, () => context.push('/cart')),
+                  Row(
+                    children: [
+                      if (isGuest) ...[
+                        TextButton(
+                          onPressed: () => context.push('/login'),
+                          style: TextButton.styleFrom(
+                            foregroundColor: purpleColor,
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 12.w, vertical: 6.h),
+                            backgroundColor:
+                                purpleColor.withValues(alpha: 0.12),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16.r),
+                            ),
+                          ),
+                          child: Text(
+                            'Sign In',
+                            style: TextStyle(
+                              color: purpleColor,
+                              fontSize:
+                                  AppTypography.font(AppFontSizes.bodySmall),
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                        SizedBox(width: 8.w),
+                      ],
+                      _buildHeaderAction(Icons.shopping_bag_rounded,
+                          () => context.push('/cart')),
+                    ],
+                  ),
                 ],
               ),
             ],

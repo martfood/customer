@@ -6,6 +6,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../../core/widgets/guest_auth_prompt_sheet.dart';
 
 class MyCartScreen extends StatefulWidget {
   const MyCartScreen({super.key});
@@ -192,15 +193,42 @@ class _MyCartScreenState extends State<MyCartScreen> {
     if (user == null) {
       return Scaffold(
         backgroundColor: backgroundColor,
-        body: Center(
-          child: Text(
-            "Please log in to view your cart",
-            style: TextStyle(
-              color: primaryTextColor,
-              fontSize: AppTypography.font(AppFontSizes.bodyLarge),
-              fontWeight: FontWeight.w600,
+        appBar: AppBar(
+          scrolledUnderElevation: 0,
+          backgroundColor: backgroundColor,
+          elevation: 0,
+          leading: Padding(
+            padding: EdgeInsets.all(8.w),
+            child: Container(
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: borderColor,
+                  width: 1,
+                ),
+              ),
+              child: IconButton(
+                padding: EdgeInsets.zero,
+                icon: Icon(Icons.arrow_back, color: purpleColor, size: 20.sp),
+                onPressed: () => context.pop(),
+              ),
             ),
           ),
+          centerTitle: true,
+          title: Text(
+            'My Cart',
+            style: TextStyle(
+              color: purpleColor,
+              fontSize: AppTypography.font(AppFontSizes.displaySmall),
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+        ),
+        body: const GuestPlaceholderView(
+          icon: LucideIcons.shoppingBag,
+          title: 'Sign In to View Cart',
+          subtitle: 'Sign in or register an account to add items and view your cart.',
+          primaryButtonText: 'Sign In',
         ),
       );
     }

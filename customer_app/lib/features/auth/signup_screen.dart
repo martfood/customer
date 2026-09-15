@@ -152,14 +152,34 @@ class _SignupScreenState extends State<SignupScreen> {
               SizedBox(height: 16.h),
 
               // ── 1. Header ───────────────────────────────────────────────────
-              Text(
-                'Create Account',
-                style: TextStyle(
-                  fontSize: AppTypography.font(AppFontSizes.authHeader),
-                  fontWeight: FontWeight.w800,
-                  color: textColor,
-                  letterSpacing: -0.5,
-                ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Create Account',
+                    style: TextStyle(
+                      fontSize: AppTypography.font(AppFontSizes.authHeader),
+                      fontWeight: FontWeight.w800,
+                      color: textColor,
+                      letterSpacing: -0.5,
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: () => context.go('/home'),
+                    style: TextButton.styleFrom(
+                      foregroundColor: purpleColor,
+                      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 4.h),
+                    ),
+                    child: Text(
+                      'Skip to Menu',
+                      style: TextStyle(
+                        fontSize: AppTypography.font(AppFontSizes.bodyMedium),
+                        fontWeight: FontWeight.w600,
+                        color: purpleColor,
+                      ),
+                    ),
+                  ),
+                ],
               ),
               SizedBox(height: 6.h),
               Text(
@@ -630,6 +650,42 @@ class _SignupScreenState extends State<SignupScreen> {
                             fontWeight: FontWeight.w500,
                           ),
                         ),
+                      ],
+                    ),
+                  ),
+                ),
+
+                SizedBox(height: 12.h),
+
+                // ── Continue as Guest Button ──────────────────────────────
+                SizedBox(
+                  width: double.infinity,
+                  height: 50.h,
+                  child: OutlinedButton(
+                    onPressed: () => context.go('/home'),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: purpleColor,
+                      side: BorderSide(
+                        color: purpleColor,
+                        width: 1.2,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(28.r),
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          'Continue as Guest',
+                          style: TextStyle(
+                            color: purpleColor,
+                            fontSize: AppTypography.font(AppFontSizes.titleMedium),
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        SizedBox(width: 6.w),
+                        Icon(Icons.arrow_forward, size: 18.sp, color: purpleColor),
                       ],
                     ),
                   ),

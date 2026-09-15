@@ -36,16 +36,40 @@ class OnboardingScreen extends StatelessWidget {
                   children: [
                     const Spacer(),
 
-                    // ── Logo ──────────────────────────────────────────────────
-                    Image.asset(
-                      'assets/logo/martfood_logo_dark.png',
-                      height: 38.h,
-                      fit: BoxFit.contain,
-                      errorBuilder: (context, error, stackTrace) => Icon(
-                        Icons.restaurant_menu,
-                        size: 38.sp,
-                        color: AppTheme.primaryColor,
-                      ),
+                    // ── Logo & Skip Row ───────────────────────────────────────
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Image.asset(
+                          'assets/logo/martfood_logo_dark.png',
+                          height: 38.h,
+                          fit: BoxFit.contain,
+                          errorBuilder: (context, error, stackTrace) => Icon(
+                            Icons.restaurant_menu,
+                            size: 38.sp,
+                            color: AppTheme.primaryColor,
+                          ),
+                        ),
+                        TextButton(
+                          onPressed: () => context.go('/home'),
+                          style: TextButton.styleFrom(
+                            foregroundColor: darkTextColor,
+                            padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 6.h),
+                            backgroundColor: Colors.black.withValues(alpha: 0.08),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16.r),
+                            ),
+                          ),
+                          child: Text(
+                            'Skip to Menu',
+                            style: TextStyle(
+                              fontSize: AppTypography.font(AppFontSizes.bodyMedium),
+                              fontWeight: FontWeight.w600,
+                              color: darkTextColor,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
 
                     SizedBox(height: 24.h),
@@ -99,6 +123,34 @@ class OnboardingScreen extends StatelessWidget {
                             fontSize: AppTypography.font(AppFontSizes.titleMedium),
                             fontWeight: FontWeight.w600,
                             color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    SizedBox(height: 10.h),
+
+                    // ── Continue as Guest Button ──────────────────────────────
+                    SizedBox(
+                      width: double.infinity,
+                      height: 50.h,
+                      child: OutlinedButton(
+                        onPressed: () => context.go('/home'),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: AppTheme.primaryColor,
+                          backgroundColor: Colors.white,
+                          side: const BorderSide(color: AppTheme.primaryColor, width: 1.4),
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(28.r),
+                          ),
+                        ),
+                        child: Text(
+                          'Continue as Guest',
+                          style: TextStyle(
+                            fontSize: AppTypography.font(AppFontSizes.titleMedium),
+                            fontWeight: FontWeight.w600,
+                            color: AppTheme.primaryColor,
                           ),
                         ),
                       ),

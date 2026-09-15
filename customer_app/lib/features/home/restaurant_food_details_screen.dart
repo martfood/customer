@@ -10,6 +10,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:shared_widgets/widgets/verification_badge.dart';
 import 'package:shared_widgets/core/utils/meal_time_helper.dart';
 import '../../core/services/price_helper.dart';
+import '../../core/widgets/guest_auth_prompt_sheet.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Data models
@@ -1700,7 +1701,17 @@ class _RestaurantFoodDetailsScreenState
 
                           // Save to Firestore under customers/{uid}/cart
                           final user = FirebaseAuth.instance.currentUser;
-                          if (user != null) {
+                          if (user == null) {
+                            GuestAuthPromptSheet.show(
+                              context,
+                              title: 'Sign In to Add to Cart',
+                              message:
+                                  'Please sign in or create an account to add items to your cart and complete your order.',
+                            );
+                            return;
+                          }
+
+                          if (true) {
                             final firestore = FirebaseFirestore.instance;
 
                             final currentVendorId =
@@ -1817,6 +1828,17 @@ class _RestaurantFoodDetailsScreenState
                           }
                         } else {
                           // Navigate to checkout with just this single order item
+                          final user = FirebaseAuth.instance.currentUser;
+                          if (user == null) {
+                            GuestAuthPromptSheet.show(
+                              context,
+                              title: 'Sign In to Order',
+                              message:
+                                  'Please sign in or create an account to place your order and track delivery in real time.',
+                            );
+                            return;
+                          }
+
                           final List<Map<String, dynamic>> selectedChoices = [];
                           for (int g = 0; g < _menuGroups.length; g++) {
                             final sel = _selectedIndex[g];

@@ -12,6 +12,7 @@ import 'package:shared_widgets/widgets/verification_badge.dart';
 import 'package:shared_widgets/widgets/food_card_horizontal.dart';
 import '../../core/services/price_helper.dart';
 import 'vendor_ratings_screen.dart';
+import '../../core/widgets/guest_auth_prompt_sheet.dart';
 
 class VendorScreen extends StatefulWidget {
   final String vendorId;
@@ -522,7 +523,15 @@ class _VendorScreenState extends State<VendorScreen> {
                                             onPressed: () async {
                                               final uid = FirebaseAuth
                                                   .instance.currentUser?.uid;
-                                              if (uid == null) return;
+                                              if (uid == null) {
+                                                GuestAuthPromptSheet.show(
+                                                  context,
+                                                  title: 'Sign In Required',
+                                                  message:
+                                                      'Please sign in or create an account to save favorite restaurants.',
+                                                );
+                                                return;
+                                              }
                                               final docRef = FirebaseFirestore
                                                   .instance
                                                   .collection('customers')

@@ -7,6 +7,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:shared_widgets/core/theme/app_theme.dart';
 import 'package:shared_widgets/widgets/verification_badge.dart';
+import '../../core/widgets/guest_auth_prompt_sheet.dart';
 
 class VendorDetailScreen extends StatelessWidget {
   final String vendorId;
@@ -150,7 +151,15 @@ class VendorDetailScreen extends StatelessWidget {
                     ),
                     onPressed: () async {
                       final uid = FirebaseAuth.instance.currentUser?.uid;
-                      if (uid == null) return;
+                      if (uid == null) {
+                        GuestAuthPromptSheet.show(
+                          context,
+                          title: 'Sign In Required',
+                          message:
+                              'Please sign in or create an account to save favorite restaurants.',
+                        );
+                        return;
+                      }
                       final docRef = FirebaseFirestore.instance.collection('customers').doc(uid);
                       if (isFav) {
                         await docRef.update({

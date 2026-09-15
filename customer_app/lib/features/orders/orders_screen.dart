@@ -10,6 +10,7 @@ import 'package:uuid/uuid.dart';
 import 'package:shared_widgets/core/theme/app_theme.dart';
 import 'package:shared_widgets/widgets/bottom_nav_bar.dart';
 import 'package:shared_widgets/widgets/verification_badge.dart';
+import '../../core/widgets/guest_auth_prompt_sheet.dart';
 
 class OrdersScreen extends StatefulWidget {
   final bool showSuccess;
@@ -338,15 +339,35 @@ class _OrdersScreenState extends State<OrdersScreen>
     if (user == null) {
       return Scaffold(
         backgroundColor: backgroundColor,
-        body: Center(
-          child: Text(
-            'Please log in to view your orders',
+        appBar: AppBar(
+          scrolledUnderElevation: 0,
+          backgroundColor: backgroundColor,
+          elevation: 0,
+          automaticallyImplyLeading: false,
+          centerTitle: true,
+          title: Text(
+            'Orders',
             style: TextStyle(
-              color: primaryTextColor,
-              fontSize: AppTypography.font(AppFontSizes.bodyLarge),
-              fontWeight: FontWeight.w600,
+              color: isDark ? Colors.white : Colors.black,
+              fontSize: AppTypography.font(AppFontSizes.displaySmall),
+              fontWeight: FontWeight.w800,
             ),
           ),
+        ),
+        body: const GuestPlaceholderView(
+          icon: LucideIcons.shoppingBag,
+          title: 'Track & View Orders',
+          subtitle: 'Sign in or register an account to view and track your orders in real time.',
+          primaryButtonText: 'Sign In / Register',
+        ),
+        bottomNavigationBar: MartFoodBottomNavBar(
+          currentIndex: 2,
+          onTap: (index) {
+            if (index == 0) context.go('/home');
+            if (index == 1) context.go('/search');
+            if (index == 3) context.go('/profile/customer-service');
+            if (index == 4) context.go('/profile');
+          },
         ),
       );
     }

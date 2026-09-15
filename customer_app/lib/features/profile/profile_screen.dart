@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:shared_widgets/core/theme/app_theme.dart';
 import 'package:shared_widgets/widgets/bottom_nav_bar.dart';
+import '../../core/widgets/guest_auth_prompt_sheet.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -36,15 +37,35 @@ class _ProfileScreenState extends State<ProfileScreen> {
     if (user == null) {
       return Scaffold(
         backgroundColor: backgroundColor,
-        body: Center(
-          child: Text(
-            'Please log in to view profile',
+        appBar: AppBar(
+          scrolledUnderElevation: 0,
+          backgroundColor: backgroundColor,
+          elevation: 0,
+          automaticallyImplyLeading: false,
+          centerTitle: true,
+          title: Text(
+            'Profile',
             style: TextStyle(
-              color: primaryTextColor,
-              fontSize: AppTypography.font(AppFontSizes.bodyLarge),
-              fontWeight: FontWeight.w600,
+              color: isDark ? Colors.white : Colors.black,
+              fontSize: AppTypography.font(AppFontSizes.displaySmall),
+              fontWeight: FontWeight.w800,
             ),
           ),
+        ),
+        body: const GuestPlaceholderView(
+          icon: LucideIcons.user,
+          title: 'Guest Account',
+          subtitle: 'Sign in or register an account to access your profile, saved addresses, and payment methods.',
+          primaryButtonText: 'Sign In / Register',
+        ),
+        bottomNavigationBar: MartFoodBottomNavBar(
+          currentIndex: 4,
+          onTap: (index) {
+            if (index == 0) context.go('/home');
+            if (index == 1) context.go('/search');
+            if (index == 2) context.go('/orders');
+            if (index == 3) context.go('/profile/customer-service');
+          },
         ),
       );
     }
