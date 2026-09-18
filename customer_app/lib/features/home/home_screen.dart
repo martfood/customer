@@ -1615,6 +1615,8 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
     );
+  }
+
   // ── Section Thick Divider Helper ───────────────────────────────────────────
   Widget _buildSectionDivider(bool isDark) {
     return Padding(
