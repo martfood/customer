@@ -1184,6 +1184,7 @@ class _HomeScreenState extends State<HomeScreen> {
             _currentPosition == null) {
           return Column(
             children: [
+              _buildSectionDivider(isDark),
               _buildSectionHeader(
                   'Discounts', () => context.push('/discount-guaranteed')),
               SizedBox(
@@ -1226,6 +1227,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
         return Column(
           children: [
+            _buildSectionDivider(isDark),
             _buildSectionHeader(
                 'Discounts', () => context.push('/discount-guaranteed')),
             SizedBox(
@@ -1309,6 +1311,7 @@ class _HomeScreenState extends State<HomeScreen> {
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              _buildSectionDivider(isDark),
               _buildSectionHeader(
                 'Schedule Meal',
                 () => context.push('/schedule-meal'),
@@ -1369,6 +1372,7 @@ class _HomeScreenState extends State<HomeScreen> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            _buildSectionDivider(isDark),
             _buildSectionHeader(
               'Schedule Meal',
               () => context.push('/schedule-meal'),
@@ -1465,6 +1469,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        _buildSectionDivider(isDark),
         _buildSectionHeader(
             'Restaurants', () => context.push('/category/restaurant')),
         SizedBox(
@@ -1608,6 +1613,18 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
         ],
+      ),
+    );
+  // ── Section Thick Divider Helper ───────────────────────────────────────────
+  Widget _buildSectionDivider(bool isDark) {
+    return Padding(
+      padding: EdgeInsets.fromLTRB(20.w, 14.h, 20.w, 18.h),
+      child: Container(
+        height: 4.h,
+        decoration: BoxDecoration(
+          color: isDark ? Colors.black : const Color(0xFFE5E7EB),
+          borderRadius: BorderRadius.circular(2.r),
+        ),
       ),
     );
   }
