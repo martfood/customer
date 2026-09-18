@@ -1377,7 +1377,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             SizedBox(height: 6.h),
             SizedBox(
-              height: MediaQuery.of(context).size.width >= 600 ? 318.h : 312.h,
+              height: MediaQuery.of(context).size.width >= 600 ? 332.h : 330.h,
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
                 padding: EdgeInsets.symmetric(horizontal: 20.w),
@@ -1435,7 +1435,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       isVerified: true,
                       vendorData: vendorInfo,
                       imageUrl: photoUrl.isNotEmpty ? photoUrl : '',
-                      height: isTablet ? 304.h : 298.h,
+                      height: isTablet ? 313.h : 313.h,
                       price: price > 0
                           ? PriceHelper.applyMarkup(price, 'resturantPosts')
                           : 0,
@@ -1602,7 +1602,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 style: TextStyle(
                   fontSize: AppTypography.font(AppFontSizes.bodySmall),
                   fontWeight: FontWeight.w600,
-                  color: purpleColor,
+                  color: isDark ? Colors.white : purpleColor,
                 ),
               ),
             ),

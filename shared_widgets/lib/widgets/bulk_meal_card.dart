@@ -144,22 +144,22 @@ class BulkMealCard extends StatelessWidget {
                         ),
                       ),
                     ),
-                    SizedBox(height: isFullWidth ? 10.h : (isTablet ? 6.h : 5.h)),
+                    SizedBox(
+                        height: isFullWidth ? 10.h : (isTablet ? 6.h : 5.h)),
 
                     // ── Title ──────────────────────────────────────────────────
                     Text(
                       title,
                       style: TextStyle(
-                        fontSize: isFullWidth
-                            ? 16
-                            : (isTablet ? 14 : 13.5),
+                        fontSize: isFullWidth ? 16 : (isTablet ? 14 : 13.5),
                         fontWeight: FontWeight.w700,
                         color: primaryTextColor,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    SizedBox(height: isFullWidth ? 4.h : (isTablet ? 2.h : 1.8.h)),
+                    SizedBox(
+                        height: isFullWidth ? 4.h : (isTablet ? 2.h : 1.8.h)),
 
                     // ── Price & Add Button Row ─────────────────────────────────
                     Row(
@@ -170,9 +170,8 @@ class BulkMealCard extends StatelessWidget {
                           child: Text(
                             _priceLabel(effectivePrice),
                             style: TextStyle(
-                              fontSize: isFullWidth
-                                  ? 16.5
-                                  : (isTablet ? 15.5 : 14.5),
+                              fontSize:
+                                  isFullWidth ? 16.5 : (isTablet ? 15.5 : 14.5),
                               fontWeight: FontWeight.w800,
                               color: isDark ? Colors.white : purpleColor,
                             ),
@@ -183,12 +182,10 @@ class BulkMealCard extends StatelessWidget {
                         GestureDetector(
                           onTap: onAddTap ?? onTap,
                           child: Container(
-                            width: isFullWidth
-                                ? 26.w
-                                : (isTablet ? 20.w : 19.w),
-                            height: isFullWidth
-                                ? 26.w
-                                : (isTablet ? 20.w : 19.w),
+                            width:
+                                isFullWidth ? 26.w : (isTablet ? 20.w : 19.w),
+                            height:
+                                isFullWidth ? 26.w : (isTablet ? 20.w : 19.w),
                             decoration: BoxDecoration(
                               color: purpleColor,
                               shape: BoxShape.circle,
@@ -203,16 +200,16 @@ class BulkMealCard extends StatelessWidget {
 
                     // ── Vendor Subline with Verified Badge ────────────────────
                     if (vendorName != null && vendorName!.isNotEmpty) ...[
-                      SizedBox(height: isFullWidth ? 4.h : (isTablet ? 2.h : 1.8.h)),
+                      SizedBox(
+                          height: isFullWidth ? 4.h : (isTablet ? 2.h : 1.8.h)),
                       Row(
                         children: [
                           Flexible(
                             child: Text(
                               vendorName!,
                               style: TextStyle(
-                                fontSize: isFullWidth
-                                    ? 13
-                                    : (isTablet ? 11 : 10.5),
+                                fontSize:
+                                    isFullWidth ? 13 : (isTablet ? 11 : 10.5),
                                 color: isDark
                                     ? Colors.grey[300]
                                     : const Color(0xFF333333),
@@ -258,17 +255,14 @@ class BulkMealCard extends StatelessWidget {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Icon(LucideIcons.clock,
-                                  size: isFullWidth
-                                      ? 14
-                                      : (isTablet ? 12 : 11),
+                                  size: isFullWidth ? 14 : (isTablet ? 12 : 11),
                                   color: purpleColor),
                               SizedBox(width: 6.w),
                               Text(
                                 'Order from',
                                 style: TextStyle(
-                                  fontSize: isFullWidth
-                                      ? 13
-                                      : (isTablet ? 11 : 10.5),
+                                  fontSize:
+                                      isFullWidth ? 13 : (isTablet ? 11 : 10.5),
                                   color: mutedTextColor,
                                   fontWeight: FontWeight.w500,
                                 ),
@@ -279,9 +273,8 @@ class BulkMealCard extends StatelessWidget {
                             child: Text(
                               orderTimeWindow,
                               style: TextStyle(
-                                fontSize: isFullWidth
-                                    ? 13
-                                    : (isTablet ? 11 : 10.5),
+                                fontSize:
+                                    isFullWidth ? 13 : (isTablet ? 11 : 10.5),
                                 color: isDark
                                     ? Colors.grey[300]
                                     : const Color(0xFF333333),
@@ -307,17 +300,14 @@ class BulkMealCard extends StatelessWidget {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Icon(LucideIcons.calendar,
-                                  size: isFullWidth
-                                      ? 14
-                                      : (isTablet ? 12 : 11),
+                                  size: isFullWidth ? 14 : (isTablet ? 12 : 11),
                                   color: purpleColor),
                               SizedBox(width: 6.w),
                               Text(
-                                'Meal time',
+                                'Delivery time',
                                 style: TextStyle(
-                                  fontSize: isFullWidth
-                                      ? 13
-                                      : (isTablet ? 11 : 10.5),
+                                  fontSize:
+                                      isFullWidth ? 13 : (isTablet ? 11 : 10.5),
                                   color: mutedTextColor,
                                   fontWeight: FontWeight.w500,
                                 ),
@@ -328,9 +318,8 @@ class BulkMealCard extends StatelessWidget {
                             child: Text(
                               deliveryTimeWindow,
                               style: TextStyle(
-                                fontSize: isFullWidth
-                                    ? 13
-                                    : (isTablet ? 11 : 10.5),
+                                fontSize:
+                                    isFullWidth ? 13 : (isTablet ? 11 : 10.5),
                                 color: isDark
                                     ? Colors.grey[300]
                                     : const Color(0xFF333333),
@@ -352,9 +341,8 @@ class BulkMealCard extends StatelessWidget {
                       Container(
                         width: double.infinity,
                         padding: EdgeInsets.symmetric(
-                            vertical: isFullWidth
-                                ? 7.h
-                                : (isTablet ? 3.5.h : 3.h),
+                            vertical:
+                                isFullWidth ? 7.h : (isTablet ? 3.5.h : 3.h),
                             horizontal: 8.w),
                         decoration: BoxDecoration(
                           color: isDark

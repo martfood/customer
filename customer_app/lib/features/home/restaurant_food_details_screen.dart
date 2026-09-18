@@ -463,7 +463,7 @@ class _RestaurantFoodDetailsScreenState
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final purpleColor = AppTheme.primaryPurpleFor(isDark);
     final backgroundColor =
-        isDark ? AppTheme.darkSurface : AppTheme.lightInputFill;
+        isDark ? AppTheme.darkSurface : Colors.white;
     final surfaceColor = isDark ? AppTheme.darkSurface : Colors.white;
     final primaryTextColor = isDark ? Colors.white : const Color(0xFF15161A);
     final mutedTextColor = AppTheme.mutedTextColorFor(isDark);
@@ -723,12 +723,12 @@ class _RestaurantFoodDetailsScreenState
                               decoration: BoxDecoration(
                                 color: isDark
                                     ? AppTheme.darkSurface
-                                    : const Color(0xFFF6F7FB),
+                                    : Colors.white,
                                 borderRadius: BorderRadius.circular(16.r),
                                 border: Border.all(
                                   color: isDark
                                       ? AppTheme.darkBorder
-                                      : const Color(0xFFEBECEF),
+                                      : AppTheme.lightInputBorder,
                                   width: 1,
                                 ),
                               ),
@@ -930,7 +930,7 @@ class _RestaurantFoodDetailsScreenState
       return Container(
         height: 260.h,
         width: double.infinity,
-        color: isDark ? AppTheme.darkSurface : AppTheme.lightInputFill,
+        color: isDark ? AppTheme.darkSurface : Colors.white,
         child: Stack(
           children: [
             Center(
@@ -1007,7 +1007,7 @@ class _RestaurantFoodDetailsScreenState
                     placeholder: (_, __) => Container(
                       color: isDark
                           ? AppTheme.darkSurface
-                          : AppTheme.lightInputFill,
+                          : Colors.white,
                       child: Center(
                           child: CircularProgressIndicator(
                               color: purpleColor, strokeWidth: 2)),
@@ -1015,7 +1015,7 @@ class _RestaurantFoodDetailsScreenState
                     errorWidget: (_, __, ___) => Container(
                       color: isDark
                           ? AppTheme.darkSurface
-                          : AppTheme.lightInputFill,
+                          : Colors.white,
                       alignment: Alignment.center,
                       child: Icon(LucideIcons.image,
                           color: Colors.grey[500], size: 40.sp),
@@ -1593,7 +1593,7 @@ class _RestaurantFoodDetailsScreenState
                   onPressed: () => context.push('/cart'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor:
-                        isDark ? AppTheme.darkSurface : AppTheme.lightInputFill,
+                        isDark ? AppTheme.darkSurface : Colors.white,
                     foregroundColor: purpleColor,
                     padding: EdgeInsets.zero,
                     shape: RoundedRectangleBorder(
