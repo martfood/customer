@@ -266,7 +266,9 @@ class _LeaveAReviewScreenState extends State<LeaveAReviewScreen> {
                         width: double.infinity,
                         padding: EdgeInsets.all(16.w),
                         decoration: BoxDecoration(
-                          color: surfaceColor,
+                          color: isDark
+                              ? AppTheme.darkSurface
+                              : AppTheme.lightInputFill,
                           borderRadius: BorderRadius.circular(24.r),
                           border: Border.all(
                             color: borderColor,

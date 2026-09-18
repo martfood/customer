@@ -176,7 +176,9 @@ class _DiscountGuaranteedScreenState extends State<DiscountGuaranteedScreen> {
           data['sourceCollection'] = collName;
           return data;
         }).where((item) {
-          final isVisible = item['visibleOnMenu'] != false && item['isVisible'] != false && item['visible'] != false;
+          final isVisible = item['visibleOnMenu'] != false &&
+              item['isVisible'] != false &&
+              item['visible'] != false;
           if (!isVisible) return false;
 
           final bool isPromo = item['isPromotion'] == true ||
@@ -491,7 +493,7 @@ class _DiscountGuaranteedScreenState extends State<DiscountGuaranteedScreen> {
                       Text(
                         'Discounts',
                         style: TextStyle(
-                          color: isDark ? Colors.white : purpleColor,
+                          color: purpleColor,
                           fontSize:
                               AppTypography.font(AppFontSizes.displaySmall),
                           fontWeight: FontWeight.w800,
@@ -608,8 +610,8 @@ class _DiscountGuaranteedScreenState extends State<DiscountGuaranteedScreen> {
                         mainAxisSpacing: 16.h,
                         childAspectRatio:
                             MediaQuery.of(context).size.width >= 600
-                                ? 0.70
-                                : 0.69,
+                                ? 0.85
+                                : 0.84,
                       ),
                       itemCount: 6,
                       itemBuilder: (context, index) =>
@@ -697,10 +699,9 @@ class _DiscountGuaranteedScreenState extends State<DiscountGuaranteedScreen> {
                           : (MediaQuery.of(context).size.width >= 600 ? 3 : 2),
                       crossAxisSpacing: 14.w,
                       mainAxisSpacing: 12.h,
-                      childAspectRatio:
-                          MediaQuery.of(context).size.width >= 600
-                              ? 0.70
-                              : 0.69,
+                      childAspectRatio: MediaQuery.of(context).size.width >= 600
+                          ? 0.85
+                          : 0.84,
                     ),
                     itemCount: filteredItems.length,
                     itemBuilder: (context, index) {
@@ -842,7 +843,8 @@ class _SearchResultItem extends StatelessWidget {
           isOutOfStock: item['inStock'] == false ||
               item['isAvailable'] == false ||
               (item['quantity'] != null && (item['quantity'] as num) <= 0) ||
-              (item['stockQuantity'] != null && (item['stockQuantity'] as num) <= 0),
+              (item['stockQuantity'] != null &&
+                  (item['stockQuantity'] as num) <= 0),
           vendorName: vendorName.isNotEmpty ? vendorName : null,
           isVerified: isVerified,
           vendorData: vendorInfo,

@@ -329,8 +329,9 @@ class _OrdersScreenState extends State<OrdersScreen>
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final backgroundColor =
+        isDark ? AppTheme.darkSurface : Colors.white;
+    final surfaceColor =
         isDark ? AppTheme.darkSurface : AppTheme.lightInputFill;
-    final surfaceColor = isDark ? AppTheme.darkSurface : Colors.white;
     final primaryTextColor = isDark ? Colors.white : Colors.black87;
     final purpleColor = AppTheme.primaryPurpleFor(isDark);
     final borderColor = isDark ? AppTheme.darkBorder : AppTheme.lightInputBorder;
@@ -348,7 +349,7 @@ class _OrdersScreenState extends State<OrdersScreen>
           title: Text(
             'Orders',
             style: TextStyle(
-              color: isDark ? Colors.white : Colors.black,
+              color: purpleColor,
               fontSize: AppTypography.font(AppFontSizes.displaySmall),
               fontWeight: FontWeight.w800,
             ),
@@ -383,7 +384,7 @@ class _OrdersScreenState extends State<OrdersScreen>
         title: Text(
           'Orders',
           style: TextStyle(
-            color: isDark ? Colors.white : Colors.black,
+            color: purpleColor,
             fontSize: AppTypography.font(AppFontSizes.displaySmall),
             fontWeight: FontWeight.w800,
           ),
@@ -477,6 +478,126 @@ class _OrdersScreenState extends State<OrdersScreen>
           .doc(docId)
           .delete();
     }
+  }
+
+  void _showDeleteOrderConfirmationSheet(
+    BuildContext context,
+    String docId,
+    String title,
+  ) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final surfaceColor = isDark ? AppTheme.darkSurface : Colors.white;
+    final primaryTextColor = isDark ? Colors.white : const Color(0xFF15161A);
+    final mutedTextColor = AppTheme.mutedTextColorFor(isDark);
+    final borderColor =
+        isDark ? AppTheme.darkBorder : AppTheme.lightInputBorder;
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: surfaceColor,
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28.r)),
+      ),
+      builder: (sheetContext) => SafeArea(
+        child: Padding(
+          padding: EdgeInsets.fromLTRB(24.w, 16.h, 24.w, 24.h),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 44.w,
+                height: 4.h,
+                decoration: BoxDecoration(
+                  color: isDark ? Colors.grey[700] : Colors.grey[300],
+                  borderRadius: BorderRadius.circular(2.r),
+                ),
+              ),
+              SizedBox(height: 20.h),
+              Text(
+                'Delete this order?',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: AppTypography.font(AppFontSizes.headlineSmall),
+                  fontWeight: FontWeight.w800,
+                  color: primaryTextColor,
+                ),
+              ),
+              SizedBox(height: 10.h),
+              Text(
+                "This order will be permanently removed. You won't be able to recover it later.",
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: AppTypography.font(AppFontSizes.bodyMedium),
+                  color: mutedTextColor,
+                  fontWeight: FontWeight.w500,
+                  height: 1.45,
+                ),
+              ),
+              SizedBox(height: 28.h),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () => Navigator.of(sheetContext).pop(),
+                      style: OutlinedButton.styleFrom(
+                        padding: EdgeInsets.symmetric(vertical: 14.h),
+                        side: BorderSide(color: borderColor, width: 1),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(18.r),
+                        ),
+                        elevation: 0,
+                      ),
+                      child: Text(
+                        'Cancel',
+                        style: TextStyle(
+                          fontSize: AppTypography.font(AppFontSizes.bodyMedium),
+                          fontWeight: FontWeight.w700,
+                          color: primaryTextColor,
+                        ),
+                      ),
+                    ),
+                  ),
+                  SizedBox(width: 14.w),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () async {
+                        Navigator.of(sheetContext).pop();
+                        await _removeCartItem(docId);
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('$title removed from cart'),
+                              duration: const Duration(seconds: 2),
+                            ),
+                          );
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red,
+                        foregroundColor: Colors.white,
+                        padding: EdgeInsets.symmetric(vertical: 14.h),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(18.r),
+                        ),
+                        elevation: 0,
+                      ),
+                      child: Text(
+                        'Delete',
+                        style: TextStyle(
+                          fontSize: AppTypography.font(AppFontSizes.bodyMedium),
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   Widget _buildCartTab(
@@ -714,7 +835,7 @@ class _OrdersScreenState extends State<OrdersScreen>
       child: Container(
         margin: EdgeInsets.only(bottom: 16.h),
         decoration: BoxDecoration(
-          color: isDark ? AppTheme.darkSurface : Colors.white,
+          color: isDark ? AppTheme.darkSurface : AppTheme.lightInputFill,
           borderRadius: BorderRadius.circular(24.r),
           border: Border.all(
             color: borderColor,
@@ -914,16 +1035,8 @@ class _OrdersScreenState extends State<OrdersScreen>
                   SizedBox(
                     width: double.infinity,
                     child: OutlinedButton(
-                      onPressed: () async {
-                        await _removeCartItem(docId);
-                        if (context.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('$title removed from cart'),
-                              duration: const Duration(seconds: 2),
-                            ),
-                          );
-                        }
+                      onPressed: () {
+                        _showDeleteOrderConfirmationSheet(context, docId, title);
                       },
                       style: OutlinedButton.styleFrom(
                         backgroundColor: Colors.transparent,
@@ -1143,7 +1256,7 @@ class _OrdersScreenState extends State<OrdersScreen>
 
     return Container(
       decoration: BoxDecoration(
-        color: isDark ? AppTheme.darkSurface : Colors.white,
+        color: isDark ? AppTheme.darkSurface : AppTheme.lightInputFill,
         borderRadius: BorderRadius.circular(24.r),
         border: Border.all(
           color: borderColor,

@@ -126,9 +126,8 @@ class _HomeScreenState extends State<HomeScreen> {
         .where('isPromotion', isEqualTo: true)
         .snapshots();
 
-    _bulkMealsStream = FirebaseFirestore.instance
-        .collection('resturantPosts')
-        .snapshots();
+    _bulkMealsStream =
+        FirebaseFirestore.instance.collection('resturantPosts').snapshots();
 
     _initLocationAndPermissions();
     _listenToCategoryStatus();
@@ -449,189 +448,200 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Stack(
           children: [
             // Main Home Screen Layout
-            Column(
-              children: [
-                _buildHeader(isDark),
-                Expanded(
-                  child: _currentPosition == null
-                      ? const Center(
-                          child: CircularProgressIndicator(
-                              color: AppTheme.primaryColor))
-                      : CustomScrollView(
-                          slivers: [
-                            // Search Bar
-                            SliverToBoxAdapter(child: _buildSearchBar(isDark)),
-                            // Special Offers + Banner
-                            SliverToBoxAdapter(
-                                child: _buildBannerSection(isDark)),
-                            // Categories Grid
-                            SliverPadding(
-                              padding: EdgeInsets.symmetric(
-                                  horizontal: 20.w,
-                                  vertical:
-                                      MediaQuery.of(context).size.width >= 600
-                                          ? 8.h
-                                          : 4.h),
-                              sliver: SliverGrid(
-                                gridDelegate:
-                                    SliverGridDelegateWithFixedCrossAxisCount(
-                                  crossAxisCount: 4,
-                                  mainAxisSpacing:
-                                      MediaQuery.of(context).size.width >= 600
-                                          ? 12.h
-                                          : 10.h,
-                                  crossAxisSpacing:
-                                      MediaQuery.of(context).size.width >= 600
-                                          ? 16.w
-                                          : 10.w,
-                                  childAspectRatio:
-                                      MediaQuery.of(context).size.width >= 600
-                                          ? 1.00
-                                          : 0.72,
-                                ),
-                                delegate: SliverChildBuilderDelegate(
-                                  (context, index) {
-                                    final category = _categories[index];
-                                    final title = category['title']!;
-                                    return CategoryItem(
-                                      title: title,
-                                      imageUrl: category['imageUrl']!,
-                                      onTap: () {
-                                        final isCategoryActive =
-                                            _categoriesStatus[title] ?? true;
+            Responsive.maxContainer(
+              context: context,
+              maxWidth: 850,
+              alignment: Alignment.topCenter,
+              child: Column(
+                children: [
+                  _buildHeader(isDark),
+                  Expanded(
+                    child: _currentPosition == null
+                        ? const Center(
+                            child: CircularProgressIndicator(
+                                color: AppTheme.primaryColor))
+                        : CustomScrollView(
+                            slivers: [
+                              // Search Bar
+                              SliverToBoxAdapter(
+                                  child: _buildSearchBar(isDark)),
+                              // Special Offers + Banner
+                              SliverToBoxAdapter(
+                                  child: _buildBannerSection(isDark)),
+                              // Categories Grid
+                              SliverPadding(
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: 20.w,
+                                    vertical:
+                                        MediaQuery.of(context).size.width >= 600
+                                            ? 8.h
+                                            : 4.h),
+                                sliver: SliverGrid(
+                                  gridDelegate:
+                                      SliverGridDelegateWithFixedCrossAxisCount(
+                                    crossAxisCount: 4,
+                                    mainAxisSpacing:
+                                        MediaQuery.of(context).size.width >= 600
+                                            ? 12.h
+                                            : 10.h,
+                                    crossAxisSpacing:
+                                        MediaQuery.of(context).size.width >= 600
+                                            ? 16.w
+                                            : 10.w,
+                                    childAspectRatio:
+                                        MediaQuery.of(context).size.width >= 600
+                                            ? 1.00
+                                            : 0.72,
+                                  ),
+                                  delegate: SliverChildBuilderDelegate(
+                                    (context, index) {
+                                      final category = _categories[index];
+                                      final title = category['title']!;
+                                      return CategoryItem(
+                                        title: title,
+                                        imageUrl: category['imageUrl']!,
+                                        onTap: () {
+                                          final isCategoryActive =
+                                              _categoriesStatus[title] ?? true;
 
-                                        if (!isCategoryActive) {
-                                          showModalBottomSheet(
-                                            context: context,
-                                            backgroundColor: isDark
-                                                ? AppTheme.darkSurface
-                                                : Colors.white,
-                                            elevation: 0,
-                                            shape: RoundedRectangleBorder(
-                                              borderRadius:
-                                                  BorderRadius.vertical(
-                                                      top: Radius.circular(
-                                                          28.r)),
-                                            ),
-                                            builder: (sheetContext) {
-                                              final purpleColor =
-                                                  AppTheme.primaryPurpleFor(
-                                                      isDark);
-                                              return Padding(
-                                                padding: EdgeInsets.fromLTRB(
-                                                    24.w, 16.h, 24.w, 24.h),
-                                                child: Column(
-                                                  mainAxisSize:
-                                                      MainAxisSize.min,
-                                                  children: [
-                                                    Container(
-                                                      width: 40.w,
-                                                      height: 4.h,
-                                                      decoration: BoxDecoration(
-                                                        color: isDark
-                                                            ? Colors.grey[700]
-                                                            : Colors.grey[300],
-                                                        borderRadius:
-                                                            BorderRadius
-                                                                .circular(2.r),
-                                                      ),
-                                                    ),
-                                                    SizedBox(height: 24.h),
-                                                    Text(
-                                                      '$title Coming Soon!',
-                                                      textAlign:
-                                                          TextAlign.center,
-                                                      style: TextStyle(
-                                                        fontSize: AppTypography
-                                                            .font(AppFontSizes
-                                                                .displaySmall),
-                                                        fontWeight:
-                                                            FontWeight.w800,
-                                                        color: isDark
-                                                            ? Colors.white
-                                                            : Colors.black87,
-                                                      ),
-                                                    ),
-                                                    SizedBox(height: 12.h),
-                                                    Text(
-                                                      'We are currently preparing $title services in your area. Stay tuned!',
-                                                      textAlign:
-                                                          TextAlign.center,
-                                                      style: TextStyle(
-                                                        fontSize: AppTypography
-                                                            .font(AppFontSizes
-                                                                .bodyMedium),
-                                                        color: AppTheme.mutedTextColorFor(isDark),
-                                                        fontWeight:
-                                                            FontWeight.w500,
-                                                      ),
-                                                    ),
-                                                    SizedBox(height: 28.h),
-                                                    ElevatedButton(
-                                                      onPressed: () =>
-                                                          Navigator.pop(
-                                                              sheetContext),
-                                                      style: ElevatedButton
-                                                          .styleFrom(
-                                                        backgroundColor:
-                                                            purpleColor,
-                                                        foregroundColor:
-                                                            Colors.white,
-                                                        minimumSize: Size(
-                                                            double.infinity,
-                                                            54.h),
-                                                        shape:
-                                                            RoundedRectangleBorder(
+                                          if (!isCategoryActive) {
+                                            showModalBottomSheet(
+                                              context: context,
+                                              backgroundColor: isDark
+                                                  ? AppTheme.darkSurface
+                                                  : Colors.white,
+                                              elevation: 0,
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.vertical(
+                                                        top: Radius.circular(
+                                                            28.r)),
+                                              ),
+                                              builder: (sheetContext) {
+                                                final purpleColor =
+                                                    AppTheme.primaryPurpleFor(
+                                                        isDark);
+                                                return Padding(
+                                                  padding: EdgeInsets.fromLTRB(
+                                                      24.w, 16.h, 24.w, 24.h),
+                                                  child: Column(
+                                                    mainAxisSize:
+                                                        MainAxisSize.min,
+                                                    children: [
+                                                      Container(
+                                                        width: 40.w,
+                                                        height: 4.h,
+                                                        decoration:
+                                                            BoxDecoration(
+                                                          color: isDark
+                                                              ? Colors.grey[700]
+                                                              : Colors
+                                                                  .grey[300],
                                                           borderRadius:
                                                               BorderRadius
                                                                   .circular(
-                                                                      18.r),
+                                                                      2.r),
                                                         ),
-                                                        elevation: 0,
                                                       ),
-                                                      child: Text(
-                                                        'OK',
+                                                      SizedBox(height: 24.h),
+                                                      Text(
+                                                        '$title Coming Soon!',
+                                                        textAlign:
+                                                            TextAlign.center,
+                                                        style: TextStyle(
+                                                          fontSize: AppTypography
+                                                              .font(AppFontSizes
+                                                                  .displaySmall),
+                                                          fontWeight:
+                                                              FontWeight.w800,
+                                                          color: isDark
+                                                              ? Colors.white
+                                                              : Colors.black87,
+                                                        ),
+                                                      ),
+                                                      SizedBox(height: 12.h),
+                                                      Text(
+                                                        'We are currently preparing $title services in your area. Stay tuned!',
+                                                        textAlign:
+                                                            TextAlign.center,
                                                         style: TextStyle(
                                                           fontSize: AppTypography
                                                               .font(AppFontSizes
                                                                   .bodyMedium),
+                                                          color: AppTheme
+                                                              .mutedTextColorFor(
+                                                                  isDark),
                                                           fontWeight:
-                                                              FontWeight.w800,
+                                                              FontWeight.w500,
                                                         ),
                                                       ),
-                                                    ),
-                                                    SizedBox(height: 12.h),
-                                                  ],
-                                                ),
-                                              );
-                                            },
-                                          );
-                                        } else {
-                                          final route =
-                                              '/category/${title.toLowerCase()}';
-                                          context.push(route);
-                                        }
-                                      },
-                                    );
-                                  },
-                                  childCount: _categories.length,
+                                                      SizedBox(height: 28.h),
+                                                      ElevatedButton(
+                                                        onPressed: () =>
+                                                            Navigator.pop(
+                                                                sheetContext),
+                                                        style: ElevatedButton
+                                                            .styleFrom(
+                                                          backgroundColor:
+                                                              purpleColor,
+                                                          foregroundColor:
+                                                              Colors.white,
+                                                          minimumSize: Size(
+                                                              double.infinity,
+                                                              54.h),
+                                                          shape:
+                                                              RoundedRectangleBorder(
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .circular(
+                                                                        18.r),
+                                                          ),
+                                                          elevation: 0,
+                                                        ),
+                                                        child: Text(
+                                                          'OK',
+                                                          style: TextStyle(
+                                                            fontSize: AppTypography
+                                                                .font(AppFontSizes
+                                                                    .bodyMedium),
+                                                            fontWeight:
+                                                                FontWeight.w800,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                      SizedBox(height: 12.h),
+                                                    ],
+                                                  ),
+                                                );
+                                              },
+                                            );
+                                          } else {
+                                            final route =
+                                                '/category/${title.toLowerCase()}';
+                                            context.push(route);
+                                          }
+                                        },
+                                      );
+                                    },
+                                    childCount: _categories.length,
+                                  ),
                                 ),
                               ),
-                            ),
-                            // Discounts Section
-                            SliverToBoxAdapter(
-                                child: _buildDiscountSection(isDark)),
-                            // Bulk Items Section
-                            SliverToBoxAdapter(
-                                child: _buildBulkMealsSection(isDark)),
-                            // Restaurants Section
-                            SliverToBoxAdapter(
-                                child: _buildRestaurantsSection(isDark)),
-                            SliverToBoxAdapter(child: SizedBox(height: 8.h)),
-                          ],
-                        ),
-                ),
-              ],
+                              // Discounts Section
+                              SliverToBoxAdapter(
+                                  child: _buildDiscountSection(isDark)),
+                              // Bulk Items Section
+                              SliverToBoxAdapter(
+                                  child: _buildBulkMealsSection(isDark)),
+                              // Restaurants Section
+                              SliverToBoxAdapter(
+                                  child: _buildRestaurantsSection(isDark)),
+                              SliverToBoxAdapter(child: SizedBox(height: 12.h)),
+                            ],
+                          ),
+                  ),
+                ],
+              ),
             ),
 
             // Bottom Sheet Overlay Screen covering search bar and bottom nav when no vendors
@@ -687,110 +697,115 @@ class _HomeScreenState extends State<HomeScreen> {
         top: false,
         child: Padding(
           padding: EdgeInsets.fromLTRB(28.w, 16.h, 28.w, 24.h),
-          child: Column(
-            children: [
-              Container(
-                width: 40.w,
-                height: 4.h,
-                decoration: BoxDecoration(
-                  color: isDark ? Colors.grey[700] : Colors.grey[300],
-                  borderRadius: BorderRadius.circular(2.r),
-                ),
-              ),
-              const Spacer(),
-              Image.asset(
-                'assets/emoji/sad.png',
-                width: 140.w,
-                height: 140.w,
-                fit: BoxFit.contain,
-              ),
-              SizedBox(height: 24.h),
-              Text(
-                "No Vendors Nearby",
-                style: TextStyle(
-                  fontSize: AppTypography.font(AppFontSizes.displaySmall),
-                  fontWeight: FontWeight.w800,
-                  color: primaryTextColor,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              SizedBox(height: 12.h),
-              Text(
-                "We're sorry, our services are currently not available in your location. Tap your address at the top or click below to change location.",
-                style: TextStyle(
-                  fontSize: AppTypography.font(AppFontSizes.bodyMedium),
-                  fontWeight: FontWeight.w500,
-                  color: mutedTextColor,
-                  height: 1.45,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              SizedBox(height: 24.h),
-              ElevatedButton(
-                onPressed: () async {
-                  final result =
-                      await context.push('/profile/address/location');
-                  if (result != null && result is Map<String, dynamic>) {
-                    final newAddr = result['address'] ?? '';
-                    final double? lat = result['latitude'] != null
-                        ? (result['latitude'] as num).toDouble()
-                        : null;
-                    final double? lng = result['longitude'] != null
-                        ? (result['longitude'] as num).toDouble()
-                        : null;
-
-                    setState(() {
-                      _currentAddress = result['title'] ?? _currentAddress;
-                      _fullAddress = newAddr;
-                    });
-                    PriceHelper.currentAddress = _currentAddress;
-                    PriceHelper.fullAddress = _fullAddress;
-                    _validateServiceAvailability();
-
-                    if (lat != null && lng != null) {
-                      final newPos = Position(
-                        latitude: lat,
-                        longitude: lng,
-                        timestamp: DateTime.now(),
-                        accuracy: 0.0,
-                        altitude: 0.0,
-                        altitudeAccuracy: 0.0,
-                        heading: 0.0,
-                        headingAccuracy: 0.0,
-                        speed: 0.0,
-                        speedAccuracy: 0.0,
-                      );
-                      if (mounted) {
-                        setState(() {
-                          _currentPosition = newPos;
-                        });
-                      }
-                      PriceHelper.currentPosition = newPos;
-                    } else {
-                      _geocodeAddress(
-                          newAddr.isNotEmpty ? newAddr : _currentAddress);
-                    }
-                  }
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: purpleColor,
-                  foregroundColor: Colors.white,
-                  minimumSize: Size(double.infinity, 56.h),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(18.r),
+          child: Responsive.maxContainer(
+            context: context,
+            maxWidth: 650,
+            alignment: Alignment.topCenter,
+            child: Column(
+              children: [
+                Container(
+                  width: 40.w,
+                  height: 4.h,
+                  decoration: BoxDecoration(
+                    color: isDark ? Colors.grey[700] : Colors.grey[300],
+                    borderRadius: BorderRadius.circular(2.r),
                   ),
-                  elevation: 0,
                 ),
-                child: Text(
-                  "Change Delivery Address",
+                const Spacer(),
+                Image.asset(
+                  'assets/emoji/sad.png',
+                  width: 140.w,
+                  height: 140.w,
+                  fit: BoxFit.contain,
+                ),
+                SizedBox(height: 24.h),
+                Text(
+                  "No Vendors Nearby",
+                  style: TextStyle(
+                    fontSize: AppTypography.font(AppFontSizes.displaySmall),
+                    fontWeight: FontWeight.w800,
+                    color: primaryTextColor,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                SizedBox(height: 12.h),
+                Text(
+                  "We're sorry, our services are currently not available in your location. Tap your address at the top or click below to change location.",
                   style: TextStyle(
                     fontSize: AppTypography.font(AppFontSizes.bodyMedium),
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w500,
+                    color: mutedTextColor,
+                    height: 1.45,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                SizedBox(height: 24.h),
+                ElevatedButton(
+                  onPressed: () async {
+                    final result =
+                        await context.push('/profile/address/location');
+                    if (result != null && result is Map<String, dynamic>) {
+                      final newAddr = result['address'] ?? '';
+                      final double? lat = result['latitude'] != null
+                          ? (result['latitude'] as num).toDouble()
+                          : null;
+                      final double? lng = result['longitude'] != null
+                          ? (result['longitude'] as num).toDouble()
+                          : null;
+
+                      setState(() {
+                        _currentAddress = result['title'] ?? _currentAddress;
+                        _fullAddress = newAddr;
+                      });
+                      PriceHelper.currentAddress = _currentAddress;
+                      PriceHelper.fullAddress = _fullAddress;
+                      _validateServiceAvailability();
+
+                      if (lat != null && lng != null) {
+                        final newPos = Position(
+                          latitude: lat,
+                          longitude: lng,
+                          timestamp: DateTime.now(),
+                          accuracy: 0.0,
+                          altitude: 0.0,
+                          altitudeAccuracy: 0.0,
+                          heading: 0.0,
+                          headingAccuracy: 0.0,
+                          speed: 0.0,
+                          speedAccuracy: 0.0,
+                        );
+                        if (mounted) {
+                          setState(() {
+                            _currentPosition = newPos;
+                          });
+                        }
+                        PriceHelper.currentPosition = newPos;
+                      } else {
+                        _geocodeAddress(
+                            newAddr.isNotEmpty ? newAddr : _currentAddress);
+                      }
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: purpleColor,
+                    foregroundColor: Colors.white,
+                    minimumSize: Size(double.infinity, 56.h),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(18.r),
+                    ),
+                    elevation: 0,
+                  ),
+                  child: Text(
+                    "Change Delivery Address",
+                    style: TextStyle(
+                      fontSize: AppTypography.font(AppFontSizes.bodyMedium),
+                      fontWeight: FontWeight.w800,
+                    ),
                   ),
                 ),
-              ),
-              const Spacer(),
-            ],
+                const Spacer(),
+              ],
+            ),
           ),
         ),
       ),
@@ -917,9 +932,9 @@ class _HomeScreenState extends State<HomeScreen> {
                             : '${_getGreeting()}, $firstName',
                         style: TextStyle(
                           fontSize:
-                              AppTypography.font(AppFontSizes.headlineMedium),
-                          fontWeight: FontWeight.bold,
-                          color: textColor,
+                              AppTypography.font(AppFontSizes.headlineSmall),
+                          fontWeight: FontWeight.w800,
+                          color: purpleColor,
                         ),
                       ),
                       SizedBox(height: 2.h),
@@ -1142,8 +1157,8 @@ class _HomeScreenState extends State<HomeScreen> {
                         height: 6.h,
                         decoration: BoxDecoration(
                           color: isActive
-                              ? AppTheme.primaryColor
-                              : Colors.grey[300],
+                              ? AppTheme.primaryPurpleFor(isDark)
+                              : (isDark ? Colors.grey[800] : Colors.grey[300]),
                           borderRadius: BorderRadius.circular(10.r),
                         ),
                       );
@@ -1170,9 +1185,9 @@ class _HomeScreenState extends State<HomeScreen> {
           return Column(
             children: [
               _buildSectionHeader(
-                  'Discount', () => context.push('/discount-guaranteed')),
+                  'Discounts', () => context.push('/discount-guaranteed')),
               SizedBox(
-                height: 208.h,
+                height: 160.h,
                 child: ListView.builder(
                   scrollDirection: Axis.horizontal,
                   padding: EdgeInsets.symmetric(horizontal: 20.w),
@@ -1212,10 +1227,9 @@ class _HomeScreenState extends State<HomeScreen> {
         return Column(
           children: [
             _buildSectionHeader(
-                'Discount', () => context.push('/discount-guaranteed')),
+                'Discounts', () => context.push('/discount-guaranteed')),
             SizedBox(
-              height:
-                  MediaQuery.of(context).size.width >= 600 ? 220.h : 228.h,
+              height: MediaQuery.of(context).size.width >= 600 ? 178.h : 184.h,
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
                 padding: EdgeInsets.symmetric(horizontal: 20.w),
@@ -1304,7 +1318,7 @@ class _HomeScreenState extends State<HomeScreen> {
               SizedBox(height: 6.h),
               SizedBox(
                 height:
-                    MediaQuery.of(context).size.width >= 600 ? 218.h : 258.h,
+                    MediaQuery.of(context).size.width >= 600 ? 308.h : 302.h,
                 child: ListView.builder(
                   scrollDirection: Axis.horizontal,
                   padding: EdgeInsets.symmetric(horizontal: 20.w),
@@ -1363,8 +1377,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             SizedBox(height: 6.h),
             SizedBox(
-              height: MediaQuery.of(context).size.width >= 600 ? 263.h : 258.h,
-              // 255.h on Tablets vs 258.h on Phones
+              height: MediaQuery.of(context).size.width >= 600 ? 318.h : 312.h,
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
                 padding: EdgeInsets.symmetric(horizontal: 20.w),
@@ -1384,15 +1397,15 @@ class _HomeScreenState extends State<HomeScreen> {
                       vendorInfo?['businessName'] ??
                       '';
 
-                  final rawOrderStart = data['orderStartTime'] ??
-                      data['orderStarttime'];
+                  final rawOrderStart =
+                      data['orderStartTime'] ?? data['orderStarttime'];
                   final rawOrderClose = data['orderEndTime'] ??
                       data['orderClosetime'] ??
                       data['orderTimeClose'];
-                  final rawDeliveryStart = data['deliveryStartTime'] ??
-                      data['deliveryStarttime'];
-                  final rawDeliveryClose = data['deliveryEndTime'] ??
-                      data['deliveryClosetime'];
+                  final rawDeliveryStart =
+                      data['deliveryStartTime'] ?? data['deliveryStarttime'];
+                  final rawDeliveryClose =
+                      data['deliveryEndTime'] ?? data['deliveryClosetime'];
 
                   final orderWindow = MealTimeHelper.formatTimeWindow(
                     rawOrderStart?.toString(),
@@ -1412,6 +1425,8 @@ class _HomeScreenState extends State<HomeScreen> {
                           closeTimeStr: rawOrderClose?.toString(),
                         );
 
+                  final isTablet = MediaQuery.of(context).size.width >= 600;
+
                   return Padding(
                     padding: EdgeInsets.only(right: 16.w),
                     child: BulkMealCard(
@@ -1420,6 +1435,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       isVerified: true,
                       vendorData: vendorInfo,
                       imageUrl: photoUrl.isNotEmpty ? photoUrl : '',
+                      height: isTablet ? 304.h : 298.h,
                       price: price > 0
                           ? PriceHelper.applyMarkup(price, 'resturantPosts')
                           : 0,
@@ -1452,7 +1468,7 @@ class _HomeScreenState extends State<HomeScreen> {
         _buildSectionHeader(
             'Restaurants', () => context.push('/category/restaurant')),
         SizedBox(
-          height: MediaQuery.of(context).size.width >= 600 ? 190.h : 225.h,
+          height: MediaQuery.of(context).size.width >= 600 ? 180.h : 214.h,
           child: Builder(builder: (context) {
             if (_currentPosition == null || _vendorsMap.isEmpty) {
               return ListView.builder(

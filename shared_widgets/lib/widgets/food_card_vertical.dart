@@ -50,13 +50,14 @@ class FoodCardVertical extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final purpleColor = AppTheme.primaryPurpleFor(isDark);
     final surfaceColor = isDark ? AppTheme.darkSurface : Colors.white;
-    final borderColor = isDark ? AppTheme.darkBorder : AppTheme.lightInputBorder;
+    final borderColor =
+        isDark ? AppTheme.darkBorder : AppTheme.lightInputBorder;
     final primaryTextColor = isDark ? Colors.white : Colors.black87;
     final mutedTextColor = AppTheme.mutedTextColorFor(isDark);
 
     final isTablet = MediaQuery.of(context).size.width >= 600;
     final double cardWidth = isTablet ? 182.w : 230.w;
-    final double imgHeight = isTablet ? 108.h : 135.h;
+    final double imgHeight = isTablet ? 113.h : 138.h;
 
     return Material(
       color: Colors.transparent,
@@ -66,7 +67,8 @@ class FoodCardVertical extends StatelessWidget {
                 ScaffoldMessenger.of(context).hideCurrentSnackBar();
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
-                    content: Text('Ordering is disabled as this store is currently closed'),
+                    content: Text(
+                        'Ordering is disabled as this store is currently closed'),
                     duration: Duration(seconds: 2),
                   ),
                 );
@@ -109,7 +111,9 @@ class FoodCardVertical extends StatelessWidget {
                         width: cardWidth,
                         height: imgHeight,
                         color: isDark ? Colors.grey[900] : Colors.grey[200],
-                        child: Icon(LucideIcons.image, color: Colors.grey[500], size: isTablet ? 18.sp : 24.sp),
+                        child: Icon(LucideIcons.image,
+                            color: Colors.grey[500],
+                            size: isTablet ? 18.sp : 24.sp),
                       ),
                       errorWidget: (_, __, ___) => Container(
                         width: cardWidth,
@@ -117,7 +121,9 @@ class FoodCardVertical extends StatelessWidget {
                         color: purpleColor,
                         alignment: Alignment.center,
                         child: Text(
-                          title.trim().isNotEmpty ? title.trim()[0].toUpperCase() : 'F',
+                          title.trim().isNotEmpty
+                              ? title.trim()[0].toUpperCase()
+                              : 'F',
                           style: const TextStyle(
                             color: Colors.white,
                             fontSize: 22,
@@ -136,7 +142,9 @@ class FoodCardVertical extends StatelessWidget {
                         ),
                         child: Center(
                           child: Container(
-                            padding: EdgeInsets.symmetric(horizontal: isTablet ? 10.w : 14.w, vertical: isTablet ? 4.h : 6.h),
+                            padding: EdgeInsets.symmetric(
+                                horizontal: isTablet ? 10.w : 14.w,
+                                vertical: isTablet ? 4.h : 6.h),
                             decoration: BoxDecoration(
                               color: Colors.redAccent.withValues(alpha: 0.9),
                               borderRadius: BorderRadius.circular(8.r),
@@ -164,7 +172,9 @@ class FoodCardVertical extends StatelessWidget {
                         ),
                         child: Center(
                           child: Container(
-                            padding: EdgeInsets.symmetric(horizontal: isTablet ? 8.w : 10.w, vertical: isTablet ? 4.h : 5.h),
+                            padding: EdgeInsets.symmetric(
+                                horizontal: isTablet ? 8.w : 10.w,
+                                vertical: isTablet ? 4.h : 5.h),
                             decoration: BoxDecoration(
                               color: Colors.redAccent.withValues(alpha: 0.95),
                               borderRadius: BorderRadius.circular(8.r),
@@ -211,7 +221,8 @@ class FoodCardVertical extends StatelessWidget {
                           VerificationBadge(vendorData: vendorData!, size: 14),
                         ] else if (isVerified) ...[
                           SizedBox(width: 4.w),
-                          const Icon(Icons.verified, color: Colors.blue, size: 14),
+                          const Icon(Icons.verified,
+                              color: Colors.blue, size: 14),
                         ],
                       ],
                     ),
@@ -230,27 +241,37 @@ class FoodCardVertical extends StatelessWidget {
 
               // ── Details Row: Rating & Delivery Time ────────────────────────
               Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Icon(Icons.star, size: 14, color: Colors.amber),
-                  SizedBox(width: 3.w),
-                  Text(
-                    '$rating ($reviewsCount)',
-                    style: TextStyle(
-                      fontSize: 12.5,
-                      fontWeight: FontWeight.w600,
-                      color: mutedTextColor,
-                    ),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.star, size: 14, color: Colors.amber),
+                      SizedBox(width: 3.w),
+                      Text(
+                        '$rating ($reviewsCount)',
+                        style: TextStyle(
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.w600,
+                          color: mutedTextColor,
+                        ),
+                      ),
+                    ],
                   ),
-                  SizedBox(width: isTablet ? 8.w : 12.w),
-                  Icon(Icons.location_on_outlined, size: 14, color: purpleColor),
-                  SizedBox(width: 3.w),
-                  Text(
-                    deliveryTime ?? '10 - 15 min',
-                    style: TextStyle(
-                      fontSize: 12.5,
-                      fontWeight: FontWeight.w600,
-                      color: mutedTextColor,
-                    ),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(LucideIcons.clock, size: 13, color: purpleColor),
+                      SizedBox(width: 3.w),
+                      Text(
+                        deliveryTime ?? '10 - 15 min',
+                        style: TextStyle(
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.w600,
+                          color: mutedTextColor,
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -261,4 +282,3 @@ class FoodCardVertical extends StatelessWidget {
     );
   }
 }
-

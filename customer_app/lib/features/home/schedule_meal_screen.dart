@@ -498,9 +498,9 @@ class _ScheduleMealScreenState extends State<ScheduleMealScreen> {
                       Text(
                         'Schedule Meal',
                         style: TextStyle(
-                          color: primaryTextColor,
+                          color: purpleColor,
                           fontSize:
-                              AppTypography.font(AppFontSizes.displaySmall),
+                              AppTypography.font(AppFontSizes.headlineSmall),
                           fontWeight: FontWeight.w800,
                         ),
                       ),
@@ -602,25 +602,13 @@ class _ScheduleMealScreenState extends State<ScheduleMealScreen> {
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting &&
                       !snapshot.hasData) {
-                    return GridView.builder(
+                    return ListView.separated(
                       padding:
                           EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
-                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: MediaQuery.of(context).size.width >= 900
-                            ? 4
-                            : (MediaQuery.of(context).size.width >= 600
-                                ? 3
-                                : 2),
-                        crossAxisSpacing: 14.w,
-                        mainAxisSpacing: 12.h,
-                        childAspectRatio:
-                            MediaQuery.of(context).size.width >= 600
-                                ? 0.84
-                                : 0.70,
-                      ),
-                      itemCount: 4,
+                      itemCount: 3,
+                      separatorBuilder: (_, __) => SizedBox(height: 16.h),
                       itemBuilder: (context, index) =>
-                          SkeletonLoader.horizontalFoodCard(context: context),
+                          SkeletonLoader.foodMenuItem(context: context),
                     );
                   }
 
@@ -695,20 +683,11 @@ class _ScheduleMealScreenState extends State<ScheduleMealScreen> {
                     );
                   }
 
-                  return GridView.builder(
+                  return ListView.separated(
                     padding:
                         EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
-                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: MediaQuery.of(context).size.width >= 900
-                          ? 4
-                          : (MediaQuery.of(context).size.width >= 600 ? 3 : 2),
-                      crossAxisSpacing: 14.w,
-                      mainAxisSpacing: 12.h,
-                      childAspectRatio: MediaQuery.of(context).size.width >= 600
-                          ? 0.58
-                          : 0.70,
-                    ),
                     itemCount: filteredItems.length,
+                    separatorBuilder: (_, __) => SizedBox(height: 16.h),
                     itemBuilder: (context, index) {
                       final item = filteredItems[index];
                       final title =
@@ -764,6 +743,7 @@ class _ScheduleMealScreenState extends State<ScheduleMealScreen> {
 
                       return BulkMealCard(
                         title: title,
+                        width: double.infinity,
                         vendorName: vName.isNotEmpty ? vName : null,
                         isVerified: profile?['status'] == 'verified',
                         vendorData: vendorInfo,

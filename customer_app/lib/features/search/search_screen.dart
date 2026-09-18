@@ -812,10 +812,11 @@ class _SearchScreenState extends State<SearchScreen> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final backgroundColor =
-        isDark ? const Color(0xFF050505) : const Color(0xFFF6F7FB);
+        isDark ? AppTheme.darkSurface : Colors.white;
     final surfaceColor = isDark ? const Color(0xFF121212) : Colors.white;
     final primaryTextColor = isDark ? Colors.white : const Color(0xFF15161A);
     final mutedTextColor = AppTheme.mutedTextColorFor(isDark);
+    final purpleColor = AppTheme.primaryPurpleFor(isDark);
     final borderColor =
         isDark ? Colors.white.withAlpha(15) : const Color(0xFFE9EAF0);
 
@@ -830,7 +831,7 @@ class _SearchScreenState extends State<SearchScreen> {
         title: Text(
           'Search',
           style: TextStyle(
-            color: primaryTextColor,
+            color: purpleColor,
             fontSize: AppTypography.font(AppFontSizes.displaySmall),
             fontWeight: FontWeight.w800,
           ),
@@ -1256,13 +1257,13 @@ class _SearchScreenState extends State<SearchScreen> {
                                   mainAxisSpacing: 10.h,
                                   childAspectRatio:
                                       MediaQuery.of(context).size.width >= 900
-                                          ? 0.74
+                                          ? 0.92
                                           : (MediaQuery.of(context)
                                                       .size
                                                       .width >=
                                                   600
-                                              ? 0.70
-                                              : 0.69),
+                                              ? 0.88
+                                              : 0.86),
                                 ),
                                 itemCount: filteredItems.length,
                                 itemBuilder: (context, index) {

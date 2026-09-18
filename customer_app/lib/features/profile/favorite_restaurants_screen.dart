@@ -104,7 +104,7 @@ class _FavoriteRestaurantsScreenState
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final backgroundColor =
-        isDark ? AppTheme.darkSurface : AppTheme.lightInputFill;
+        isDark ? AppTheme.darkSurface : Colors.white;
     final surfaceColor = isDark ? AppTheme.darkSurface : Colors.white;
     final primaryTextColor = isDark ? Colors.white : const Color(0xFF15161A);
     final mutedTextColor = AppTheme.mutedTextColorFor(isDark);

@@ -20,6 +20,8 @@ class BulkMealCard extends StatelessWidget {
   final VoidCallback onTap;
   final VoidCallback? onAddTap;
   final double? width;
+  final double? height;
+  final double? imageAspectRatio;
 
   const BulkMealCard({
     super.key,
@@ -37,6 +39,8 @@ class BulkMealCard extends StatelessWidget {
     required this.onTap,
     this.onAddTap,
     this.width,
+    this.height,
+    this.imageAspectRatio,
   });
 
   /// Formats price with thousand-separator commas e.g. ₦2,500
@@ -53,16 +57,19 @@ class BulkMealCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final purpleColor = AppTheme.primaryPurpleFor(isDark);
-    final surfaceColor = isDark ? AppTheme.darkSurface : Colors.white;
+    final surfaceColor = isDark ? AppTheme.darkSurface : AppTheme.lightSurface;
     final borderColor = isDark ? AppTheme.darkBorder : const Color(0xFFF0E6FF);
     final primaryTextColor = isDark ? Colors.white : const Color(0xFF15161A);
     final mutedTextColor = AppTheme.mutedTextColorFor(isDark);
 
+    final isFullWidth = width == double.infinity;
     final isTablet = MediaQuery.of(context).size.width >= 600;
-    final double cardWidth = width ?? (isTablet ? 136.w : 160.w);
+    final double cardWidth = width ?? (isTablet ? 204.w : 240.w);
 
-    final effectivePrice = (promoPrice != null && promoPrice! > 0) ? promoPrice! : price;
-    final showBanner = orderClosesText != null && orderClosesText!.trim().isNotEmpty;
+    final effectivePrice =
+        (promoPrice != null && promoPrice! > 0) ? promoPrice! : price;
+    final showBanner =
+        orderClosesText != null && orderClosesText!.trim().isNotEmpty;
     final bannerText = showBanner ? orderClosesText!.trim() : '';
 
     return Material(
@@ -73,7 +80,8 @@ class BulkMealCard extends StatelessWidget {
                 ScaffoldMessenger.of(context).hideCurrentSnackBar();
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
-                    content: Text('Ordering is disabled as this store is currently closed'),
+                    content: Text(
+                        'Ordering is disabled as this store is currently closed'),
                     duration: Duration(seconds: 2),
                   ),
                 );
@@ -84,9 +92,12 @@ class BulkMealCard extends StatelessWidget {
           children: [
             Container(
               width: cardWidth,
-              padding: isTablet
-                  ? EdgeInsets.symmetric(horizontal: 8.w, vertical: 8.h)
-                  : EdgeInsets.symmetric(horizontal: 7.w, vertical: 6.8.h),
+              height: height,
+              padding: isFullWidth
+                  ? EdgeInsets.all(12.w)
+                  : (isTablet
+                      ? EdgeInsets.symmetric(horizontal: 8.w, vertical: 8.h)
+                      : EdgeInsets.symmetric(horizontal: 7.w, vertical: 6.8.h)),
               decoration: BoxDecoration(
                 color: surfaceColor,
                 borderRadius: BorderRadius.circular(16.r),
@@ -100,9 +111,10 @@ class BulkMealCard extends StatelessWidget {
                   children: [
                     // ── Food Image ─────────────────────────────────────────────
                     ClipRRect(
-                      borderRadius: BorderRadius.circular(10.r),
+                      borderRadius: BorderRadius.circular(12.r),
                       child: AspectRatio(
-                        aspectRatio: 4 / 3,
+                        aspectRatio: imageAspectRatio ??
+                            (isFullWidth ? (16 / 9) : (4 / 3)),
                         child: CachedNetworkImage(
                           imageUrl: imageUrl,
                           width: double.infinity,
@@ -110,14 +122,18 @@ class BulkMealCard extends StatelessWidget {
                           placeholder: (_, __) => Container(
                             width: double.infinity,
                             color: isDark ? Colors.grey[900] : Colors.grey[200],
-                            child: Icon(LucideIcons.image, color: Colors.grey[500], size: isTablet ? 22.sp : 20.sp),
+                            child: Icon(LucideIcons.image,
+                                color: Colors.grey[500],
+                                size: isTablet ? 22.sp : 20.sp),
                           ),
                           errorWidget: (_, __, ___) => Container(
                             width: double.infinity,
                             color: purpleColor,
                             alignment: Alignment.center,
                             child: Text(
-                              title.trim().isNotEmpty ? title.trim()[0].toUpperCase() : 'F',
+                              title.trim().isNotEmpty
+                                  ? title.trim()[0].toUpperCase()
+                                  : 'F',
                               style: TextStyle(
                                 color: Colors.white,
                                 fontSize: isTablet ? 22 : 20,
@@ -128,20 +144,22 @@ class BulkMealCard extends StatelessWidget {
                         ),
                       ),
                     ),
-                    SizedBox(height: isTablet ? 6.h : 5.h),
+                    SizedBox(height: isFullWidth ? 10.h : (isTablet ? 6.h : 5.h)),
 
                     // ── Title ──────────────────────────────────────────────────
                     Text(
                       title,
                       style: TextStyle(
-                        fontSize: isTablet ? 14 : 13.5,
+                        fontSize: isFullWidth
+                            ? 16
+                            : (isTablet ? 14 : 13.5),
                         fontWeight: FontWeight.w700,
                         color: primaryTextColor,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    SizedBox(height: isTablet ? 2.h : 1.8.h),
+                    SizedBox(height: isFullWidth ? 4.h : (isTablet ? 2.h : 1.8.h)),
 
                     // ── Price & Add Button Row ─────────────────────────────────
                     Row(
@@ -152,7 +170,9 @@ class BulkMealCard extends StatelessWidget {
                           child: Text(
                             _priceLabel(effectivePrice),
                             style: TextStyle(
-                              fontSize: isTablet ? 15.5 : 14.5,
+                              fontSize: isFullWidth
+                                  ? 16.5
+                                  : (isTablet ? 15.5 : 14.5),
                               fontWeight: FontWeight.w800,
                               color: isDark ? Colors.white : purpleColor,
                             ),
@@ -163,13 +183,19 @@ class BulkMealCard extends StatelessWidget {
                         GestureDetector(
                           onTap: onAddTap ?? onTap,
                           child: Container(
-                            width: isTablet ? 20.w : 19.w,
-                            height: isTablet ? 20.w : 19.w,
+                            width: isFullWidth
+                                ? 26.w
+                                : (isTablet ? 20.w : 19.w),
+                            height: isFullWidth
+                                ? 26.w
+                                : (isTablet ? 20.w : 19.w),
                             decoration: BoxDecoration(
                               color: purpleColor,
                               shape: BoxShape.circle,
                             ),
-                            child: Icon(Icons.add, color: Colors.white, size: isTablet ? 14 : 12),
+                            child: Icon(Icons.add,
+                                color: Colors.white,
+                                size: isFullWidth ? 16 : (isTablet ? 14 : 12)),
                           ),
                         ),
                       ],
@@ -177,15 +203,19 @@ class BulkMealCard extends StatelessWidget {
 
                     // ── Vendor Subline with Verified Badge ────────────────────
                     if (vendorName != null && vendorName!.isNotEmpty) ...[
-                      SizedBox(height: isTablet ? 2.h : 1.8.h),
+                      SizedBox(height: isFullWidth ? 4.h : (isTablet ? 2.h : 1.8.h)),
                       Row(
                         children: [
                           Flexible(
                             child: Text(
                               vendorName!,
                               style: TextStyle(
-                                fontSize: isTablet ? 11 : 10.5,
-                                color: isDark ? Colors.grey[300] : const Color(0xFF333333),
+                                fontSize: isFullWidth
+                                    ? 13
+                                    : (isTablet ? 11 : 10.5),
+                                color: isDark
+                                    ? Colors.grey[300]
+                                    : const Color(0xFF333333),
                                 fontWeight: FontWeight.w600,
                               ),
                               maxLines: 1,
@@ -193,11 +223,15 @@ class BulkMealCard extends StatelessWidget {
                             ),
                           ),
                           if (vendorData != null) ...[
-                            SizedBox(width: 3.w),
-                            VerificationBadge(vendorData: vendorData!, size: isTablet ? 11 : 10),
+                            SizedBox(width: 4.w),
+                            VerificationBadge(
+                                vendorData: vendorData!,
+                                size: isFullWidth ? 13 : (isTablet ? 11 : 10)),
                           ] else if (isVerified) ...[
-                            SizedBox(width: 3.w),
-                            Icon(Icons.verified, color: const Color(0xFF2563EB), size: isTablet ? 12 : 11),
+                            SizedBox(width: 4.w),
+                            Icon(Icons.verified,
+                                color: const Color(0xFF2563EB),
+                                size: isFullWidth ? 14 : (isTablet ? 12 : 11)),
                           ],
                         ],
                       ),
@@ -205,10 +239,13 @@ class BulkMealCard extends StatelessWidget {
 
                     // ── Hairline Divider ──────────────────────────────────────
                     Padding(
-                      padding: EdgeInsets.symmetric(vertical: isTablet ? 4.h : 3.h),
+                      padding: EdgeInsets.symmetric(
+                          vertical: isFullWidth ? 8.h : (isTablet ? 4.h : 3.h)),
                       child: Container(
                         height: 1,
-                        color: isDark ? AppTheme.darkBorder : const Color(0xFFF1F1F5),
+                        color: isDark
+                            ? AppTheme.darkBorder
+                            : const Color(0xFFF1F1F5),
                       ),
                     ),
 
@@ -220,14 +257,20 @@ class BulkMealCard extends StatelessWidget {
                           Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(LucideIcons.clock, size: isTablet ? 11 : 10, color: purpleColor),
-                              SizedBox(width: 3.w),
+                              Icon(LucideIcons.clock,
+                                  size: isFullWidth
+                                      ? 14
+                                      : (isTablet ? 12 : 11),
+                                  color: purpleColor),
+                              SizedBox(width: 6.w),
                               Text(
-                                'Order time',
+                                'Order from',
                                 style: TextStyle(
-                                  fontSize: isTablet ? 10 : 9.5,
+                                  fontSize: isFullWidth
+                                      ? 13
+                                      : (isTablet ? 11 : 10.5),
                                   color: mutedTextColor,
-                                  fontWeight: FontWeight.w600,
+                                  fontWeight: FontWeight.w500,
                                 ),
                               ),
                             ],
@@ -236,8 +279,12 @@ class BulkMealCard extends StatelessWidget {
                             child: Text(
                               orderTimeWindow,
                               style: TextStyle(
-                                fontSize: isTablet ? 10 : 9.5,
-                                color: isDark ? Colors.grey[300] : const Color(0xFF333333),
+                                fontSize: isFullWidth
+                                    ? 13
+                                    : (isTablet ? 11 : 10.5),
+                                color: isDark
+                                    ? Colors.grey[300]
+                                    : const Color(0xFF333333),
                                 fontWeight: FontWeight.w500,
                               ),
                               maxLines: 1,
@@ -247,7 +294,8 @@ class BulkMealCard extends StatelessWidget {
                           ),
                         ],
                       ),
-                      SizedBox(height: isTablet ? 2.h : 1.8.h),
+                      SizedBox(
+                          height: isFullWidth ? 6.h : (isTablet ? 2.h : 1.8.h)),
                     ],
 
                     // ── Timing Row: Delivery time ─────────────────────────────
@@ -258,14 +306,20 @@ class BulkMealCard extends StatelessWidget {
                           Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(LucideIcons.calendar, size: isTablet ? 11 : 10, color: purpleColor),
-                              SizedBox(width: 3.w),
+                              Icon(LucideIcons.calendar,
+                                  size: isFullWidth
+                                      ? 14
+                                      : (isTablet ? 12 : 11),
+                                  color: purpleColor),
+                              SizedBox(width: 6.w),
                               Text(
-                                'Delivery time',
+                                'Meal time',
                                 style: TextStyle(
-                                  fontSize: isTablet ? 10 : 9.5,
+                                  fontSize: isFullWidth
+                                      ? 13
+                                      : (isTablet ? 11 : 10.5),
                                   color: mutedTextColor,
-                                  fontWeight: FontWeight.w600,
+                                  fontWeight: FontWeight.w500,
                                 ),
                               ),
                             ],
@@ -274,8 +328,12 @@ class BulkMealCard extends StatelessWidget {
                             child: Text(
                               deliveryTimeWindow,
                               style: TextStyle(
-                                fontSize: isTablet ? 10 : 9.5,
-                                color: isDark ? Colors.grey[300] : const Color(0xFF333333),
+                                fontSize: isFullWidth
+                                    ? 13
+                                    : (isTablet ? 11 : 10.5),
+                                color: isDark
+                                    ? Colors.grey[300]
+                                    : const Color(0xFF333333),
                                 fontWeight: FontWeight.w500,
                               ),
                               maxLines: 1,
@@ -285,30 +343,38 @@ class BulkMealCard extends StatelessWidget {
                           ),
                         ],
                       ),
-                      SizedBox(height: isTablet ? 5.h : 4.h),
+                      SizedBox(
+                          height: isFullWidth ? 10.h : (isTablet ? 5.h : 4.h)),
                     ],
 
                     // ── Status Pill Banner ────────────────────────────────────
                     if (showBanner) ...[
                       Container(
                         width: double.infinity,
-                        padding: EdgeInsets.symmetric(vertical: isTablet ? 3.5.h : 3.h, horizontal: 5.w),
+                        padding: EdgeInsets.symmetric(
+                            vertical: isFullWidth
+                                ? 7.h
+                                : (isTablet ? 3.5.h : 3.h),
+                            horizontal: 8.w),
                         decoration: BoxDecoration(
                           color: isDark
                               ? purpleColor.withValues(alpha: 0.18)
                               : const Color(0xFFF3E8FF),
-                          borderRadius: BorderRadius.circular(isTablet ? 10.r : 8.r),
+                          borderRadius: BorderRadius.circular(
+                              isFullWidth ? 20.r : (isTablet ? 10.r : 8.r)),
                         ),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(LucideIcons.clock, size: 10, color: purpleColor),
-                            SizedBox(width: 3.w),
+                            Icon(LucideIcons.clock,
+                                size: isFullWidth ? 13 : 10,
+                                color: purpleColor),
+                            SizedBox(width: 5.w),
                             Flexible(
                               child: Text(
                                 bannerText,
                                 style: TextStyle(
-                                  fontSize: 9.5,
+                                  fontSize: isFullWidth ? 12 : 9.5,
                                   fontWeight: FontWeight.w600,
                                   color: purpleColor,
                                 ),
@@ -324,7 +390,6 @@ class BulkMealCard extends StatelessWidget {
                 ),
               ),
             ),
-
             if (isClosed)
               Positioned.fill(
                 child: Container(
@@ -334,7 +399,8 @@ class BulkMealCard extends StatelessWidget {
                   ),
                   child: Center(
                     child: Container(
-                      padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 6.h),
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 14.w, vertical: 6.h),
                       decoration: BoxDecoration(
                         color: Colors.redAccent.withValues(alpha: 0.9),
                         borderRadius: BorderRadius.circular(8.r),

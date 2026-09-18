@@ -187,8 +187,10 @@ class _RateRiderScreenState extends State<RateRiderScreen> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final backgroundColor =
-        isDark ? AppTheme.darkSurface : AppTheme.lightInputFill;
+        isDark ? AppTheme.darkSurface : Colors.white;
     final surfaceColor = isDark ? AppTheme.darkSurface : Colors.white;
+    final containerGreyColor =
+        isDark ? AppTheme.darkSurface : AppTheme.lightInputFill;
     final primaryTextColor = isDark ? Colors.white : const Color(0xFF15161A);
     final mutedTextColor = AppTheme.mutedTextColorFor(isDark);
     final purpleColor = AppTheme.primaryPurpleFor(isDark);
@@ -241,7 +243,7 @@ class _RateRiderScreenState extends State<RateRiderScreen> {
                       width: double.infinity,
                       padding: EdgeInsets.all(18.w),
                       decoration: BoxDecoration(
-                        color: surfaceColor,
+                        color: containerGreyColor,
                         borderRadius: BorderRadius.circular(24.r),
                         border: Border.all(
                           color: borderColor,
@@ -343,7 +345,7 @@ class _RateRiderScreenState extends State<RateRiderScreen> {
                                   selected
                                       ? Icons.star_rounded
                                       : Icons.star_outline_rounded,
-                                  color: purpleColor,
+                                  color: const Color(0xFFFFC107),
                                   size: 36.sp,
                                 ),
                               );

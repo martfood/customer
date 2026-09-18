@@ -42,9 +42,12 @@ class AppTheme {
   static const Color onboardingBackground = Color(0xFFE4E1DA);
 
   // High contrast text tokens (Eliminates faint/dull 20% opacity look in light mode)
-  static const Color lightMutedText = Color(0xFF374151); // Deep crisp slate (9.5:1 contrast against white)
-  static const Color darkMutedText = Color(0xFF9CA3AF); // High-visibility light slate for dark mode
-  static const Color lightHintText = Color(0xFF6B7280); // Clear, readable placeholder for light mode
+  static const Color lightMutedText =
+      Color(0xFF374151); // Deep crisp slate (9.5:1 contrast against white)
+  static const Color darkMutedText =
+      Color(0xFF9CA3AF); // High-visibility light slate for dark mode
+  static const Color lightHintText =
+      Color(0xFF6B7280); // Clear, readable placeholder for light mode
   static const Color darkHintText = Color(0xFF9CA3AF);
 
   static Color getMutedTextColor(BuildContext context) {
@@ -209,14 +212,14 @@ class AppTheme {
 }
 
 class AppFontSizes {
-  static const double displayLarge = 34;
-  static const double displayMedium = 30;
-  static const double displaySmall = 26;
+  static const double displayLarge = 28;
+  static const double displayMedium = 24;
+  static const double displaySmall = 20;
   static const double authHeader = 28;
 
   static const double headlineLarge = 24;
   static const double headlineMedium = 22;
-  static const double headlineSmall = 20;
+  static const double headlineSmall = 18.0;
 
   static const double titleLarge = 18;
   static const double titleMedium = 16;

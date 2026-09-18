@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_widgets/core/theme/app_theme.dart';
+import '../profile/add_address_bottom_sheet.dart';
 
 class DeliverToScreen extends StatefulWidget {
   const DeliverToScreen({super.key});
@@ -92,12 +93,7 @@ class _DeliverToScreenState extends State<DeliverToScreen> {
                   ),
                   SizedBox(height: 16.h),
                   ElevatedButton(
-                    onPressed: () async {
-                      final res = await context.push('/profile/address/add');
-                      if (res is Map<String, dynamic> && context.mounted) {
-                        context.pop(res);
-                      }
-                    },
+                    onPressed: () => showAddNewAddressBottomSheet(context: context),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: purpleColor,
                       foregroundColor: Colors.white,
@@ -226,12 +222,7 @@ class _DeliverToScreenState extends State<DeliverToScreen> {
                 child: Column(
                   children: [
                     ElevatedButton(
-                      onPressed: () async {
-                        final res = await context.push('/profile/address/add');
-                        if (res is Map<String, dynamic> && context.mounted) {
-                          context.pop(res);
-                        }
-                      },
+                      onPressed: () => showAddNewAddressBottomSheet(context: context),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: purpleColor.withValues(alpha: 0.1),
                         foregroundColor: purpleColor,

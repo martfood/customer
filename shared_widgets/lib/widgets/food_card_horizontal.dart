@@ -67,7 +67,7 @@ class FoodCardHorizontal extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final purpleColor = AppTheme.primaryPurpleFor(isDark);
-    final surfaceColor = backgroundColor ?? (isDark ? AppTheme.darkSurface : Colors.white);
+    final surfaceColor = backgroundColor ?? (isDark ? AppTheme.darkSurface : AppTheme.lightSurface);
     final borderColor =
         isDark ? AppTheme.darkBorder : AppTheme.lightInputBorder;
     final primaryTextColor = isDark ? Colors.white : Colors.black87;
@@ -119,10 +119,12 @@ class FoodCardHorizontal extends StatelessWidget {
                 borderRadius: BorderRadius.circular(16.r),
                 border: Border.all(color: borderColor, width: 1),
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
+              child: SingleChildScrollView(
+                physics: const NeverScrollableScrollPhysics(),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
                   // ── Image ──────────────────────────────────────────────────
                   Stack(
                     children: [
@@ -245,7 +247,7 @@ class FoodCardHorizontal extends StatelessWidget {
                       style: TextStyle(
                         fontSize: isTablet ? 11.5 : 11,
                         color: mutedTextColor,
-                        fontWeight: FontWeight.w600,
+                        fontWeight: FontWeight.bold,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -260,7 +262,7 @@ class FoodCardHorizontal extends StatelessWidget {
                             style: TextStyle(
                               fontSize: isTablet ? 11.5 : 11,
                               color: mutedTextColor,
-                              fontWeight: FontWeight.w500,
+                              fontWeight: FontWeight.bold,
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
@@ -283,6 +285,7 @@ class FoodCardHorizontal extends StatelessWidget {
                 ],
               ),
             ),
+          ),
             if (isClosed)
               Positioned.fill(
                 child: Container(

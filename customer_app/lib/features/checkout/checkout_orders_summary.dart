@@ -68,6 +68,7 @@ class _CheckoutOrdersSummaryScreenState
     'name': 'MartFood Wallet',
   };
   bool _hideOrderDetailsForSomeone = false;
+  bool _showOrderDetails = true;
   Map<String, dynamic>? _selectedPromo;
 
   double _platformFee = 0.0;
@@ -2665,11 +2666,15 @@ class _CheckoutOrdersSummaryScreenState
                       ),
                     ),
                     InkWell(
-                      onTap: () {},
+                      onTap: () {
+                        setState(() {
+                          _showOrderDetails = !_showOrderDetails;
+                        });
+                      },
                       child: Row(
                         children: [
                           Text(
-                            'View details',
+                            _showOrderDetails ? 'Hide details' : 'View details',
                             style: TextStyle(
                               color: mutedTextColor,
                               fontSize: AppTypography.font(AppFontSizes.bodySmall),
@@ -2678,7 +2683,7 @@ class _CheckoutOrdersSummaryScreenState
                           ),
                           SizedBox(width: 4.w),
                           Icon(
-                            LucideIcons.chevronDown,
+                            _showOrderDetails ? LucideIcons.chevronUp : LucideIcons.chevronDown,
                             color: mutedTextColor,
                             size: 16.sp,
                           ),
@@ -2687,248 +2692,250 @@ class _CheckoutOrdersSummaryScreenState
                     ),
                   ],
                 ),
-                SizedBox(height: 20.h),
+                SizedBox(height: _showOrderDetails ? 20.h : 8.h),
 
-                // List of Packs / Items
-                if (_activeCheckoutItems.isEmpty) ...[
-                  Padding(
-                    padding: EdgeInsets.symmetric(vertical: 40.h),
-                    child: Center(
-                      child: Text(
-                        'No items in checkout.',
-                        style: TextStyle(
-                          color: mutedTextColor,
-                          fontSize: AppTypography.font(AppFontSizes.bodyMedium),
+                // List of Packs / Items (Toggleable)
+                if (_showOrderDetails) ...[
+                  if (_activeCheckoutItems.isEmpty) ...[
+                    Padding(
+                      padding: EdgeInsets.symmetric(vertical: 40.h),
+                      child: Center(
+                        child: Text(
+                          'No items in checkout.',
+                          style: TextStyle(
+                            color: mutedTextColor,
+                            fontSize: AppTypography.font(AppFontSizes.bodyMedium),
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                ] else ...[
-                  ...List.generate(_activeCheckoutItems.length, (index) {
-                    final item = _activeCheckoutItems[index];
-                    final packTitle = 'Pack ${index + 1}';
-                    final qty = (item['quantity'] ?? 1) as int;
-                    final price = _toDouble(item['price']);
-                    final itemChoices = List<dynamic>.from(item['selectedChoices'] ?? []);
-                    final itemAddOns = List<dynamic>.from(item['selectedAddOns'] ?? []);
+                  ] else ...[
+                    ...List.generate(_activeCheckoutItems.length, (index) {
+                      final item = _activeCheckoutItems[index];
+                      final packTitle = 'Pack ${index + 1}';
+                      final qty = (item['quantity'] ?? 1) as int;
+                      final price = _toDouble(item['price']);
+                      final itemChoices = List<dynamic>.from(item['selectedChoices'] ?? []);
+                      final itemAddOns = List<dynamic>.from(item['selectedAddOns'] ?? []);
 
-                    return Container(
-                      margin: EdgeInsets.only(bottom: 16.h),
-                      padding: EdgeInsets.all(16.w),
-                      decoration: BoxDecoration(
-                        color: surfaceColor,
-                        borderRadius: BorderRadius.circular(20.r),
-                        border: Border.all(color: borderColor, width: 1),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // Pack Header with duplicate and delete buttons
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                packTitle,
-                                style: TextStyle(
-                                  color: primaryTextColor,
-                                  fontSize: AppTypography.font(
-                                      AppFontSizes.bodyMedium),
-                                  fontWeight: FontWeight.w800,
+                      return Container(
+                        margin: EdgeInsets.only(bottom: 16.h),
+                        padding: EdgeInsets.all(16.w),
+                        decoration: BoxDecoration(
+                          color: surfaceColor,
+                          borderRadius: BorderRadius.circular(20.r),
+                          border: Border.all(color: borderColor, width: 1),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Pack Header with duplicate and delete buttons
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  packTitle,
+                                  style: TextStyle(
+                                    color: primaryTextColor,
+                                    fontSize: AppTypography.font(
+                                        AppFontSizes.bodyMedium),
+                                    fontWeight: FontWeight.w800,
+                                  ),
                                 ),
-                              ),
-                              Row(
-                                children: [
-                                  GestureDetector(
-                                    onTap: () => _duplicatePackItem(index),
-                                    child: Container(
-                                      width: 34.w,
-                                      height: 34.w,
-                                      decoration: BoxDecoration(
-                                        shape: BoxShape.circle,
-                                        color: isDark
-                                            ? Colors.grey[800]
-                                            : Colors.grey[100],
-                                      ),
-                                      child: Icon(
-                                        LucideIcons.copy,
-                                        color: isDark
-                                            ? Colors.grey[300]
-                                            : Colors.grey[700],
-                                        size: 16.sp,
-                                      ),
-                                    ),
-                                  ),
-                                  SizedBox(width: 10.w),
-                                  GestureDetector(
-                                    onTap: () => _deletePackItem(index),
-                                    child: Container(
-                                      width: 34.w,
-                                      height: 34.w,
-                                      decoration: const BoxDecoration(
-                                        shape: BoxShape.circle,
-                                        color: Color(0xFFFFEBEE),
-                                      ),
-                                      child: Icon(
-                                        LucideIcons.trash2,
-                                        color: const Color(0xFFEF5350),
-                                        size: 16.sp,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                          SizedBox(height: 14.h),
-
-                          // Item Info Row
-                          Row(
-                            children: [
-                              ClipRRect(
-                                borderRadius: BorderRadius.circular(16.r),
-                                child: (item['imageUrl'] != null &&
-                                        item['imageUrl'].toString().isNotEmpty)
-                                    ? CachedNetworkImage(
-                                        imageUrl: item['imageUrl'].toString(),
-                                        width: 72.w,
-                                        height: 72.w,
-                                        fit: BoxFit.cover,
-                                        errorWidget: (_, __, ___) =>
-                                            _buildFoodFallback(purpleColor, isDark),
-                                      )
-                                    : _buildFoodFallback(purpleColor, isDark),
-                              ),
-                              SizedBox(width: 12.w),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                Row(
                                   children: [
-                                    Text(
-                                      (item['title'] ?? item['name'] ?? 'Food Item')
-                                          .toString(),
-                                      style: TextStyle(
-                                        color: primaryTextColor,
-                                        fontSize: AppTypography.font(
-                                            AppFontSizes.bodyMedium),
-                                        fontWeight: FontWeight.w700,
-                                      ),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                    SizedBox(height: 4.h),
-                                    Text(
-                                      _formatCurrency(price),
-                                      style: TextStyle(
-                                        color: mutedTextColor,
-                                        fontSize: AppTypography.font(
-                                            AppFontSizes.bodySmall),
-                                        fontWeight: FontWeight.w500,
+                                    GestureDetector(
+                                      onTap: () => _duplicatePackItem(index),
+                                      child: Container(
+                                        width: 34.w,
+                                        height: 34.w,
+                                        decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          color: isDark
+                                              ? Colors.grey[800]
+                                              : Colors.grey[100],
+                                        ),
+                                        child: Icon(
+                                          LucideIcons.copy,
+                                          color: isDark
+                                              ? Colors.grey[300]
+                                              : Colors.grey[700],
+                                          size: 16.sp,
+                                        ),
                                       ),
                                     ),
-                                    if (itemChoices.isNotEmpty) ...[
-                                      SizedBox(height: 3.h),
-                                      Text(
-                                        itemChoices
-                                            .map((c) => c['label'] ?? '')
-                                            .where((l) => l.toString().isNotEmpty)
-                                            .join(' • '),
-                                        style: TextStyle(
-                                          color: mutedTextColor,
-                                          fontSize: AppTypography.font(AppFontSizes.caption),
-                                          fontWeight: FontWeight.w500,
+                                    SizedBox(width: 10.w),
+                                    GestureDetector(
+                                      onTap: () => _deletePackItem(index),
+                                      child: Container(
+                                        width: 34.w,
+                                        height: 34.w,
+                                        decoration: const BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          color: Color(0xFFFFEBEE),
                                         ),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ],
-                                    if (itemAddOns.isNotEmpty) ...[
-                                      SizedBox(height: 2.h),
-                                      Text(
-                                        'Add-ons: ${itemAddOns.map((a) => ((a['quantity'] as num?)?.toInt() ?? 1) > 1 ? '${a['name'] ?? a['title']} (x${a['quantity']})' : '${a['name'] ?? a['title']}').where((n) => n.isNotEmpty).join(', ')}',
-                                        style: TextStyle(
-                                          color: mutedTextColor,
-                                          fontSize: AppTypography.font(AppFontSizes.caption),
-                                          fontWeight: FontWeight.w500,
+                                        child: Icon(
+                                          LucideIcons.trash2,
+                                          color: const Color(0xFFEF5350),
+                                          size: 16.sp,
                                         ),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
                                       ),
-                                    ],
+                                    ),
                                   ],
                                 ),
-                              ),
-                              // Circular Quantity Stepper
-                              Row(
-                                children: [
-                                  GestureDetector(
-                                    onTap: () {
-                                      setState(() {
-                                        if (qty > 1) {
-                                          item['quantity'] = qty - 1;
-                                        } else {
-                                          _activeCheckoutItems.removeAt(index);
-                                        }
-                                      });
-                                    },
-                                    child: Container(
-                                      width: 28.w,
-                                      height: 28.w,
-                                      decoration: BoxDecoration(
-                                        shape: BoxShape.circle,
-                                        color: isDark
-                                            ? Colors.grey[800]
-                                            : Colors.grey[100],
+                              ],
+                            ),
+                            SizedBox(height: 14.h),
+
+                            // Item Info Row
+                            Row(
+                              children: [
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(16.r),
+                                  child: (item['imageUrl'] != null &&
+                                          item['imageUrl'].toString().isNotEmpty)
+                                      ? CachedNetworkImage(
+                                          imageUrl: item['imageUrl'].toString(),
+                                          width: 72.w,
+                                          height: 72.w,
+                                          fit: BoxFit.cover,
+                                          errorWidget: (_, __, ___) =>
+                                              _buildFoodFallback(purpleColor, isDark),
+                                        )
+                                      : _buildFoodFallback(purpleColor, isDark),
+                                ),
+                                SizedBox(width: 12.w),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        (item['title'] ?? item['name'] ?? 'Food Item')
+                                            .toString(),
+                                        style: TextStyle(
+                                          color: primaryTextColor,
+                                          fontSize: AppTypography.font(
+                                              AppFontSizes.bodyMedium),
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
                                       ),
-                                      child: Icon(
-                                        LucideIcons.minus,
-                                        color: primaryTextColor,
-                                        size: 14.sp,
+                                      SizedBox(height: 4.h),
+                                      Text(
+                                        _formatCurrency(price),
+                                        style: TextStyle(
+                                          color: mutedTextColor,
+                                          fontSize: AppTypography.font(
+                                              AppFontSizes.bodySmall),
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                      if (itemChoices.isNotEmpty) ...[
+                                        SizedBox(height: 3.h),
+                                        Text(
+                                          itemChoices
+                                              .map((c) => c['label'] ?? '')
+                                              .where((l) => l.toString().isNotEmpty)
+                                              .join(' • '),
+                                          style: TextStyle(
+                                            color: mutedTextColor,
+                                            fontSize: AppTypography.font(AppFontSizes.caption),
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ],
+                                      if (itemAddOns.isNotEmpty) ...[
+                                        SizedBox(height: 2.h),
+                                        Text(
+                                          'Add-ons: ${itemAddOns.map((a) => ((a['quantity'] as num?)?.toInt() ?? 1) > 1 ? '${a['name'] ?? a['title']} (x${a['quantity']})' : '${a['name'] ?? a['title']}').where((n) => n.isNotEmpty).join(', ')}',
+                                          style: TextStyle(
+                                            color: mutedTextColor,
+                                            fontSize: AppTypography.font(AppFontSizes.caption),
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ],
+                                    ],
+                                  ),
+                                ),
+                                // Circular Quantity Stepper
+                                Row(
+                                  children: [
+                                    GestureDetector(
+                                      onTap: () {
+                                        setState(() {
+                                          if (qty > 1) {
+                                            item['quantity'] = qty - 1;
+                                          } else {
+                                            _activeCheckoutItems.removeAt(index);
+                                          }
+                                        });
+                                      },
+                                      child: Container(
+                                        width: 28.w,
+                                        height: 28.w,
+                                        decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          color: isDark
+                                              ? Colors.grey[800]
+                                              : Colors.grey[100],
+                                        ),
+                                        child: Icon(
+                                          LucideIcons.minus,
+                                          color: primaryTextColor,
+                                          size: 14.sp,
+                                        ),
                                       ),
                                     ),
-                                  ),
-                                  Padding(
-                                    padding:
-                                        EdgeInsets.symmetric(horizontal: 10.w),
-                                    child: Text(
-                                      '$qty',
-                                      style: TextStyle(
-                                        color: primaryTextColor,
-                                        fontSize: AppTypography.font(
-                                            AppFontSizes.bodyMedium),
-                                        fontWeight: FontWeight.w800,
+                                    Padding(
+                                      padding:
+                                          EdgeInsets.symmetric(horizontal: 10.w),
+                                      child: Text(
+                                        '$qty',
+                                        style: TextStyle(
+                                          color: primaryTextColor,
+                                          fontSize: AppTypography.font(
+                                              AppFontSizes.bodyMedium),
+                                          fontWeight: FontWeight.w800,
+                                        ),
                                       ),
                                     ),
-                                  ),
-                                  GestureDetector(
-                                    onTap: () {
-                                      setState(() {
-                                        item['quantity'] = qty + 1;
-                                      });
-                                    },
-                                    child: Container(
-                                      width: 28.w,
-                                      height: 28.w,
-                                      decoration: BoxDecoration(
-                                        shape: BoxShape.circle,
-                                        color: isDark
-                                            ? Colors.grey[800]
-                                            : Colors.grey[100],
-                                      ),
-                                      child: Icon(
-                                        LucideIcons.plus,
-                                        color: primaryTextColor,
-                                        size: 14.sp,
+                                    GestureDetector(
+                                      onTap: () {
+                                        setState(() {
+                                          item['quantity'] = qty + 1;
+                                        });
+                                      },
+                                      child: Container(
+                                        width: 28.w,
+                                        height: 28.w,
+                                        decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          color: isDark
+                                              ? Colors.grey[800]
+                                              : Colors.grey[100],
+                                        ),
+                                        child: Icon(
+                                          LucideIcons.plus,
+                                          color: primaryTextColor,
+                                          size: 14.sp,
+                                        ),
                                       ),
                                     ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    );
-                  }),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      );
+                    }),
+                  ],
                 ],
 
                 SizedBox(height: 12.h),
@@ -3542,9 +3549,9 @@ class _CheckoutOrdersSummaryScreenState
                     Text(
                       'Sub-total ($_totalItemCount items)',
                       style: TextStyle(
-                        color: mutedTextColor,
+                        color: primaryTextColor,
                         fontSize: AppTypography.font(AppFontSizes.bodyMedium),
-                        fontWeight: FontWeight.w500,
+                        fontWeight: FontWeight.w800,
                       ),
                     ),
                     Text(
@@ -3564,9 +3571,9 @@ class _CheckoutOrdersSummaryScreenState
                     Text(
                       'Delivery Fee',
                       style: TextStyle(
-                        color: mutedTextColor,
+                        color: primaryTextColor,
                         fontSize: AppTypography.font(AppFontSizes.bodyMedium),
-                        fontWeight: FontWeight.w500,
+                        fontWeight: FontWeight.w800,
                       ),
                     ),
                     Text(
@@ -3590,9 +3597,9 @@ class _CheckoutOrdersSummaryScreenState
                     Text(
                       'Platform Fee',
                       style: TextStyle(
-                        color: mutedTextColor,
+                        color: primaryTextColor,
                         fontSize: AppTypography.font(AppFontSizes.bodyMedium),
-                        fontWeight: FontWeight.w500,
+                        fontWeight: FontWeight.w800,
                       ),
                     ),
                     Text(

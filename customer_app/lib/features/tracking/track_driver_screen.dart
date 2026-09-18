@@ -78,9 +78,9 @@ class _TrackDriverScreenState extends State<TrackDriverScreen> {
 
   String _formatCurrency(double value) {
     final formatted = value.toStringAsFixed(0).replaceAllMapped(
-      RegExp(r'(\d)(?=(\d{3})+(?!\d))'),
-      (match) => '${match[1]},',
-    );
+          RegExp(r'(\d)(?=(\d{3})+(?!\d))'),
+          (match) => '${match[1]},',
+        );
     return '₦$formatted';
   }
 
@@ -104,12 +104,21 @@ class _TrackDriverScreenState extends State<TrackDriverScreen> {
   String _formatAddress(dynamic rawAddress) {
     if (rawAddress == null) return 'Delivery Location';
     if (rawAddress is Map) {
-      final street = (rawAddress['street'] ?? rawAddress['address'] ?? rawAddress['addressLine1'] ?? '').toString();
+      final street = (rawAddress['street'] ??
+              rawAddress['address'] ??
+              rawAddress['addressLine1'] ??
+              '')
+          .toString();
       final city = (rawAddress['city'] ?? rawAddress['state'] ?? '').toString();
       if (street.isNotEmpty && city.isNotEmpty) return '$street, $city';
       if (street.isNotEmpty) return street;
       if (city.isNotEmpty) return city;
-      final vals = rawAddress.values.where((v) => v != null && v.toString().isNotEmpty && !v.toString().startsWith('{')).join(', ');
+      final vals = rawAddress.values
+          .where((v) =>
+              v != null &&
+              v.toString().isNotEmpty &&
+              !v.toString().startsWith('{'))
+          .join(', ');
       return vals.isNotEmpty ? vals : 'Delivery Location';
     }
     var str = rawAddress.toString().trim();
@@ -120,7 +129,8 @@ class _TrackDriverScreenState extends State<TrackDriverScreen> {
     return str.isNotEmpty ? str : 'Delivery Location';
   }
 
-  void _showRiderUnassignedBottomSheet(BuildContext context, {required bool isCall}) {
+  void _showRiderUnassignedBottomSheet(BuildContext context,
+      {required bool isCall}) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final surfaceColor = isDark ? AppTheme.darkSurface : Colors.white;
     final primaryTextColor = isDark ? Colors.white : Colors.black87;
@@ -213,12 +223,13 @@ class _TrackDriverScreenState extends State<TrackDriverScreen> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final backgroundColor = isDark ? AppTheme.darkSurface : AppTheme.lightInputFill;
+    final backgroundColor = isDark ? AppTheme.darkSurface : Colors.white;
     final surfaceColor = isDark ? AppTheme.darkSurface : Colors.white;
     final primaryTextColor = isDark ? Colors.white : Colors.black87;
     final mutedTextColor = AppTheme.mutedTextColorFor(isDark);
     final purpleColor = AppTheme.primaryPurpleFor(isDark);
-    final borderColor = isDark ? AppTheme.darkBorder : AppTheme.lightInputBorder;
+    final borderColor =
+        isDark ? AppTheme.darkBorder : AppTheme.lightInputBorder;
 
     return Scaffold(
       backgroundColor: backgroundColor,
@@ -284,13 +295,21 @@ class _TrackDriverScreenState extends State<TrackDriverScreen> {
                 final riderPhone = (order['riderPhone'] ?? '').toString();
                 final riderId = (order['riderId'] ?? '').toString();
 
-                final vendorName = (order['restaurantName'] ?? order['vendorName'] ?? 'Store').toString();
-                final deliveryAddress = _formatAddress(order['deliveryAddress'] ?? order['address'] ?? order['customerAddress']);
+                final vendorName =
+                    (order['restaurantName'] ?? order['vendorName'] ?? 'Store')
+                        .toString();
+                final deliveryAddress = _formatAddress(
+                    order['deliveryAddress'] ??
+                        order['address'] ??
+                        order['customerAddress']);
 
-                final items = List<Map<String, dynamic>>.from(order['items'] ?? []);
+                final items =
+                    List<Map<String, dynamic>>.from(order['items'] ?? []);
                 final subtotal = items.fold<double>(
                   0.0,
-                  (acc, item) => acc + (_toDouble(item['price']) * (item['quantity'] ?? 1)),
+                  (acc, item) =>
+                      acc +
+                      (_toDouble(item['price']) * (item['quantity'] ?? 1)),
                 );
                 final deliveryFee = _toDouble(order['deliveryFee']);
                 final platformFee = _toDouble(order['platformFee']);
@@ -333,16 +352,19 @@ class _TrackDriverScreenState extends State<TrackDriverScreen> {
                               // ── Delivery PIN Row ──────────────────────────
                               Row(
                                 crossAxisAlignment: CrossAxisAlignment.center,
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
                                 children: [
                                   Expanded(
                                     child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
                                         Text(
                                           'Delivery PIN',
                                           style: TextStyle(
-                                            fontSize: AppTypography.font(AppFontSizes.caption),
+                                            fontSize: AppTypography.font(
+                                                AppFontSizes.caption),
                                             color: mutedTextColor,
                                             fontWeight: FontWeight.w600,
                                           ),
@@ -367,123 +389,168 @@ class _TrackDriverScreenState extends State<TrackDriverScreen> {
                                         width: 44.w,
                                         height: 44.w,
                                         decoration: BoxDecoration(
-                                          color: isDark ? AppTheme.darkSurface : Colors.grey[200],
-                                          borderRadius: BorderRadius.circular(12.r),
-                                          border: Border.all(color: borderColor, width: 1),
+                                          color: isDark
+                                              ? AppTheme.darkSurface
+                                              : Colors.grey[200],
+                                          borderRadius:
+                                              BorderRadius.circular(12.r),
+                                          border: Border.all(
+                                              color: borderColor, width: 1),
                                         ),
                                         alignment: Alignment.center,
-                                        child: Text(
-                                          digit,
-                                          style: TextStyle(
-                                            fontSize: AppTypography.font(18),
-                                            fontWeight: FontWeight.w800,
-                                            color: primaryTextColor,
-                                          ),
+                                        child: Stack(
+                                          alignment: Alignment.center,
+                                          children: [
+                                            Text(
+                                              digit,
+                                              style: TextStyle(
+                                                fontSize:
+                                                    AppTypography.font(18),
+                                                fontWeight: FontWeight.w900,
+                                                foreground: Paint()
+                                                  ..style = PaintingStyle.stroke
+                                                  ..strokeWidth = 0.5
+                                                  ..color = purpleColor,
+                                              ),
+                                            ),
+                                            Text(
+                                              digit,
+                                              style: TextStyle(
+                                                fontSize:
+                                                    AppTypography.font(18),
+                                                fontWeight: FontWeight.w900,
+                                                color: purpleColor,
+                                              ),
+                                            ),
+                                          ],
                                         ),
                                       );
                                     }).toList(),
                                   ),
                                 ],
                               ),
-                              SizedBox(height: 16.h),
-                              Divider(color: borderColor, height: 1),
-                              SizedBox(height: 16.h),
+                              if (riderId.isNotEmpty ||
+                                  riderName.isNotEmpty) ...[
+                                SizedBox(height: 16.h),
+                                Divider(color: borderColor, height: 1),
+                                SizedBox(height: 16.h),
 
-                              // ── Rider Contact Box ────────────────────────
-                              Container(
-                                padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
-                                decoration: BoxDecoration(
-                                  color: surfaceColor,
-                                  borderRadius: BorderRadius.circular(16.r),
-                                  border: Border.all(color: borderColor, width: 1),
-                                ),
-                                child: Row(
-                                  children: [
-                                    CircleAvatar(
-                                      radius: 22.r,
-                                      backgroundColor: isDark ? Colors.grey[800] : Colors.grey[200],
-                                      backgroundImage: riderPhotoUrl.isNotEmpty
-                                          ? CachedNetworkImageProvider(riderPhotoUrl)
-                                          : null,
-                                      child: riderPhotoUrl.isEmpty
-                                          ? Icon(LucideIcons.user, color: purpleColor, size: 20.sp)
-                                          : null,
-                                    ),
-                                    SizedBox(width: 12.w),
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            riderName.isNotEmpty ? riderName : 'Assigning Rider...',
-                                            style: TextStyle(
-                                              fontSize: AppTypography.font(14),
-                                              fontWeight: FontWeight.bold,
-                                              color: primaryTextColor,
-                                            ),
-                                          ),
-                                          SizedBox(height: 2.h),
-                                          Text(
-                                            'Your Rider',
-                                            style: TextStyle(
-                                              fontSize: AppTypography.font(12),
-                                              color: mutedTextColor,
-                                            ),
-                                          ),
-                                        ],
+                                // ── Rider Contact Box ────────────────────────
+                                Container(
+                                  padding: EdgeInsets.symmetric(
+                                      horizontal: 16.w, vertical: 12.h),
+                                  decoration: BoxDecoration(
+                                    color: surfaceColor,
+                                    borderRadius: BorderRadius.circular(16.r),
+                                    border: Border.all(
+                                        color: borderColor, width: 1),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      CircleAvatar(
+                                        radius: 22.r,
+                                        backgroundColor: isDark
+                                            ? Colors.grey[800]
+                                            : Colors.grey[200],
+                                        backgroundImage:
+                                            riderPhotoUrl.isNotEmpty
+                                                ? CachedNetworkImageProvider(
+                                                    riderPhotoUrl)
+                                                : null,
+                                        child: riderPhotoUrl.isEmpty
+                                            ? Icon(LucideIcons.user,
+                                                color: purpleColor, size: 20.sp)
+                                            : null,
                                       ),
-                                    ),
-                                    // Chat Button
-                                    GestureDetector(
-                                      onTap: () {
-                                        if (riderId.isNotEmpty) {
-                                          context.push(
-                                            '/conversation/$riderId',
-                                            extra: {
-                                              'riderName': riderName,
-                                              'riderPhotoUrl': riderPhotoUrl,
-                                            },
-                                          );
-                                        } else {
-                                          _showRiderUnassignedBottomSheet(context, isCall: false);
-                                        }
-                                      },
-                                      child: Container(
-                                        width: 36.w,
-                                        height: 36.w,
-                                        decoration: BoxDecoration(
-                                          color: purpleColor.withValues(alpha: 0.12),
-                                          shape: BoxShape.circle,
+                                      SizedBox(width: 12.w),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              riderName,
+                                              style: TextStyle(
+                                                fontSize:
+                                                    AppTypography.font(14),
+                                                fontWeight: FontWeight.bold,
+                                                color: primaryTextColor,
+                                              ),
+                                            ),
+                                            SizedBox(height: 2.h),
+                                            Text(
+                                              'Your Rider',
+                                              style: TextStyle(
+                                                fontSize:
+                                                    AppTypography.font(12),
+                                                color: mutedTextColor,
+                                              ),
+                                            ),
+                                          ],
                                         ),
-                                        child: Icon(LucideIcons.mail, color: purpleColor, size: 18.sp),
                                       ),
-                                    ),
-                                    SizedBox(width: 10.w),
-                                    // Call Button
-                                    GestureDetector(
-                                      onTap: () async {
-                                        if (riderPhone.isNotEmpty) {
-                                          final uri = Uri(scheme: 'tel', path: riderPhone);
-                                          if (await canLaunchUrl(uri)) {
-                                            await launchUrl(uri);
+                                      // Chat Button
+                                      GestureDetector(
+                                        onTap: () {
+                                          if (riderId.isNotEmpty) {
+                                            context.push(
+                                              '/conversation/$riderId',
+                                              extra: {
+                                                'riderName': riderName,
+                                                'riderPhotoUrl': riderPhotoUrl,
+                                              },
+                                            );
+                                          } else {
+                                            _showRiderUnassignedBottomSheet(
+                                                context,
+                                                isCall: false);
                                           }
-                                        } else {
-                                          _showRiderUnassignedBottomSheet(context, isCall: true);
-                                        }
-                                      },
-                                      child: Container(
-                                        width: 36.w,
-                                        height: 36.w,
-                                        decoration: BoxDecoration(
-                                          color: purpleColor.withValues(alpha: 0.12),
-                                          shape: BoxShape.circle,
+                                        },
+                                        child: Container(
+                                          width: 36.w,
+                                          height: 36.w,
+                                          decoration: BoxDecoration(
+                                            color: purpleColor.withValues(
+                                                alpha: 0.12),
+                                            shape: BoxShape.circle,
+                                          ),
+                                          child: Icon(LucideIcons.mail,
+                                              color: purpleColor, size: 18.sp),
                                         ),
-                                        child: Icon(LucideIcons.phone, color: purpleColor, size: 18.sp),
                                       ),
-                                    ),
-                                  ],
+                                      SizedBox(width: 10.w),
+                                      // Call Button
+                                      GestureDetector(
+                                        onTap: () async {
+                                          if (riderPhone.isNotEmpty) {
+                                            final uri = Uri(
+                                                scheme: 'tel',
+                                                path: riderPhone);
+                                            if (await canLaunchUrl(uri)) {
+                                              await launchUrl(uri);
+                                            }
+                                          } else {
+                                            _showRiderUnassignedBottomSheet(
+                                                context,
+                                                isCall: true);
+                                          }
+                                        },
+                                        child: Container(
+                                          width: 36.w,
+                                          height: 36.w,
+                                          decoration: BoxDecoration(
+                                            color: purpleColor.withValues(
+                                                alpha: 0.12),
+                                            shape: BoxShape.circle,
+                                          ),
+                                          child: Icon(LucideIcons.phone,
+                                              color: purpleColor, size: 18.sp),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ),
-                              ),
+                              ],
                               SizedBox(height: 16.h),
 
                               // ── Route Origin & Destination Card ─────────
@@ -492,13 +559,15 @@ class _TrackDriverScreenState extends State<TrackDriverScreen> {
                                 decoration: BoxDecoration(
                                   color: surfaceColor,
                                   borderRadius: BorderRadius.circular(16.r),
-                                  border: Border.all(color: borderColor, width: 1),
+                                  border:
+                                      Border.all(color: borderColor, width: 1),
                                 ),
                                 child: Column(
                                   children: [
                                     Row(
                                       children: [
-                                        Icon(LucideIcons.disc, color: purpleColor, size: 18.sp),
+                                        Icon(LucideIcons.disc,
+                                            color: purpleColor, size: 18.sp),
                                         SizedBox(width: 12.w),
                                         Expanded(
                                           child: Row(
@@ -508,16 +577,21 @@ class _TrackDriverScreenState extends State<TrackDriverScreen> {
                                                 child: Text(
                                                   vendorName,
                                                   style: TextStyle(
-                                                    fontSize: AppTypography.font(14),
+                                                    fontSize:
+                                                        AppTypography.font(14),
                                                     fontWeight: FontWeight.w600,
                                                     color: primaryTextColor,
                                                   ),
-                                                  overflow: TextOverflow.ellipsis,
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
                                                 ),
                                               ),
                                               SizedBox(width: 6.w),
                                               VendorVerificationBadge(
-                                                vendorId: (order['vendorId'] ?? order['restaurantId'] ?? '').toString(),
+                                                vendorId: (order['vendorId'] ??
+                                                        order['restaurantId'] ??
+                                                        '')
+                                                    .toString(),
                                                 fallbackData: order,
                                                 size: 16.sp,
                                               ),
@@ -527,12 +601,15 @@ class _TrackDriverScreenState extends State<TrackDriverScreen> {
                                       ],
                                     ),
                                     Padding(
-                                      padding: EdgeInsets.symmetric(vertical: 8.h),
-                                      child: Divider(color: borderColor, height: 1),
+                                      padding:
+                                          EdgeInsets.symmetric(vertical: 8.h),
+                                      child: Divider(
+                                          color: borderColor, height: 1),
                                     ),
                                     Row(
                                       children: [
-                                        Icon(LucideIcons.mapPin, color: mutedTextColor, size: 18.sp),
+                                        Icon(LucideIcons.mapPin,
+                                            color: mutedTextColor, size: 18.sp),
                                         SizedBox(width: 12.w),
                                         Expanded(
                                           child: Text(
@@ -553,9 +630,11 @@ class _TrackDriverScreenState extends State<TrackDriverScreen> {
 
                               // ── View Order Timeline Accordion Header ──────
                               GestureDetector(
-                                onTap: () => setState(() => _isTimelineExpanded = !_isTimelineExpanded),
+                                onTap: () => setState(() =>
+                                    _isTimelineExpanded = !_isTimelineExpanded),
                                 child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
                                   children: [
                                     Row(
                                       children: [
@@ -579,7 +658,9 @@ class _TrackDriverScreenState extends State<TrackDriverScreen> {
                                       ],
                                     ),
                                     Icon(
-                                      _isTimelineExpanded ? LucideIcons.chevronUp : LucideIcons.chevronDown,
+                                      _isTimelineExpanded
+                                          ? LucideIcons.chevronUp
+                                          : LucideIcons.chevronDown,
                                       color: purpleColor,
                                       size: 20.sp,
                                     ),
@@ -603,7 +684,8 @@ class _TrackDriverScreenState extends State<TrackDriverScreen> {
 
                               // ── Order Summary ─────────────────────────────
                               Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
                                 children: [
                                   Text(
                                     'Order summary',
@@ -630,35 +712,56 @@ class _TrackDriverScreenState extends State<TrackDriverScreen> {
                                 shrinkWrap: true,
                                 physics: const NeverScrollableScrollPhysics(),
                                 itemCount: items.length,
-                                separatorBuilder: (_, __) => SizedBox(height: 12.h),
+                                separatorBuilder: (_, __) =>
+                                    SizedBox(height: 12.h),
                                 itemBuilder: (context, idx) {
                                   final item = items[idx];
-                                  final title = (item['title'] ?? item['name'] ?? 'Product').toString();
+                                  final title = (item['title'] ??
+                                          item['name'] ??
+                                          'Product')
+                                      .toString();
                                   final qty = item['quantity'] ?? 1;
-                                  final photoUrl = (item['imageUrl'] ?? item['photoUrl'] ?? '').toString();
-                                  final priceVal = _toDouble(item['price']) * qty;
+                                  final photoUrl = (item['imageUrl'] ??
+                                          item['photoUrl'] ??
+                                          '')
+                                      .toString();
+                                  final priceVal =
+                                      _toDouble(item['price']) * qty;
 
                                   return Row(
                                     children: [
                                       ClipRRect(
-                                        borderRadius: BorderRadius.circular(10.r),
+                                        borderRadius:
+                                            BorderRadius.circular(10.r),
                                         child: photoUrl.isNotEmpty
                                             ? CachedNetworkImage(
                                                 imageUrl: photoUrl,
                                                 width: 50.w,
                                                 height: 50.w,
                                                 fit: BoxFit.cover,
-                                                placeholder: (_, __) => Container(color: Colors.grey[200]),
-                                                errorWidget: (_, __, ___) => Container(
-                                                  color: purpleColor.withValues(alpha: 0.1),
-                                                  child: Icon(LucideIcons.utensils, color: purpleColor, size: 20.sp),
+                                                placeholder: (_, __) =>
+                                                    Container(
+                                                        color:
+                                                            Colors.grey[200]),
+                                                errorWidget: (_, __, ___) =>
+                                                    Container(
+                                                  color: purpleColor.withValues(
+                                                      alpha: 0.1),
+                                                  child: Icon(
+                                                      LucideIcons.utensils,
+                                                      color: purpleColor,
+                                                      size: 20.sp),
                                                 ),
                                               )
                                             : Container(
                                                 width: 50.w,
                                                 height: 50.w,
-                                                color: purpleColor.withValues(alpha: 0.1),
-                                                child: Icon(LucideIcons.utensils, color: purpleColor, size: 20.sp),
+                                                color: purpleColor.withValues(
+                                                    alpha: 0.1),
+                                                child: Icon(
+                                                    LucideIcons.utensils,
+                                                    color: purpleColor,
+                                                    size: 20.sp),
                                               ),
                                       ),
                                       SizedBox(width: 12.w),
@@ -687,11 +790,23 @@ class _TrackDriverScreenState extends State<TrackDriverScreen> {
                               SizedBox(height: 20.h),
 
                               // Financial Breakdown
-                              _buildSummaryRow('Sub-total', _formatCurrency(subtotal), primaryTextColor, mutedTextColor),
+                              _buildSummaryRow(
+                                  'Sub-total',
+                                  _formatCurrency(subtotal),
+                                  primaryTextColor,
+                                  mutedTextColor),
                               SizedBox(height: 10.h),
-                              _buildSummaryRow('Delivery Fee', _formatCurrency(deliveryFee), primaryTextColor, mutedTextColor),
+                              _buildSummaryRow(
+                                  'Delivery Fee',
+                                  _formatCurrency(deliveryFee),
+                                  primaryTextColor,
+                                  mutedTextColor),
                               SizedBox(height: 10.h),
-                              _buildSummaryRow('Platform Fee', _formatCurrency(platformFee), primaryTextColor, mutedTextColor),
+                              _buildSummaryRow(
+                                  'Platform Fee',
+                                  _formatCurrency(platformFee),
+                                  primaryTextColor,
+                                  mutedTextColor),
                               SizedBox(height: 10.h),
                               _buildSummaryRow(
                                 'Total',
@@ -701,7 +816,8 @@ class _TrackDriverScreenState extends State<TrackDriverScreen> {
                                 isBold: true,
                               ),
                               SizedBox(height: 10.h),
-                              _buildSummaryRow('Payment Method', paymentMethod, primaryTextColor, mutedTextColor),
+                              _buildSummaryRow('Payment Method', paymentMethod,
+                                  primaryTextColor, mutedTextColor),
                             ],
                           ),
                         ),
@@ -722,7 +838,8 @@ class _TrackDriverScreenState extends State<TrackDriverScreen> {
                             child: SizedBox(
                               width: double.infinity,
                               child: ElevatedButton(
-                                onPressed: () => context.push('/rate_rider', extra: {
+                                onPressed: () =>
+                                    context.push('/rate_rider', extra: {
                                   'orderId': widget.orderId,
                                   'riderId': order['riderId'] ?? '',
                                   'riderName': order['riderName'] ?? 'Rider',
@@ -791,7 +908,8 @@ class _TrackDriverScreenState extends State<TrackDriverScreen> {
     return Column(
       children: List.generate(
         _steps.length,
-        (index) => _buildTimelineStep(context, index, isDark, currentStep, primaryTextColor, mutedTextColor, purpleColor),
+        (index) => _buildTimelineStep(context, index, isDark, currentStep,
+            primaryTextColor, mutedTextColor, purpleColor),
       ),
     );
   }
@@ -830,10 +948,15 @@ class _TrackDriverScreenState extends State<TrackDriverScreen> {
                     width: 14.w,
                     height: 14.w,
                     decoration: BoxDecoration(
-                      color: isCompleted || isActive ? purpleColor : (isDark ? Colors.grey[800] : Colors.grey[300]),
+                      color: isCompleted || isActive
+                          ? purpleColor
+                          : (isDark ? Colors.grey[800] : Colors.grey[300]),
                       shape: BoxShape.circle,
                       border: isActive
-                          ? Border.all(color: isDark ? AppTheme.darkSurface : Colors.white, width: 3)
+                          ? Border.all(
+                              color:
+                                  isDark ? AppTheme.darkSurface : Colors.white,
+                              width: 3)
                           : null,
                     ),
                   ),
@@ -862,8 +985,12 @@ class _TrackDriverScreenState extends State<TrackDriverScreen> {
                     _steps[index]['title']!,
                     style: TextStyle(
                       fontSize: AppTypography.font(14),
-                      fontWeight: (isCompleted || isActive) ? FontWeight.bold : FontWeight.w500,
-                      color: (isCompleted || isActive) ? purpleColor : mutedTextColor,
+                      fontWeight: (isCompleted || isActive)
+                          ? FontWeight.bold
+                          : FontWeight.w500,
+                      color: (isCompleted || isActive)
+                          ? purpleColor
+                          : mutedTextColor,
                     ),
                   ),
                   SizedBox(height: 2.h),
@@ -903,16 +1030,24 @@ class VendorVerificationBadge extends StatelessWidget {
     }
 
     return StreamBuilder<DocumentSnapshot>(
-      stream: FirebaseFirestore.instance.collection('vendors').doc(vendorId).snapshots(),
+      stream: FirebaseFirestore.instance
+          .collection('vendors')
+          .doc(vendorId)
+          .snapshots(),
       builder: (context, snapshot) {
-        if (snapshot.hasData && snapshot.data != null && snapshot.data!.exists) {
-          final vendorData = snapshot.data!.data() as Map<String, dynamic>? ?? {};
-          final bpComplete = vendorData['businessProfileComplete']?.toString() == 'true';
+        if (snapshot.hasData &&
+            snapshot.data != null &&
+            snapshot.data!.exists) {
+          final vendorData =
+              snapshot.data!.data() as Map<String, dynamic>? ?? {};
+          final bpComplete =
+              vendorData['businessProfileComplete']?.toString() == 'true';
           final physicalVerification = vendorData['physicalVerification'];
           final physicalVerified = (physicalVerification is Map)
               ? physicalVerification['status']?.toString() == 'verified'
               : false;
-          final docComplete = vendorData['verificationDocumentsComplete']?.toString() == 'true';
+          final docComplete =
+              vendorData['verificationDocumentsComplete']?.toString() == 'true';
 
           if (physicalVerified || docComplete || bpComplete) {
             return VerificationBadge(vendorData: vendorData, size: size);
@@ -922,7 +1057,8 @@ class VendorVerificationBadge extends StatelessWidget {
               vendorData['isVerified']?.toString() == 'true' ||
               vendorData['isVendorVerified'] == true;
           if (isVerified) {
-            return Icon(Icons.verified_rounded, color: const Color(0xFF34C759), size: size);
+            return Icon(Icons.verified_rounded,
+                color: const Color(0xFF34C759), size: size);
           }
         }
         return _buildFallback();
@@ -934,17 +1070,20 @@ class VendorVerificationBadge extends StatelessWidget {
     final vendorMap = fallbackData['vendorData'] is Map
         ? Map<String, dynamic>.from(fallbackData['vendorData'])
         : fallbackData;
-    final bpComplete = vendorMap['businessProfileComplete']?.toString() == 'true';
+    final bpComplete =
+        vendorMap['businessProfileComplete']?.toString() == 'true';
     final physicalVerification = vendorMap['physicalVerification'];
     final physicalVerified = (physicalVerification is Map)
         ? physicalVerification['status']?.toString() == 'verified'
         : false;
-    final docComplete = vendorMap['verificationDocumentsComplete']?.toString() == 'true';
+    final docComplete =
+        vendorMap['verificationDocumentsComplete']?.toString() == 'true';
 
     if (physicalVerified || docComplete || bpComplete) {
       return VerificationBadge(vendorData: vendorMap, size: size);
     }
 
-    return Icon(Icons.verified_rounded, color: const Color(0xFF34C759), size: size);
+    return Icon(Icons.verified_rounded,
+        color: const Color(0xFF34C759), size: size);
   }
 }

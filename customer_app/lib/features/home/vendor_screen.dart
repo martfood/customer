@@ -10,6 +10,8 @@ import 'package:geolocator/geolocator.dart';
 import 'package:shared_widgets/widgets/skeleton_loader.dart';
 import 'package:shared_widgets/widgets/verification_badge.dart';
 import 'package:shared_widgets/widgets/food_card_horizontal.dart';
+import 'package:shared_widgets/widgets/bulk_meal_card.dart';
+import 'package:shared_widgets/core/utils/meal_time_helper.dart';
 import '../../core/services/price_helper.dart';
 import 'vendor_ratings_screen.dart';
 import '../../core/widgets/guest_auth_prompt_sheet.dart';
@@ -613,36 +615,10 @@ class _VendorScreenState extends State<VendorScreen> {
                                         ],
                                       ),
                                     ),
-                                    SizedBox(width: 8.w),
-                                    // Info Action Button
+                                    // Arrow right to Vendor Detail Screen
                                     GestureDetector(
                                       onTap: () => context.push(
                                           '/vendor-detail/${widget.vendorId}'),
-                                      child: Container(
-                                        width: 32.w,
-                                        height: 32.w,
-                                        decoration: BoxDecoration(
-                                          color: purpleColor,
-                                          shape: BoxShape.circle,
-                                        ),
-                                        child: Icon(LucideIcons.info,
-                                            color: Colors.white, size: 16.sp),
-                                      ),
-                                    ),
-                                    SizedBox(width: 6.w),
-                                    // Arrow right to Ratings Screen
-                                    GestureDetector(
-                                      onTap: () {
-                                        Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (_) => VendorRatingsScreen(
-                                              vendorId: widget.vendorId,
-                                              vendorName: name,
-                                            ),
-                                          ),
-                                        );
-                                      },
                                       child: Icon(LucideIcons.chevronRight,
                                           color: mutedTextColor, size: 20.sp),
                                     ),
@@ -654,39 +630,23 @@ class _VendorScreenState extends State<VendorScreen> {
                                   Text(
                                     tagline,
                                     style: TextStyle(
-                                      fontSize: AppTypography.font(13),
-                                      color: mutedTextColor,
+                                      fontSize: AppTypography.font(18.sp),
+                                      color: primaryTextColor,
                                       fontWeight: FontWeight.w500,
                                     ),
                                   ),
                                 ],
 
                                 SizedBox(height: 6.h),
-                                Row(
-                                  children: [
-                                    Icon(
-                                      LucideIcons.clock,
-                                      size: 14.sp,
-                                      color: isStoreOpen
-                                          ? Colors.green
-                                          : Colors.red,
-                                    ),
-                                    SizedBox(width: 6.w),
-                                    Text(
-                                      _getTodayOperatingHoursText(
-                                          vendorData['operatingHours']
-                                              as Map<String, dynamic>?),
-                                      style: TextStyle(
-                                        fontSize: AppTypography.font(12),
-                                        fontWeight: FontWeight.w600,
-                                        color: isStoreOpen
-                                            ? (isDark
-                                                ? Colors.greenAccent
-                                                : Colors.green[700])
-                                            : Colors.red,
-                                      ),
-                                    ),
-                                  ],
+                                Text(
+                                  _getTodayOperatingHoursText(
+                                      vendorData['operatingHours']
+                                          as Map<String, dynamic>?),
+                                  style: TextStyle(
+                                    fontSize: AppTypography.font(18.sp),
+                                    fontWeight: FontWeight.w500,
+                                    color: primaryTextColor,
+                                  ),
                                 ),
 
                                 SizedBox(height: 14.h),
@@ -698,7 +658,7 @@ class _VendorScreenState extends State<VendorScreen> {
                                   decoration: BoxDecoration(
                                     color: isDark
                                         ? Colors.white.withValues(alpha: 0.04)
-                                        : AppTheme.lightInputFill,
+                                        : Colors.white,
                                     borderRadius: BorderRadius.circular(16.r),
                                     border: Border.all(
                                         color: borderColor, width: 1),
@@ -748,7 +708,7 @@ class _VendorScreenState extends State<VendorScreen> {
                                                 CrossAxisAlignment.start,
                                             children: [
                                               Text(
-                                                'Preparation time',
+                                                'Prep Time',
                                                 style: TextStyle(
                                                   fontSize:
                                                       AppTypography.font(AppFontSizes.caption),
@@ -844,11 +804,10 @@ class _VendorScreenState extends State<VendorScreen> {
                                                       'Ratings',
                                                       style: TextStyle(
                                                         fontSize:
-                                                            AppTypography.font(
-                                                                10.sp),
+                                                            AppTypography.font(AppFontSizes.caption),
                                                         color: mutedTextColor,
                                                         fontWeight:
-                                                            FontWeight.w500,
+                                                            FontWeight.w600,
                                                       ),
                                                     ),
                                                     SizedBox(height: 3.h),
@@ -1035,7 +994,7 @@ class _VendorScreenState extends State<VendorScreen> {
                   if (postsLoading)
                     SliverPadding(
                       padding:
-                          EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),
+                          EdgeInsets.fromLTRB(16.w, 24.h, 16.w, 4.h),
                       sliver: SliverGrid(
                         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                           crossAxisCount: 2,
@@ -1061,111 +1020,605 @@ class _VendorScreenState extends State<VendorScreen> {
                         ),
                       ),
                     )
-                  else
-                    SliverPadding(
-                      padding:
-                          EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),
-                      sliver: SliverGrid(
-                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount:
-                              MediaQuery.of(context).size.width >= 900
-                                  ? 4
-                                  : (MediaQuery.of(context).size.width >= 600
-                                      ? 3
-                                      : 2),
-                          mainAxisSpacing: 12.h,
-                          crossAxisSpacing: 14.w,
-                          childAspectRatio: MediaQuery.of(context).size.width >=
-                                  600
-                              ? 0.78 // <-- Tablet card aspect ratio (increase to make shorter, e.g. 0.78 or 0.80)
-                              : 0.70, // <-- Phone card aspect ratio
-                        ),
-                        delegate: SliverChildBuilderDelegate(
-                          (context, idx) {
-                            final item = itemsToDisplay[idx];
-                            final title = item['name'] ?? 'Product';
-                            final photoUrl = item['photoUrl'] ?? '';
-                            final basePriceRaw =
-                                (item['basePrice'] ?? 0).toDouble();
-                            final originalPriceRaw =
-                                item['originalPrice'] != null
-                                    ? (item['originalPrice'] as num).toDouble()
-                                    : null;
-                            final price = PriceHelper.applyMarkup(basePriceRaw,
-                                item['sourceCollection'] ?? category);
-                            final originalPrice = originalPriceRaw != null
-                                ? PriceHelper.applyMarkup(originalPriceRaw,
-                                    item['sourceCollection'] ?? category)
-                                : null;
-                            final mealCategory =
-                                item['mealCategory'] ?? item['category'] ?? '';
-                            final inStock = item['inStock'] ?? true;
-                            final quantity = item['quantity'] as num?;
-                            final isOutOfStock = inStock == false ||
-                                (quantity != null && quantity <= 0);
+                  else ...[
+                    // If all items are bulk meals (or category is Bulk/Schedule), render 1x1 full-width list
+                    if (itemsToDisplay.every((item) {
+                      final orderType =
+                          (item['orderType'] ?? '').toString().toLowerCase().trim();
+                      final cat =
+                          (item['mealCategory'] ?? item['category'] ?? '')
+                              .toString()
+                              .toLowerCase();
+                      return orderType == 'bulk' ||
+                          item['isBulkMeal'] == true ||
+                          cat.contains('bulk') ||
+                          cat.contains('schedule') ||
+                          item['orderStartTime'] != null ||
+                          item['orderStarttime'] != null ||
+                          item['deliveryStartTime'] != null ||
+                          item['deliveryStarttime'] != null;
+                    }))
+                      SliverPadding(
+                        padding: EdgeInsets.fromLTRB(16.w, 24.h, 16.w, 16.h),
+                        sliver: SliverList(
+                          delegate: SliverChildBuilderDelegate(
+                            (context, idx) {
+                              final item = itemsToDisplay[idx];
+                              final title = item['name'] ?? 'Scheduled Order Item';
+                              final photoUrl = item['photoUrl'] ?? '';
+                              final basePriceRaw =
+                                  (item['basePrice'] ?? 0).toDouble();
+                              final originalPriceRaw = item['originalPrice'] != null
+                                  ? (item['originalPrice'] as num).toDouble()
+                                  : null;
+                              final price = PriceHelper.applyMarkup(basePriceRaw,
+                                  item['sourceCollection'] ?? category);
+                              final originalPrice = originalPriceRaw != null
+                                  ? PriceHelper.applyMarkup(originalPriceRaw,
+                                      item['sourceCollection'] ?? category)
+                                  : null;
 
-                            return FoodCardHorizontal(
-                              width: double.infinity,
-                              backgroundColor: cardBackgroundColor,
-                              title: title,
-                              imageUrl: photoUrl,
-                              rating:
-                                  (item['rating'] as num?)?.toDouble() ?? 0.0,
-                              reviewsCount:
-                                  (item['reviewsCount'] as num?)?.toInt() ?? 0,
-                              distanceKm: distanceKm,
-                              basePrice: price,
-                              promoPrice: originalPrice,
-                              isPromo: originalPrice != null &&
-                                  originalPrice > price,
-                              categoryName: mealCategory.isNotEmpty
-                                  ? mealCategory
-                                  : category,
-                              vendorName: null,
-                              isClosed: !isStoreOpen,
-                              isOutOfStock: isOutOfStock,
-                              vendorData: vendorData,
-                              onTap: () {
-                                if (!isStoreOpen) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text(
-                                          'Ordering is disabled as this store is currently closed.'),
-                                      duration: Duration(seconds: 2),
-                                    ),
-                                  );
-                                  return;
-                                }
-                                context.push('/food-details/$title', extra: {
-                                  'vendorId': widget.vendorId,
-                                  'docId': item['id'],
-                                  'sourceCollection': _cachedCollectionName,
-                                });
-                              },
-                              onFavoriteTap: () {},
-                              onAddTap: () {
-                                if (!isStoreOpen) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text(
-                                          'Ordering is disabled as this store is currently closed.'),
-                                      duration: Duration(seconds: 2),
-                                    ),
-                                  );
-                                  return;
-                                }
-                                context.push('/food-details/$title', extra: {
-                                  'vendorId': widget.vendorId,
-                                  'docId': item['id'],
-                                  'sourceCollection': _cachedCollectionName,
-                                });
-                              },
-                            );
-                          },
-                          childCount: itemsToDisplay.length,
+                              final rawOrderStart = item['orderStartTime'] ??
+                                  item['orderStarttime'];
+                              final rawOrderClose = item['orderEndTime'] ??
+                                  item['orderClosetime'] ??
+                                  item['orderTimeClose'];
+                              final rawDeliveryStart = item['deliveryStartTime'] ??
+                                  item['deliveryStarttime'];
+                              final rawDeliveryClose = item['deliveryEndTime'] ??
+                                  item['deliveryClosetime'];
+
+                              final orderWindow = MealTimeHelper.formatTimeWindow(
+                                rawOrderStart?.toString(),
+                                rawOrderClose?.toString(),
+                              );
+                              final deliveryWindow =
+                                  MealTimeHelper.formatTimeWindow(
+                                rawDeliveryStart?.toString(),
+                                rawDeliveryClose?.toString(),
+                              );
+                              final rawClosesText =
+                                  (item['orderClosesText'] ?? '').toString().trim();
+                              final orderClosesText = rawClosesText.isNotEmpty
+                                  ? rawClosesText
+                                  : MealTimeHelper.calculateOrderClosesText(
+                                      startTimeStr: rawOrderStart?.toString(),
+                                      closeTimeStr: rawOrderClose?.toString(),
+                                    );
+
+                              return Padding(
+                                padding: EdgeInsets.only(bottom: 16.h),
+                                child: BulkMealCard(
+                                  width: double.infinity,
+                                  title: title,
+                                  imageUrl: photoUrl,
+                                  price: price,
+                                  promoPrice: originalPrice,
+                                  vendorName: null,
+                                  vendorData: vendorData,
+                                  orderTimeWindow: orderWindow,
+                                  deliveryTimeWindow: deliveryWindow,
+                                  orderClosesText: orderClosesText,
+                                  isClosed: !isStoreOpen,
+                                  onTap: () {
+                                    if (!isStoreOpen) {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        const SnackBar(
+                                          content: Text(
+                                              'Ordering is disabled as this store is currently closed.'),
+                                          duration: Duration(seconds: 2),
+                                        ),
+                                      );
+                                      return;
+                                    }
+                                    context.push('/food-details/$title', extra: {
+                                      'vendorId': widget.vendorId,
+                                      'docId': item['id'],
+                                      'sourceCollection': _cachedCollectionName,
+                                    });
+                                  },
+                                  onAddTap: () {
+                                    if (!isStoreOpen) {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        const SnackBar(
+                                          content: Text(
+                                              'Ordering is disabled as this store is currently closed.'),
+                                          duration: Duration(seconds: 2),
+                                        ),
+                                      );
+                                      return;
+                                    }
+                                    context.push('/food-details/$title', extra: {
+                                      'vendorId': widget.vendorId,
+                                      'docId': item['id'],
+                                      'sourceCollection': _cachedCollectionName,
+                                    });
+                                  },
+                                ),
+                              );
+                            },
+                            childCount: itemsToDisplay.length,
+                          ),
                         ),
-                      ),
-                    ),
+                      )
+                    else if (itemsToDisplay.every((item) {
+                      final orderType =
+                          (item['orderType'] ?? '').toString().toLowerCase().trim();
+                      final cat =
+                          (item['mealCategory'] ?? item['category'] ?? '')
+                              .toString()
+                              .toLowerCase();
+                      final isBulk = orderType == 'bulk' ||
+                          item['isBulkMeal'] == true ||
+                          cat.contains('bulk') ||
+                          cat.contains('schedule') ||
+                          item['orderStartTime'] != null ||
+                          item['orderStarttime'] != null ||
+                          item['deliveryStartTime'] != null ||
+                          item['deliveryStarttime'] != null;
+                      return !isBulk;
+                    }))
+                      // All standard items: 2x2 grid
+                      SliverPadding(
+                        padding: EdgeInsets.fromLTRB(16.w, 24.h, 16.w, 4.h),
+                        sliver: SliverGrid(
+                          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount:
+                                MediaQuery.of(context).size.width >= 900
+                                    ? 4
+                                    : (MediaQuery.of(context).size.width >= 600
+                                        ? 3
+                                        : 2),
+                            mainAxisSpacing: 12.h,
+                            crossAxisSpacing: 14.w,
+                            childAspectRatio:
+                                MediaQuery.of(context).size.width >= 600
+                                    ? 0.98
+                                    : 0.88,
+                          ),
+                          delegate: SliverChildBuilderDelegate(
+                            (context, idx) {
+                              final item = itemsToDisplay[idx];
+                              final title = item['name'] ?? 'Product';
+                              final photoUrl = item['photoUrl'] ?? '';
+                              final basePriceRaw =
+                                  (item['basePrice'] ?? 0).toDouble();
+                              final originalPriceRaw = item['originalPrice'] != null
+                                  ? (item['originalPrice'] as num).toDouble()
+                                  : null;
+                              final price = PriceHelper.applyMarkup(basePriceRaw,
+                                  item['sourceCollection'] ?? category);
+                              final originalPrice = originalPriceRaw != null
+                                  ? PriceHelper.applyMarkup(originalPriceRaw,
+                                      item['sourceCollection'] ?? category)
+                                  : null;
+                              final mealCategory =
+                                  item['mealCategory'] ?? item['category'] ?? '';
+                              final inStock = item['inStock'] ?? true;
+                              final quantity = item['quantity'] as num?;
+                              final isOutOfStock = inStock == false ||
+                                  (quantity != null && quantity <= 0);
+
+                              return FoodCardHorizontal(
+                                width: double.infinity,
+                                backgroundColor: cardBackgroundColor,
+                                title: title,
+                                imageUrl: photoUrl,
+                                rating:
+                                    (item['rating'] as num?)?.toDouble() ?? 0.0,
+                                reviewsCount:
+                                    (item['reviewsCount'] as num?)?.toInt() ?? 0,
+                                distanceKm: distanceKm,
+                                basePrice: price,
+                                promoPrice: originalPrice,
+                                isPromo: originalPrice != null &&
+                                    originalPrice > price,
+                                categoryName: mealCategory.isNotEmpty
+                                    ? mealCategory
+                                    : category,
+                                vendorName: null,
+                                isClosed: !isStoreOpen,
+                                isOutOfStock: isOutOfStock,
+                                vendorData: vendorData,
+                                onTap: () {
+                                  if (!isStoreOpen) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text(
+                                            'Ordering is disabled as this store is currently closed.'),
+                                        duration: Duration(seconds: 2),
+                                      ),
+                                    );
+                                    return;
+                                  }
+                                  context.push('/food-details/$title', extra: {
+                                    'vendorId': widget.vendorId,
+                                    'docId': item['id'],
+                                    'sourceCollection': _cachedCollectionName,
+                                  });
+                                },
+                                onFavoriteTap: () {},
+                                onAddTap: () {
+                                  if (!isStoreOpen) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text(
+                                            'Ordering is disabled as this store is currently closed.'),
+                                        duration: Duration(seconds: 2),
+                                      ),
+                                    );
+                                    return;
+                                  }
+                                  context.push('/food-details/$title', extra: {
+                                    'vendorId': widget.vendorId,
+                                    'docId': item['id'],
+                                    'sourceCollection': _cachedCollectionName,
+                                  });
+                                },
+                              );
+                            },
+                            childCount: itemsToDisplay.length,
+                          ),
+                        ),
+                      )
+                    else ...[
+                      // Mixed items: Separate bulk (1x1 full width) and standard (2x2 grid)
+                      if (itemsToDisplay.any((item) {
+                        final orderType = (item['orderType'] ?? '')
+                            .toString()
+                            .toLowerCase()
+                            .trim();
+                        final cat = (item['mealCategory'] ??
+                                item['category'] ?? '')
+                            .toString()
+                            .toLowerCase();
+                        return orderType == 'bulk' ||
+                            item['isBulkMeal'] == true ||
+                            cat.contains('bulk') ||
+                            cat.contains('schedule') ||
+                            item['orderStartTime'] != null ||
+                            item['orderStarttime'] != null ||
+                            item['deliveryStartTime'] != null ||
+                            item['deliveryStarttime'] != null;
+                      })) ...[
+                        SliverPadding(
+                          padding: EdgeInsets.fromLTRB(16.w, 24.h, 16.w, 0),
+                          sliver: SliverList(
+                            delegate: SliverChildBuilderDelegate(
+                              (context, idx) {
+                                final bulkItems = itemsToDisplay.where((item) {
+                                  final orderType = (item['orderType'] ?? '')
+                                      .toString()
+                                      .toLowerCase()
+                                      .trim();
+                                  final cat = (item['mealCategory'] ??
+                                          item['category'] ?? '')
+                                      .toString()
+                                      .toLowerCase();
+                                  return orderType == 'bulk' ||
+                                      item['isBulkMeal'] == true ||
+                                      cat.contains('bulk') ||
+                                      cat.contains('schedule') ||
+                                      item['orderStartTime'] != null ||
+                                      item['orderStarttime'] != null ||
+                                      item['deliveryStartTime'] != null ||
+                                      item['deliveryStarttime'] != null;
+                                }).toList();
+
+                                final item = bulkItems[idx];
+                                final title =
+                                    item['name'] ?? 'Scheduled Order Item';
+                                final photoUrl = item['photoUrl'] ?? '';
+                                final basePriceRaw =
+                                    (item['basePrice'] ?? 0).toDouble();
+                                final originalPriceRaw =
+                                    item['originalPrice'] != null
+                                        ? (item['originalPrice'] as num)
+                                            .toDouble()
+                                        : null;
+                                final price = PriceHelper.applyMarkup(
+                                    basePriceRaw,
+                                    item['sourceCollection'] ?? category);
+                                final originalPrice = originalPriceRaw != null
+                                    ? PriceHelper.applyMarkup(
+                                        originalPriceRaw,
+                                        item['sourceCollection'] ?? category)
+                                    : null;
+
+                                final rawOrderStart = item['orderStartTime'] ??
+                                    item['orderStarttime'];
+                                final rawOrderClose = item['orderEndTime'] ??
+                                    item['orderClosetime'] ??
+                                    item['orderTimeClose'];
+                                final rawDeliveryStart =
+                                    item['deliveryStartTime'] ??
+                                        item['deliveryStarttime'];
+                                final rawDeliveryClose =
+                                    item['deliveryEndTime'] ??
+                                        item['deliveryClosetime'];
+
+                                final orderWindow =
+                                    MealTimeHelper.formatTimeWindow(
+                                  rawOrderStart?.toString(),
+                                  rawOrderClose?.toString(),
+                                );
+                                final deliveryWindow =
+                                    MealTimeHelper.formatTimeWindow(
+                                  rawDeliveryStart?.toString(),
+                                  rawDeliveryClose?.toString(),
+                                );
+                                final rawClosesText =
+                                    (item['orderClosesText'] ?? '')
+                                        .toString()
+                                        .trim();
+                                final orderClosesText = rawClosesText.isNotEmpty
+                                    ? rawClosesText
+                                    : MealTimeHelper.calculateOrderClosesText(
+                                        startTimeStr:
+                                            rawOrderStart?.toString(),
+                                        closeTimeStr:
+                                            rawOrderClose?.toString(),
+                                      );
+
+                                return Padding(
+                                  padding: EdgeInsets.only(bottom: 16.h),
+                                  child: BulkMealCard(
+                                    width: double.infinity,
+                                    title: title,
+                                    imageUrl: photoUrl,
+                                    price: price,
+                                    promoPrice: originalPrice,
+                                    vendorName: null,
+                                    vendorData: vendorData,
+                                    orderTimeWindow: orderWindow,
+                                    deliveryTimeWindow: deliveryWindow,
+                                    orderClosesText: orderClosesText,
+                                    isClosed: !isStoreOpen,
+                                    onTap: () {
+                                      if (!isStoreOpen) {
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(
+                                          const SnackBar(
+                                            content: Text(
+                                                'Ordering is disabled as this store is currently closed.'),
+                                            duration: Duration(seconds: 2),
+                                          ),
+                                        );
+                                        return;
+                                      }
+                                      context.push('/food-details/$title',
+                                          extra: {
+                                            'vendorId': widget.vendorId,
+                                            'docId': item['id'],
+                                            'sourceCollection':
+                                                _cachedCollectionName,
+                                          });
+                                    },
+                                    onAddTap: () {
+                                      if (!isStoreOpen) {
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(
+                                          const SnackBar(
+                                            content: Text(
+                                                'Ordering is disabled as this store is currently closed.'),
+                                            duration: Duration(seconds: 2),
+                                          ),
+                                        );
+                                        return;
+                                      }
+                                      context.push('/food-details/$title',
+                                          extra: {
+                                            'vendorId': widget.vendorId,
+                                            'docId': item['id'],
+                                            'sourceCollection':
+                                                _cachedCollectionName,
+                                          });
+                                    },
+                                  ),
+                                );
+                              },
+                              childCount: itemsToDisplay.where((item) {
+                                final orderType = (item['orderType'] ?? '')
+                                    .toString()
+                                    .toLowerCase()
+                                    .trim();
+                                final cat = (item['mealCategory'] ??
+                                        item['category'] ?? '')
+                                    .toString()
+                                    .toLowerCase();
+                                return orderType == 'bulk' ||
+                                    item['isBulkMeal'] == true ||
+                                    cat.contains('bulk') ||
+                                    cat.contains('schedule') ||
+                                    item['orderStartTime'] != null ||
+                                    item['orderStarttime'] != null ||
+                                    item['deliveryStartTime'] != null ||
+                                    item['deliveryStarttime'] != null;
+                              }).length,
+                            ),
+                          ),
+                        ),
+                      ],
+                      if (itemsToDisplay.any((item) {
+                        final orderType = (item['orderType'] ?? '')
+                            .toString()
+                            .toLowerCase()
+                            .trim();
+                        final cat = (item['mealCategory'] ??
+                                item['category'] ?? '')
+                            .toString()
+                            .toLowerCase();
+                        final isBulk = orderType == 'bulk' ||
+                            item['isBulkMeal'] == true ||
+                            cat.contains('bulk') ||
+                            cat.contains('schedule') ||
+                            item['orderStartTime'] != null ||
+                            item['orderStarttime'] != null ||
+                            item['deliveryStartTime'] != null ||
+                            item['deliveryStarttime'] != null;
+                        return !isBulk;
+                      })) ...[
+                        SliverPadding(
+                          padding: EdgeInsets.fromLTRB(16.w, 16.h, 16.w, 4.h),
+                          sliver: SliverGrid(
+                            gridDelegate:
+                                SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount:
+                                  MediaQuery.of(context).size.width >= 900
+                                      ? 4
+                                      : (MediaQuery.of(context).size.width >=
+                                              600
+                                          ? 3
+                                          : 2),
+                              mainAxisSpacing: 12.h,
+                              crossAxisSpacing: 14.w,
+                              childAspectRatio:
+                                  MediaQuery.of(context).size.width >= 600
+                                      ? 0.98
+                                      : 0.88,
+                            ),
+                            delegate: SliverChildBuilderDelegate(
+                              (context, idx) {
+                                final standardItems =
+                                    itemsToDisplay.where((item) {
+                                  final orderType = (item['orderType'] ?? '')
+                                      .toString()
+                                      .toLowerCase()
+                                      .trim();
+                                  final cat = (item['mealCategory'] ??
+                                          item['category'] ?? '')
+                                      .toString()
+                                      .toLowerCase();
+                                  final isBulk = orderType == 'bulk' ||
+                                      item['isBulkMeal'] == true ||
+                                      cat.contains('bulk') ||
+                                      cat.contains('schedule') ||
+                                      item['orderStartTime'] != null ||
+                                      item['orderStarttime'] != null ||
+                                      item['deliveryStartTime'] != null ||
+                                      item['deliveryStarttime'] != null;
+                                  return !isBulk;
+                                }).toList();
+
+                                final item = standardItems[idx];
+                                final title = item['name'] ?? 'Product';
+                                final photoUrl = item['photoUrl'] ?? '';
+                                final basePriceRaw =
+                                    (item['basePrice'] ?? 0).toDouble();
+                                final originalPriceRaw =
+                                    item['originalPrice'] != null
+                                        ? (item['originalPrice'] as num)
+                                            .toDouble()
+                                        : null;
+                                final price = PriceHelper.applyMarkup(
+                                    basePriceRaw,
+                                    item['sourceCollection'] ?? category);
+                                final originalPrice = originalPriceRaw != null
+                                    ? PriceHelper.applyMarkup(
+                                        originalPriceRaw,
+                                        item['sourceCollection'] ?? category)
+                                    : null;
+                                final mealCategory =
+                                    item['mealCategory'] ??
+                                        item['category'] ??
+                                        '';
+                                final inStock = item['inStock'] ?? true;
+                                final quantity = item['quantity'] as num?;
+                                final isOutOfStock = inStock == false ||
+                                    (quantity != null && quantity <= 0);
+
+                                return FoodCardHorizontal(
+                                  width: double.infinity,
+                                  backgroundColor: cardBackgroundColor,
+                                  title: title,
+                                  imageUrl: photoUrl,
+                                  rating: (item['rating'] as num?)
+                                          ?.toDouble() ??
+                                      0.0,
+                                  reviewsCount: (item['reviewsCount']
+                                              as num?)
+                                          ?.toInt() ??
+                                      0,
+                                  distanceKm: distanceKm,
+                                  basePrice: price,
+                                  promoPrice: originalPrice,
+                                  isPromo: originalPrice != null &&
+                                      originalPrice > price,
+                                  categoryName: mealCategory.isNotEmpty
+                                      ? mealCategory
+                                      : category,
+                                  vendorName: null,
+                                  isClosed: !isStoreOpen,
+                                  isOutOfStock: isOutOfStock,
+                                  vendorData: vendorData,
+                                  onTap: () {
+                                    if (!isStoreOpen) {
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(
+                                        const SnackBar(
+                                          content: Text(
+                                              'Ordering is disabled as this store is currently closed.'),
+                                          duration: Duration(seconds: 2),
+                                        ),
+                                      );
+                                      return;
+                                    }
+                                    context.push('/food-details/$title',
+                                        extra: {
+                                          'vendorId': widget.vendorId,
+                                          'docId': item['id'],
+                                          'sourceCollection':
+                                              _cachedCollectionName,
+                                        });
+                                  },
+                                  onFavoriteTap: () {},
+                                  onAddTap: () {
+                                    if (!isStoreOpen) {
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(
+                                        const SnackBar(
+                                          content: Text(
+                                              'Ordering is disabled as this store is currently closed.'),
+                                          duration: Duration(seconds: 2),
+                                        ),
+                                      );
+                                      return;
+                                    }
+                                    context.push('/food-details/$title',
+                                        extra: {
+                                          'vendorId': widget.vendorId,
+                                          'docId': item['id'],
+                                          'sourceCollection':
+                                              _cachedCollectionName,
+                                        });
+                                  },
+                                );
+                              },
+                              childCount: itemsToDisplay.where((item) {
+                                final orderType = (item['orderType'] ?? '')
+                                    .toString()
+                                    .toLowerCase()
+                                    .trim();
+                                final cat = (item['mealCategory'] ??
+                                        item['category'] ?? '')
+                                    .toString()
+                                    .toLowerCase();
+                                final isBulk = orderType == 'bulk' ||
+                                    item['isBulkMeal'] == true ||
+                                    cat.contains('bulk') ||
+                                    cat.contains('schedule') ||
+                                    item['orderStartTime'] != null ||
+                                    item['orderStarttime'] != null ||
+                                    item['deliveryStartTime'] != null ||
+                                    item['deliveryStarttime'] != null;
+                                return !isBulk;
+                              }).length,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ],
                 ],
               );
             },

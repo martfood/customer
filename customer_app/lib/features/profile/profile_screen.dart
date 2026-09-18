@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:shared_widgets/core/theme/app_theme.dart';
@@ -129,7 +130,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ),
                     ),
 
-                    // ── Group 1 Card (Profile Details, Addresses, Wallet) ──
+                    // ── Group 1 Card: Profile details, address, favorite restaurants, wallet ──
                     Container(
                       decoration: BoxDecoration(
                         color: cardBg,
@@ -140,8 +141,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         children: [
                           _buildProfileRowItem(
                             context: context,
-                            icon: Icons.person,
-                            title: 'Profile Details',
+                            svgAsset:
+                                'assets/icons/bottom_nav_bar/profile_filled.svg',
+                            title: 'Profile details',
                             onTap: () => context.push('/profile/edit'),
                             isDark: isDark,
                           ),
@@ -153,8 +155,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           _buildProfileRowItem(
                             context: context,
                             icon: Icons.location_on,
-                            title: 'Addresses',
+                            title: 'Address',
                             onTap: () => context.push('/profile/address'),
+                            isDark: isDark,
+                          ),
+                          Divider(
+                              height: 1,
+                              color: dividerColor,
+                              indent: 60.w,
+                              endIndent: 16.w),
+                          _buildProfileRowItem(
+                            context: context,
+                            icon: Icons.favorite,
+                            title: 'Favorite restaurants',
+                            onTap: () => context.push('/profile/favorites'),
                             isDark: isDark,
                           ),
                           Divider(
@@ -169,25 +183,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             onTap: () => context.push('/wallet'),
                             isDark: isDark,
                           ),
-                          Divider(
-                              height: 1,
-                              color: dividerColor,
-                              indent: 60.w,
-                              endIndent: 16.w),
-                          _buildProfileRowItem(
-                            context: context,
-                            icon: LucideIcons.messageSquare,
-                            title: 'Messages',
-                            onTap: () => context.push('/messages'),
-                            isDark: isDark,
-                            trailing: _buildMessagesUnreadBadge(user.uid, isDark),
-                          ),
                         ],
                       ),
                     ),
                     SizedBox(height: 20.h),
 
-                    // ── Group 2 Card (Favorite Restaurants, Help/FAQs, Settings) ───────────
+                    // ── Group 2 Card: message, settings, help/faqs, legal ──
                     Container(
                       decoration: BoxDecoration(
                         color: cardBg,
@@ -198,9 +199,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         children: [
                           _buildProfileRowItem(
                             context: context,
-                            icon: Icons.favorite,
-                            title: 'Favorite Restaurants',
-                            onTap: () => context.push('/profile/favorites'),
+                            icon: Icons.chat_bubble,
+                            title: 'Message',
+                            onTap: () => context.push('/messages'),
+                            isDark: isDark,
+                            trailing:
+                                _buildMessagesUnreadBadge(user.uid, isDark),
+                          ),
+                          Divider(
+                              height: 1,
+                              color: dividerColor,
+                              indent: 60.w,
+                              endIndent: 16.w),
+                          _buildProfileRowItem(
+                            context: context,
+                            icon: Icons.settings,
+                            title: 'Settings',
+                            onTap: () => context.push('/profile/appearance'),
                             isDark: isDark,
                           ),
                           Divider(
@@ -222,21 +237,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               endIndent: 16.w),
                           _buildProfileRowItem(
                             context: context,
-                            icon: LucideIcons.scale,
+                            icon: Icons.gavel,
                             title: 'Legal',
                             onTap: () => context.push('/profile/legal'),
-                            isDark: isDark,
-                          ),
-                          Divider(
-                              height: 1,
-                              color: dividerColor,
-                              indent: 60.w,
-                              endIndent: 16.w),
-                          _buildProfileRowItem(
-                            context: context,
-                            icon: Icons.settings,
-                            title: 'Settings',
-                            onTap: () => context.push('/profile/appearance'),
                             isDark: isDark,
                           ),
                         ],
@@ -309,7 +312,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Widget _buildProfileRowItem({
     required BuildContext context,
-    required IconData icon,
+    IconData? icon,
+    String? svgAsset,
+    Widget? customIcon,
     required String title,
     required VoidCallback onTap,
     required bool isDark,
@@ -325,6 +330,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ? iconColor.withValues(alpha: 0.1)
             : const Color(0xFFF6F2FC));
     final iconClr = iconColor ?? purpleAccent;
+
+    Widget iconWidget;
+    if (customIcon != null) {
+      iconWidget = customIcon;
+    } else if (svgAsset != null) {
+      iconWidget = SvgPicture.asset(
+        svgAsset,
+        width: 20.w,
+        height: 20.w,
+        colorFilter: ColorFilter.mode(iconClr, BlendMode.srcIn),
+      );
+    } else {
+      iconWidget = Icon(
+        icon,
+        size: 20.sp,
+        color: iconClr,
+      );
+    }
 
     return Material(
       color: Colors.transparent,
@@ -342,11 +365,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   color: pillBg,
                   shape: BoxShape.circle,
                 ),
-                child: Icon(
-                  icon,
-                  size: 20.sp,
-                  color: iconClr,
-                ),
+                alignment: Alignment.center,
+                child: iconWidget,
               ),
               SizedBox(width: 14.w),
               Expanded(
