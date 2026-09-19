@@ -206,7 +206,7 @@ class MartFoodApp extends StatelessWidget {
                 // ── GLOBAL FONT SCALING (MOBILE & TABLET) ────────────────────
                 // Tablet (>= 600dp / 8.7"+): customize scale multiplier here
                 // Mobile (< 600dp):          customize scale multiplier here
-                final scaleFactor = isTablet ? 1.1 : 0.95;
+                final scaleFactor = isTablet ? 1.1 : 1.0;
 
                 return MediaQuery(
                   data: mediaQuery.copyWith(

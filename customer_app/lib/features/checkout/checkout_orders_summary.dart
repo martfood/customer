@@ -12,10 +12,12 @@ import 'package:go_router/go_router.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:uuid/uuid.dart';
 import 'package:shared_widgets/core/theme/app_theme.dart';
+import 'package:shared_widgets/widgets/section_divider.dart';
 
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../../core/services/notification_service.dart';
+import '../../core/services/order_completion_service.dart';
 import '../../core/services/price_helper.dart';
 import '../wallet/paystack_service.dart';
 import 'add_card_bottom_sheet.dart';
@@ -1229,6 +1231,71 @@ class _CheckoutOrdersSummaryScreenState
           throw Exception('Paystack bank transfer account generation failed.');
         }
 
+        // ── Pre-save Order with status 'awaiting_payment' BEFORE modal ──────
+        final orderRef = _firestore.collection('orders').doc();
+        final deliveryPin = _generateDeliveryPin();
+
+        await orderRef.set({
+          'orderNumber': orderRef.id,
+          'customerId': uid,
+          'customerName': _customerName,
+          'customerEmail': _customerEmail,
+          'customerPhone': _customerPhone,
+          'items': _activeCheckoutItems.map((item) {
+            return {
+              'id': item['id'],
+              'title': item['title'],
+              'price': _toDouble(item['price']),
+              'basePrice': _toDouble(item['basePrice'] ?? item['price']),
+              'quantity': item['quantity'] ?? 1,
+              'imageUrl': item['imageUrl'],
+              'selectedChoices':
+                  List<Map<String, dynamic>>.from(item['selectedChoices'] ?? []),
+              'selectedAddOns':
+                  List<Map<String, dynamic>>.from(item['selectedAddOns'] ?? []),
+            };
+          }).toList(),
+          'subtotal': _subtotal,
+          'vendorSubtotal': _vendorSubtotal,
+          'deliveryFee': _deliveryFee,
+          'platformFee': _platformFee,
+          'discount': _discountAmount,
+          'total': orderTotal,
+          'promo': _selectedPromo == null
+              ? null
+              : {
+                  'id': _selectedPromo!['id'],
+                  'discountPercentage': _selectedPromo!['discountPercentage'],
+                  'appliedOn': _selectedPromo!['appliedOn'],
+                  'description': _selectedPromo!['description'] ?? _selectedPromo!['code'],
+                },
+          'paymentMethod': _selectedPayment,
+          'paymentReference': bankAcc['reference'] ?? '',
+          'bankDetails': {
+            'bankName': bankAcc['bank_name'] ?? 'N/A',
+            'accountName': bankAcc['account_name'] ?? 'N/A',
+            'accountNumber': bankAcc['account_number'] ?? 'N/A',
+          },
+          'hideOrderDetails': _hideOrderDetailsForSomeone,
+          'deliveryAddress': _selectedAddress,
+          'restaurantNote': _restaurantNote,
+          'riderNote': _riderNote,
+          'vendorId': effectiveVendorId,
+          'restaurantName': _restaurantName,
+          'restaurantAddress': _restaurantAddress,
+          if (_restaurantType != null) 'restaurantType': _restaurantType,
+          'deliveryPin': deliveryPin,
+          'status': 'awaiting_payment',
+          'paymentStatus': 'unpaid',
+          'createdAt': FieldValue.serverTimestamp(),
+          'updatedAt': FieldValue.serverTimestamp(),
+        });
+
+        // Save locally in SharedPreferences so if app restarts, customer is prompted to resume
+        await OrderCompletionService.savePendingBankOrder(orderRef.id);
+
+        if (!mounted) return;
+
         final bool? paymentVerified = await _showBankTransferBottomSheet(
           bankName: bankAcc['bank_name'] ?? 'N/A',
           accountName: bankAcc['account_name'] ?? 'N/A',
@@ -1237,17 +1304,30 @@ class _CheckoutOrdersSummaryScreenState
           reference: bankAcc['reference'] ?? '',
         );
 
-        if (paymentVerified != true) {
-          throw Exception('Bank transfer payment cancelled or failed.');
+        if (paymentVerified == true) {
+          // Finalize order (idempotent: marks paid, deducts stock, sends vendor push & customer email, clears cart)
+          await OrderCompletionService.completeOrderPayment(
+            orderId: orderRef.id,
+          );
+          if (!mounted) return;
+          setState(() => _isLoading = false);
+          context.go('/orders?showSuccess=true');
+          return;
+        } else {
+          // Keep the order saved as 'awaiting_payment' in active orders so user can complete later
+          if (!mounted) return;
+          setState(() => _isLoading = false);
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                'Transfer verification pending. You can track or complete verification anytime in your Orders tab.',
+              ),
+              duration: Duration(seconds: 5),
+            ),
+          );
+          context.go('/orders');
+          return;
         }
-
-        await custRef.collection('transactions').add({
-          'title': 'Order Checkout Payment (Bank Transfer)',
-          'amount': orderTotal,
-          'type': 'Orders',
-          'isExpense': true,
-          'createdAt': FieldValue.serverTimestamp(),
-        });
       }
 
       final orderRef = _firestore.collection('orders').doc();
@@ -2938,9 +3018,9 @@ class _CheckoutOrdersSummaryScreenState
                   ],
                 ],
 
-                SizedBox(height: 12.h),
-                Divider(color: borderColor, height: 1),
-                SizedBox(height: 16.h),
+                SectionDivider(
+                  margin: EdgeInsets.only(left: -20.w, right: -20.w, top: 16.h, bottom: 20.h),
+                ),
 
                 // Leave a note for the restaurant Section
                 Row(
@@ -3238,9 +3318,9 @@ class _CheckoutOrdersSummaryScreenState
                     ),
                   ),
                 ],
-                SizedBox(height: 16.h),
-                Divider(color: borderColor, height: 1),
-                SizedBox(height: 16.h),
+                SectionDivider(
+                  margin: EdgeInsets.only(left: -20.w, right: -20.w, top: 16.h, bottom: 16.h),
+                ),
 
                 // Leave a note for the rider Section
                 Row(
@@ -3299,9 +3379,9 @@ class _CheckoutOrdersSummaryScreenState
                     ),
                   ],
                 ),
-                SizedBox(height: 16.h),
-                Divider(color: borderColor, height: 1),
-                SizedBox(height: 16.h),
+                SectionDivider(
+                  margin: EdgeInsets.only(left: -20.w, right: -20.w, top: 16.h, bottom: 16.h),
+                ),
 
                 // Payment Method Card
                 InkWell(
@@ -3418,9 +3498,9 @@ class _CheckoutOrdersSummaryScreenState
                     ),
                   ),
                 ],
-                SizedBox(height: 16.h),
-                Divider(color: borderColor, height: 1),
-                SizedBox(height: 20.h),
+                SectionDivider(
+                  margin: EdgeInsets.only(left: -20.w, right: -20.w, top: 16.h, bottom: 20.h),
+                ),
 
                 // Payment Summary Section
                 Text(
@@ -3489,18 +3569,22 @@ class _CheckoutOrdersSummaryScreenState
                                     size: 14.sp,
                                   ),
                                   SizedBox(width: 4.w),
-                                  Text(
-                                    _selectedPromo != null
-                                        ? (_selectedPromo!['description'] ??
-                                                _selectedPromo!['code'] ??
-                                                'Promo Applied')
-                                            .toString()
-                                        : 'Select a promo or special offer',
-                                    style: TextStyle(
-                                      color: Colors.black87,
-                                      fontSize: AppTypography.font(
-                                          AppFontSizes.caption),
-                                      fontWeight: FontWeight.w700,
+                                  Flexible(
+                                    child: Text(
+                                      _selectedPromo != null
+                                          ? (_selectedPromo!['description'] ??
+                                                  _selectedPromo!['code'] ??
+                                                  'Promo Applied')
+                                              .toString()
+                                          : 'Select a promo or special offer',
+                                      style: TextStyle(
+                                        color: Colors.black87,
+                                        fontSize: AppTypography.font(
+                                            AppFontSizes.caption),
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
                                     ),
                                   ),
                                 ],

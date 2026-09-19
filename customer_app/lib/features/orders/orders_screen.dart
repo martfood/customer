@@ -11,6 +11,8 @@ import 'package:shared_widgets/core/theme/app_theme.dart';
 import 'package:shared_widgets/widgets/bottom_nav_bar.dart';
 import 'package:shared_widgets/widgets/verification_badge.dart';
 import '../../core/widgets/guest_auth_prompt_sheet.dart';
+import '../../core/services/order_completion_service.dart';
+import '../wallet/paystack_service.dart';
 
 class OrdersScreen extends StatefulWidget {
   final bool showSuccess;
@@ -1401,10 +1403,21 @@ class _OrdersScreenState extends State<OrdersScreen>
                         SizedBox(width: 12.w),
                         Expanded(
                           child: ElevatedButton(
-                            onPressed: () => _showPayNowModal(
-                              orderId,
-                              orderData,
-                            ),
+                            onPressed: () {
+                              final pMethod = orderData['paymentMethod'];
+                              final pType = (pMethod is Map) ? pMethod['type']?.toString() : null;
+                              if (pType == 'bank' || orderData['paymentReference'] != null) {
+                                _showBankTransferVerificationBottomSheet(
+                                  orderId: orderId,
+                                  orderData: orderData,
+                                );
+                              } else {
+                                _showPayNowModal(
+                                  orderId,
+                                  orderData,
+                                );
+                              }
+                            },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: purpleColor,
                               foregroundColor: Colors.white,
@@ -1414,12 +1427,19 @@ class _OrdersScreenState extends State<OrdersScreen>
                               padding: EdgeInsets.symmetric(vertical: 14.h),
                               elevation: 0,
                             ),
-                            child: Text(
-                              'Pay Now',
-                              style: TextStyle(
-                                fontSize: AppTypography.font(AppFontSizes.bodySmall),
-                                fontWeight: FontWeight.w800,
-                              ),
+                            child: Builder(
+                              builder: (context) {
+                                final pMethod = orderData['paymentMethod'];
+                                final pType = (pMethod is Map) ? pMethod['type']?.toString() : null;
+                                final isBank = pType == 'bank' || orderData['paymentReference'] != null;
+                                return Text(
+                                  isBank ? 'Verify Transfer' : 'Pay Now',
+                                  style: TextStyle(
+                                    fontSize: AppTypography.font(AppFontSizes.bodySmall),
+                                    fontWeight: FontWeight.w800,
+                                  ),
+                                );
+                              },
                             ),
                           ),
                         ),
@@ -1726,6 +1746,376 @@ class _OrdersScreenState extends State<OrdersScreen>
         debugPrint('Error cancelling order: $e');
       }
     }
+  }
+
+  Future<void> _showBankTransferVerificationBottomSheet({
+    required String orderId,
+    required Map<String, dynamic> orderData,
+  }) async {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final primaryTextColor = isDark ? Colors.white : const Color(0xFF15161A);
+    final mutedTextColor = AppTheme.mutedTextColorFor(isDark);
+    final surfaceColor = isDark ? AppTheme.darkSurface : Colors.white;
+    final purpleColor = AppTheme.primaryPurpleFor(isDark);
+    final cardBgColor = isDark ? const Color(0xFF1E1E2E) : const Color(0xFFF3F4F6);
+
+    final bankDetails = (orderData['bankDetails'] as Map<String, dynamic>?) ?? {};
+    final String bankName = (bankDetails['bankName'] ?? bankDetails['bank_name'] ?? 'Paystack Virtual Bank').toString();
+    final String accountName = (bankDetails['accountName'] ?? bankDetails['account_name'] ?? 'MartFood Delivery').toString();
+    final String accountNumber = (bankDetails['accountNumber'] ?? bankDetails['account_number'] ?? 'N/A').toString();
+    final String reference = (orderData['paymentReference'] ?? '').toString();
+    final double amount = ((orderData['total'] ?? 0.0) as num).toDouble();
+
+    bool isVerifying = false;
+    String? verificationError;
+
+    await showModalBottomSheet(
+      context: context,
+      backgroundColor: surfaceColor,
+      elevation: 0,
+      isScrollControlled: true,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28.r)),
+      ),
+      builder: (sheetContext) => StatefulBuilder(
+        builder: (context, setSheetState) {
+          return Padding(
+            padding: EdgeInsets.fromLTRB(24.w, 16.h, 24.w, 24.h),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 40.w,
+                  height: 4.h,
+                  decoration: BoxDecoration(
+                    color: isDark ? Colors.grey[700] : Colors.grey[300],
+                    borderRadius: BorderRadius.circular(2.r),
+                  ),
+                ),
+                SizedBox(height: 20.h),
+                Text(
+                  'Verify Bank Transfer',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: AppTypography.font(AppFontSizes.headlineSmall),
+                    fontWeight: FontWeight.w800,
+                    color: primaryTextColor,
+                  ),
+                ),
+                SizedBox(height: 8.h),
+                Text(
+                  'Confirm your transfer for order #${orderId.length >= 6 ? orderId.substring(0, 6).toUpperCase() : orderId}.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: AppTypography.font(AppFontSizes.bodySmall),
+                    color: mutedTextColor,
+                  ),
+                ),
+                SizedBox(height: 20.h),
+
+                // Bank Account Details Card
+                Container(
+                  width: double.infinity,
+                  padding: EdgeInsets.all(16.w),
+                  decoration: BoxDecoration(
+                    color: cardBgColor,
+                    borderRadius: BorderRadius.circular(16.r),
+                    border: Border.all(
+                      color: isDark ? AppTheme.darkBorder : AppTheme.lightInputBorder,
+                      width: 1,
+                    ),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Bank Name',
+                        style: TextStyle(
+                          fontSize: AppTypography.font(AppFontSizes.caption),
+                          fontWeight: FontWeight.w500,
+                          color: mutedTextColor,
+                        ),
+                      ),
+                      SizedBox(height: 4.h),
+                      Text(
+                        bankName,
+                        style: TextStyle(
+                          fontSize: AppTypography.font(AppFontSizes.bodyLarge),
+                          fontWeight: FontWeight.w800,
+                          color: primaryTextColor,
+                        ),
+                      ),
+                      SizedBox(height: 14.h),
+                      Text(
+                        'Account Name',
+                        style: TextStyle(
+                          fontSize: AppTypography.font(AppFontSizes.caption),
+                          fontWeight: FontWeight.w500,
+                          color: mutedTextColor,
+                        ),
+                      ),
+                      SizedBox(height: 4.h),
+                      Text(
+                        accountName,
+                        style: TextStyle(
+                          fontSize: AppTypography.font(AppFontSizes.bodyLarge),
+                          fontWeight: FontWeight.w800,
+                          color: primaryTextColor,
+                        ),
+                      ),
+                      SizedBox(height: 14.h),
+                      Text(
+                        'Account Number',
+                        style: TextStyle(
+                          fontSize: AppTypography.font(AppFontSizes.caption),
+                          fontWeight: FontWeight.w500,
+                          color: mutedTextColor,
+                        ),
+                      ),
+                      SizedBox(height: 4.h),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            accountNumber,
+                            style: TextStyle(
+                              fontSize: AppTypography.font(AppFontSizes.bodyLarge),
+                              fontWeight: FontWeight.w800,
+                              color: primaryTextColor,
+                            ),
+                          ),
+                          if (accountNumber != 'N/A')
+                            IconButton(
+                              icon: Icon(LucideIcons.copy,
+                                  size: 18.sp, color: purpleColor),
+                              onPressed: () {
+                                Clipboard.setData(
+                                    ClipboardData(text: accountNumber));
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text(
+                                        'Account number copied to clipboard'),
+                                    duration: Duration(seconds: 2),
+                                  ),
+                                );
+                              },
+                            ),
+                        ],
+                      ),
+                      SizedBox(height: 14.h),
+                      Text(
+                        'Amount',
+                        style: TextStyle(
+                          fontSize: AppTypography.font(AppFontSizes.caption),
+                          fontWeight: FontWeight.w500,
+                          color: mutedTextColor,
+                        ),
+                      ),
+                      SizedBox(height: 4.h),
+                      Text(
+                        '₦${amount.toStringAsFixed(2)}',
+                        style: TextStyle(
+                          fontSize: AppTypography.font(AppFontSizes.bodyLarge),
+                          fontWeight: FontWeight.w800,
+                          color: primaryTextColor,
+                        ),
+                      ),
+                      if (reference.isNotEmpty) ...[
+                        SizedBox(height: 14.h),
+                        Text(
+                          'Reference',
+                          style: TextStyle(
+                            fontSize: AppTypography.font(AppFontSizes.caption),
+                            fontWeight: FontWeight.w500,
+                            color: mutedTextColor,
+                          ),
+                        ),
+                        SizedBox(height: 4.h),
+                        SelectableText(
+                          reference,
+                          style: TextStyle(
+                            fontSize: AppTypography.font(AppFontSizes.bodySmall),
+                            fontWeight: FontWeight.w600,
+                            color: primaryTextColor,
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+                SizedBox(height: 14.h),
+
+                if (verificationError != null) ...[
+                  Container(
+                    width: double.infinity,
+                    padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
+                    decoration: BoxDecoration(
+                      color: isDark
+                          ? const Color(0xFF3B1515)
+                          : const Color(0xFFFEE2E2),
+                      borderRadius: BorderRadius.circular(14.r),
+                      border: Border.all(
+                        color: isDark
+                            ? const Color(0xFFEF4444).withValues(alpha: 0.4)
+                            : const Color(0xFFFCA5A5),
+                        width: 1,
+                      ),
+                    ),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Icon(
+                          LucideIcons.alertTriangle,
+                          size: 18.sp,
+                          color: const Color(0xFFEF4444),
+                        ),
+                        SizedBox(width: 10.w),
+                        Expanded(
+                          child: Text(
+                            verificationError!,
+                            style: TextStyle(
+                              fontSize: AppTypography.font(AppFontSizes.caption),
+                              fontWeight: FontWeight.w600,
+                              color: isDark
+                                  ? const Color(0xFFFCA5A5)
+                                  : const Color(0xFFB91C1C),
+                              height: 1.35,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  SizedBox(height: 14.h),
+                ],
+
+                Text(
+                  'Payments are usually confirmed within a few minutes.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: AppTypography.font(AppFontSizes.bodySmall),
+                    fontWeight: FontWeight.w500,
+                    color: mutedTextColor,
+                  ),
+                ),
+                SizedBox(height: 20.h),
+
+                // Primary Button: Verify Transfer
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: isVerifying
+                        ? null
+                        : () async {
+                            setSheetState(() {
+                              isVerifying = true;
+                              verificationError = null;
+                            });
+
+                            bool isSuccess = false;
+                            try {
+                              if (reference.isNotEmpty) {
+                                final verifyRes =
+                                    await PaystackService.verifyTransaction(reference);
+                                if (verifyRes != null &&
+                                    (verifyRes['status'] == 'success' ||
+                                        verifyRes['status'] == true)) {
+                                  isSuccess = true;
+                                }
+                              }
+                            } catch (_) {}
+
+                            if (!sheetContext.mounted) return;
+
+                            if (isSuccess) {
+                              final messenger = ScaffoldMessenger.of(context);
+                              Navigator.pop(sheetContext);
+                              await OrderCompletionService.completeOrderPayment(
+                                orderId: orderId,
+                              );
+                              if (mounted) {
+                                messenger.showSnackBar(
+                                  const SnackBar(
+                                    content: Text('Payment verified! Order confirmed.'),
+                                  ),
+                                );
+                              }
+                            } else {
+                              setSheetState(() {
+                                isVerifying = false;
+                                verificationError =
+                                    "We haven't received your transfer yet. Please make sure you completed the payment in your banking app. If you just sent it, please wait a minute and tap to retry.";
+                              });
+                            }
+                          },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: purpleColor,
+                      foregroundColor: Colors.white,
+                      minimumSize: Size(double.infinity, 56.h),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(999.r),
+                      ),
+                      elevation: 0,
+                    ),
+                    child: isVerifying
+                        ? Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              SizedBox(
+                                width: 20.w,
+                                height: 20.w,
+                                child: const CircularProgressIndicator(
+                                  strokeWidth: 2.2,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              SizedBox(width: 12.w),
+                              Text(
+                                'Verifying Transfer...',
+                                style: TextStyle(
+                                  fontSize:
+                                      AppTypography.font(AppFontSizes.bodyMedium),
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ],
+                          )
+                        : Text(
+                            verificationError != null
+                                ? 'Retry Verification'
+                                : "I've Made the Transfer",
+                            style: TextStyle(
+                              fontSize:
+                                  AppTypography.font(AppFontSizes.bodyMedium),
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                  ),
+                ),
+                SizedBox(height: 12.h),
+
+                TextButton.icon(
+                  onPressed: () => Navigator.pop(sheetContext),
+                  icon: Icon(
+                    LucideIcons.xCircle,
+                    size: 20.sp,
+                    color: mutedTextColor,
+                  ),
+                  label: Text(
+                    'Close',
+                    style: TextStyle(
+                      fontSize: AppTypography.font(AppFontSizes.bodyMedium),
+                      fontWeight: FontWeight.w600,
+                      color: mutedTextColor,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
   }
 
   void _showPayNowModal(String orderId, Map<String, dynamic> orderData) {

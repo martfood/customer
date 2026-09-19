@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:shared_widgets/core/theme/app_theme.dart';
+import 'package:shared_widgets/widgets/section_divider.dart';
 import 'package:shared_widgets/widgets/verification_badge.dart';
 import '../../core/widgets/guest_auth_prompt_sheet.dart';
 
@@ -243,9 +244,9 @@ class VendorDetailScreen extends StatelessWidget {
                           height: 1.5,
                         ),
                       ),
-                      SizedBox(height: 24.h),
-                      Divider(color: borderColor, height: 1),
-                      SizedBox(height: 24.h),
+                      SectionDivider(
+                        margin: EdgeInsets.only(left: -20.w, right: -20.w, top: 20.h, bottom: 20.h),
+                      ),
                     ],
 
                     // ── Location Section ───────────────────────────────────
@@ -267,9 +268,9 @@ class VendorDetailScreen extends StatelessWidget {
                           height: 1.5,
                         ),
                       ),
-                      SizedBox(height: 24.h),
-                      Divider(color: borderColor, height: 1),
-                      SizedBox(height: 24.h),
+                      SectionDivider(
+                        margin: EdgeInsets.only(left: -20.w, right: -20.w, top: 20.h, bottom: 20.h),
+                      ),
                     ],
 
                     // ── Opening Hours Section ──────────────────────────────
@@ -289,9 +290,9 @@ class VendorDetailScreen extends StatelessWidget {
                         color: mutedTextColor,
                       ),
                     ),
-                    SizedBox(height: 24.h),
-                    Divider(color: borderColor, height: 1),
-                    SizedBox(height: 24.h),
+                    SectionDivider(
+                      margin: EdgeInsets.only(left: -20.w, right: -20.w, top: 20.h, bottom: 20.h),
+                    ),
 
                     // ── Reviews & Ratings Section ──────────────────────────
                     Text(

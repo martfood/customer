@@ -44,7 +44,9 @@ class CategoryItem extends StatelessWidget {
                   color: isDark ? AppTheme.darkSurface : AppTheme.lightSurface,
                   shape: BoxShape.circle,
                   border: Border.all(
-                    color: isDark ? AppTheme.darkBorder : AppTheme.lightInputBorder,
+                    color: isDark
+                        ? AppTheme.darkBorder
+                        : AppTheme.lightInputBorder,
                     width: 1,
                   ),
                 ),
@@ -76,7 +78,7 @@ class CategoryItem extends StatelessWidget {
               Text(
                 title,
                 style: TextStyle(
-                  fontSize: 12,
+                  fontSize: AppTypography.font(AppFontSizes.bodySmall),
                   fontWeight: FontWeight.w600,
                   color: isDark ? Colors.white : Colors.black87,
                 ),

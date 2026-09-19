@@ -140,24 +140,14 @@ class FoodCardVertical extends StatelessWidget {
                           color: Colors.black.withValues(alpha: 0.55),
                           borderRadius: BorderRadius.circular(16.r),
                         ),
-                        child: Center(
-                          child: Container(
-                            padding: EdgeInsets.symmetric(
-                                horizontal: isTablet ? 10.w : 14.w,
-                                vertical: isTablet ? 4.h : 6.h),
-                            decoration: BoxDecoration(
-                              color: Colors.redAccent.withValues(alpha: 0.9),
-                              borderRadius: BorderRadius.circular(8.r),
-                              border: Border.all(color: Colors.white, width: 1),
-                            ),
-                            child: const Text(
-                              'CLOSED',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 11,
-                                fontWeight: FontWeight.bold,
-                                letterSpacing: 1.0,
-                              ),
+                        child: const Center(
+                          child: Text(
+                            'CLOSED',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 1.2,
                             ),
                           ),
                         ),

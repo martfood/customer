@@ -26,8 +26,7 @@ class _SearchScreenState extends State<SearchScreen> {
   String _selectedTab = 'Restaurants';
 
   // Filter Options State
-  String _sortBy =
-      'All'; // 'All', 'Recommended', 'Discount', 'Top Rated', 'Nearest'
+  String _sortBy = 'All'; // 'All', 'Discount', 'Top Rated', 'Nearest'
   String?
       _deliveryTimeFilter; // null, 'Under 15 mins', '15 - 30 mins', '30 - 40 mins', '45+ mins'
   double? _minRatingFilter; // null, 4.5, 4.0, 3.5, 2.5
@@ -422,7 +421,6 @@ class _SearchScreenState extends State<SearchScreen> {
                       runSpacing: 10.h,
                       children: [
                         'All',
-                        'Recommended',
                         'Discount',
                         'Top Rated',
                         'Nearest',
@@ -616,20 +614,110 @@ class _SearchScreenState extends State<SearchScreen> {
   }
 
   double _getDistanceToVendor(String vendorId) {
-    if (_currentPosition == null) return 999999.0;
+    final pos = _currentPosition ?? PriceHelper.currentPosition;
+    if (pos == null) return 999999.0;
     final vendor = _vendorsMap[vendorId];
     if (vendor == null) return 999999.0;
     final profile = vendor['businessProfile'] as Map<String, dynamic>?;
     final geoPoint = (profile?['currentvendorLocation'] as GeoPoint?) ??
-        (vendor['currentvendorLocation'] as GeoPoint?);
+        (vendor['currentvendorLocation'] as GeoPoint?) ??
+        (vendor['location'] as GeoPoint?);
     if (geoPoint == null) return 999999.0;
     return Geolocator.distanceBetween(
-          _currentPosition!.latitude,
-          _currentPosition!.longitude,
+          pos.latitude,
+          pos.longitude,
           geoPoint.latitude,
           geoPoint.longitude,
         ) /
         1000.0;
+  }
+
+  double _extractRating(
+      Map<String, dynamic> item, Map<String, dynamic>? vendor) {
+    // 1. Direct item rating
+    final itemRating = item['rating'] ?? item['averageRating'] ?? item['stars'];
+    if (itemRating != null) {
+      final parsed = double.tryParse(itemRating.toString());
+      if (parsed != null && parsed > 0.0) return parsed;
+    }
+    // 2. Vendor profile rating
+    if (vendor != null) {
+      final profile = vendor['businessProfile'] as Map<String, dynamic>?;
+      final vendorRating = profile?['rating'] ??
+          profile?['averageRating'] ??
+          vendor['rating'] ??
+          vendor['averageRating'] ??
+          vendor['stars'];
+      if (vendorRating != null) {
+        final parsed = double.tryParse(vendorRating.toString());
+        if (parsed != null && parsed > 0.0) return parsed;
+      }
+    }
+    return 0.0;
+  }
+
+  double _extractPrepTimeMinutes(
+      Map<String, dynamic> item, Map<String, dynamic>? vendor) {
+    // Helper to parse numbers or string ranges like "20-30 mins"
+    double? parseTime(dynamic val) {
+      if (val == null) return null;
+      if (val is num) return val.toDouble();
+      final str = val.toString().toLowerCase().replaceAll('mins', '').replaceAll('min', '').trim();
+      if (str.isEmpty) return null;
+      if (str.contains('-')) {
+        final parts = str.split('-');
+        if (parts.length >= 2) {
+          final p1 = double.tryParse(parts[0].trim());
+          final p2 = double.tryParse(parts[1].trim());
+          if (p1 != null && p2 != null) return (p1 + p2) / 2.0;
+          if (p2 != null) return p2;
+        }
+      }
+      return double.tryParse(str);
+    }
+
+    final tItem = parseTime(item['prepTimeMinutes'] ??
+        item['prepTime'] ??
+        item['preparationTime'] ??
+        item['deliveryTime']);
+    if (tItem != null && tItem > 0) return tItem;
+
+    if (vendor != null) {
+      final profile = vendor['businessProfile'] as Map<String, dynamic>?;
+      final tVendor = parseTime(vendor['preparationTime'] ??
+          vendor['prepTime'] ??
+          vendor['prepTimeMinutes'] ??
+          profile?['preparationTime'] ??
+          profile?['prepTime'] ??
+          vendor['deliveryTime']);
+      if (tVendor != null && tVendor > 0) return tVendor;
+    }
+
+    return 15.0;
+  }
+
+  double _extractDiscountFraction(Map<String, dynamic> item) {
+    final basePrice = (item['basePrice'] as num?)?.toDouble() ??
+        (item['price'] as num?)?.toDouble() ??
+        0.0;
+    final promoPrice = (item['promoPrice'] as num?)?.toDouble();
+
+    if (promoPrice != null && promoPrice > 0 && basePrice > promoPrice) {
+      return (basePrice - promoPrice) / basePrice;
+    }
+
+    final discountPct = (item['discountPercentage'] as num?)?.toDouble() ??
+        (item['discountPercent'] as num?)?.toDouble() ??
+        (item['discount'] as num?)?.toDouble();
+    if (discountPct != null && discountPct > 0) {
+      return (discountPct > 1.0 ? discountPct / 100.0 : discountPct);
+    }
+
+    if (item['isPromotion'] == true || item['isDiscountGuaranteed'] == true) {
+      return 0.10; // Default 10% indicator if flagged as promotional
+    }
+
+    return 0.0;
   }
 
   void _listenToVendors() {
@@ -1020,92 +1108,86 @@ class _SearchScreenState extends State<SearchScreen> {
                                     'StreamBuilder rebuild: ${allItems.length} raw posts | pos=$posInfo | vendorsLoaded=$_vendorsLoaded | vendorCount=${_vendorsMap.length}');
                               }
 
+                              final userPos =
+                                  _currentPosition ?? PriceHelper.currentPosition;
+
                               final filteredItems = allItems.where((item) {
-                                final isVisible = item['visibleOnMenu'] != false && item['isVisible'] != false && item['visible'] != false;
+                                final isVisible = item['visibleOnMenu'] !=
+                                        false &&
+                                    item['isVisible'] != false &&
+                                    item['visible'] != false;
                                 if (!isVisible) return false;
 
                                 final vendorId = item['vendorId'] ?? '';
                                 final vendor = _vendorsMap[vendorId];
 
-                                // If position is null — show all posts (no location filtering)
-                                if (_currentPosition == null) {
-                                  _dprint(
-                                      '  POST "${item['name']}": position=null → INCLUDE (no filter)');
-                                  return true;
-                                }
-
-                                // If vendor not yet loaded — include to avoid false negatives
-                                if (vendor == null) {
-                                  _dprint(
-                                      '  POST "${item['name']}" (vendorId=$vendorId): vendor NOT in map → INCLUDE (pending load)');
-                                  return true;
-                                }
-
-                                final dist = _getDistanceToVendor(vendorId);
-
-                                // 1. Distance filter
-                                final maxDist = _selectedDistanceKm <
-                                        PriceHelper.maxDeliveryDistance
-                                    ? _selectedDistanceKm
-                                    : PriceHelper.maxDeliveryDistance;
-                                if (_currentPosition != null &&
-                                    dist > maxDist) {
-                                  return false;
-                                }
-
-                                // 2. Search Text filter
+                                // 1. Search Text filter
                                 if (_searchText.isNotEmpty) {
                                   final name = (item['name'] ?? '')
                                       .toString()
                                       .toLowerCase();
-                                  if (!name
-                                      .contains(_searchText.toLowerCase())) {
+                                  final query = _searchText.toLowerCase();
+                                  final vProfile = vendor?['businessProfile']
+                                      as Map<String, dynamic>?;
+                                  final vName = (vProfile?['restaurantName'] ??
+                                          vProfile?['businessName'] ??
+                                          vendor?['restaurantName'] ??
+                                          '')
+                                      .toString()
+                                      .toLowerCase();
+                                  if (!name.contains(query) &&
+                                      !vName.contains(query)) {
+                                    return false;
+                                  }
+                                }
+
+                                // 2. Distance filter
+                                final dist = _getDistanceToVendor(vendorId);
+                                final maxDist = _selectedDistanceKm;
+                                if (userPos != null && dist < 999990.0) {
+                                  if (dist > maxDist) {
                                     return false;
                                   }
                                 }
 
                                 // 3. Discount filter (if Sort By is 'Discount')
                                 if (_sortBy == 'Discount') {
-                                  final bool isPromo =
-                                      item['isPromotion'] == true ||
-                                          (item['promoPrice'] != null &&
-                                              (item['promoPrice'] as num) > 0);
-                                  if (!isPromo) return false;
+                                  final discountFraction =
+                                      _extractDiscountFraction(item);
+                                  if (discountFraction <= 0.0) return false;
                                 }
 
                                 // 4. Delivery Time filter
                                 if (_deliveryTimeFilter != null) {
-                                  final num prepTime =
-                                      (item['prepTime'] as num?) ??
-                                          (vendor['prepTime'] as num?) ??
-                                          15;
-                                  final double estMins = prepTime +
-                                      (dist < 9999 ? dist * 3.0 : 15.0);
+                                  final double prepTime =
+                                      _extractPrepTimeMinutes(item, vendor);
+                                  final double transitTime =
+                                      (dist < 999990.0) ? (dist * 3.0) : 10.0;
+                                  final double estMins = prepTime + transitTime;
 
-                                  if (_deliveryTimeFilter == 'Under 15 mins' &&
-                                      estMins > 15) {
-                                    return false;
+                                  if (_deliveryTimeFilter == 'Under 15 mins') {
+                                    if (estMins > 15.0) return false;
                                   } else if (_deliveryTimeFilter ==
-                                          '15 - 30 mins' &&
-                                      (estMins <= 15 || estMins > 30)) {
-                                    return false;
+                                      '15 - 30 mins') {
+                                    if (estMins < 15.0 || estMins > 30.0) {
+                                      return false;
+                                    }
                                   } else if (_deliveryTimeFilter ==
-                                          '30 - 40 mins' &&
-                                      (estMins <= 30 || estMins > 40)) {
-                                    return false;
+                                      '30 - 40 mins') {
+                                    // Covers 30 up to 45 mins smoothly without gap
+                                    if (estMins < 30.0 || estMins > 45.0) {
+                                      return false;
+                                    }
                                   } else if (_deliveryTimeFilter ==
-                                          '45+ mins' &&
-                                      estMins < 45) {
-                                    return false;
+                                      '45+ mins') {
+                                    if (estMins < 45.0) return false;
                                   }
                                 }
 
                                 // 5. Minimum Rating filter
                                 if (_minRatingFilter != null) {
-                                  final num rating = (item['rating'] as num?) ??
-                                      (vendor['rating'] as num?) ??
-                                      (vendor['averageRating'] as num?) ??
-                                      0.0;
+                                  final double rating =
+                                      _extractRating(item, vendor);
                                   if (rating < _minRatingFilter!) {
                                     return false;
                                   }
@@ -1131,59 +1213,21 @@ class _SearchScreenState extends State<SearchScreen> {
                                 if (_sortBy == 'Nearest') {
                                   return distA.compareTo(distB);
                                 } else if (_sortBy == 'Top Rated') {
-                                  final num ratingA = (a['rating'] as num?) ??
-                                      (vendorA?['rating'] as num?) ??
-                                      (vendorA?['averageRating'] as num?) ??
-                                      0.0;
-                                  final num ratingB = (b['rating'] as num?) ??
-                                      (vendorB?['rating'] as num?) ??
-                                      (vendorB?['averageRating'] as num?) ??
-                                      0.0;
-                                  return ratingB.compareTo(ratingA);
-                                } else if (_sortBy == 'Discount') {
-                                  final double baseA =
-                                      (a['basePrice'] as num?)?.toDouble() ??
-                                          1.0;
-                                  final double promoA =
-                                      (a['promoPrice'] as num?)?.toDouble() ??
-                                          baseA;
-                                  final double discountA = baseA > 0
-                                      ? (baseA - promoA) / baseA
-                                      : 0.0;
-
-                                  final double baseB =
-                                      (b['basePrice'] as num?)?.toDouble() ??
-                                          1.0;
-                                  final double promoB =
-                                      (b['promoPrice'] as num?)?.toDouble() ??
-                                          baseB;
-                                  final double discountB = baseB > 0
-                                      ? (baseB - promoB) / baseB
-                                      : 0.0;
-
-                                  return discountB.compareTo(discountA);
-                                } else if (_sortBy == 'Recommended') {
-                                  final bool isVerifiedA =
-                                      (vendorA?['businessProfile'] as Map<
-                                              String, dynamic>?)?['status'] ==
-                                          'verified';
-                                  final bool isVerifiedB =
-                                      (vendorB?['businessProfile'] as Map<
-                                              String, dynamic>?)?['status'] ==
-                                          'verified';
-                                  if (isVerifiedA != isVerifiedB) {
-                                    return isVerifiedA ? -1 : 1;
-                                  }
-                                  final num ratingA = (a['rating'] as num?) ??
-                                      (vendorA?['rating'] as num?) ??
-                                      (vendorA?['averageRating'] as num?) ??
-                                      0.0;
-                                  final num ratingB = (b['rating'] as num?) ??
-                                      (vendorB?['rating'] as num?) ??
-                                      (vendorB?['averageRating'] as num?) ??
-                                      0.0;
+                                  final double ratingA =
+                                      _extractRating(a, vendorA);
+                                  final double ratingB =
+                                      _extractRating(b, vendorB);
                                   if (ratingA != ratingB) {
                                     return ratingB.compareTo(ratingA);
+                                  }
+                                  return distA.compareTo(distB);
+                                } else if (_sortBy == 'Discount') {
+                                  final double discA =
+                                      _extractDiscountFraction(a);
+                                  final double discB =
+                                      _extractDiscountFraction(b);
+                                  if (discA != discB) {
+                                    return discB.compareTo(discA);
                                   }
                                   return distA.compareTo(distB);
                                 } else {

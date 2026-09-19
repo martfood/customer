@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:shared_widgets/core/theme/app_theme.dart';
@@ -10,6 +11,7 @@ import 'package:shared_widgets/widgets/food_card_vertical.dart';
 import 'package:shared_widgets/widgets/bulk_meal_card.dart';
 import 'package:shared_widgets/core/utils/meal_time_helper.dart';
 import 'package:shared_widgets/widgets/bottom_nav_bar.dart';
+import 'package:shared_widgets/widgets/section_divider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -20,6 +22,8 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:http/http.dart' as http;
 import '../../core/services/price_helper.dart';
 import '../../core/services/app_update_service.dart';
+import '../../core/services/order_completion_service.dart';
+import '../wallet/paystack_service.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -59,11 +63,6 @@ class _HomeScreenState extends State<HomeScreen> {
   StreamSubscription<QuerySnapshot>? _vendorsSubscription;
   StreamSubscription<QuerySnapshot>? _addressesSubscription;
 
-  static const _bannerAssets = [
-    'assets/promotional_banner/banner_1.png',
-    'assets/promotional_banner/banner_2.png',
-    'assets/promotional_banner/banner_3.png',
-  ];
 
   final List<Map<String, String>> _categories = [
     {'title': 'Restaurant', 'imageUrl': 'assets/category/restaurant.png'},
@@ -462,6 +461,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                 color: AppTheme.primaryColor))
                         : CustomScrollView(
                             slivers: [
+                              // Pending Bank Transfer Resume Banner (if any)
+                              SliverToBoxAdapter(
+                                  child: _buildPendingBankTransferResumeBanner(isDark)),
                               // Search Bar
                               SliverToBoxAdapter(
                                   child: _buildSearchBar(isDark)),
@@ -674,6 +676,505 @@ class _HomeScreenState extends State<HomeScreen> {
                 }
               },
             ),
+    );
+  }
+
+  Widget _buildPendingBankTransferResumeBanner(bool isDark) {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return const SizedBox.shrink();
+
+    final purpleColor = AppTheme.primaryPurpleFor(isDark);
+    final borderColor = isDark ? AppTheme.darkBorder : const Color(0xFFC4B5FD);
+
+    return StreamBuilder<QuerySnapshot>(
+      stream: FirebaseFirestore.instance
+          .collection('orders')
+          .where('customerId', isEqualTo: user.uid)
+          .where('status', isEqualTo: 'awaiting_payment')
+          .snapshots(),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+          return const SizedBox.shrink();
+        }
+
+        // Find bank transfer orders created within the last 2 hours
+        final docs = snapshot.data!.docs.where((doc) {
+          final data = doc.data() as Map<String, dynamic>;
+          final pMethod = data['paymentMethod'];
+          final pType = (pMethod is Map) ? pMethod['type']?.toString() : null;
+          final isBank = pType == 'bank' || data['paymentReference'] != null;
+          if (!isBank) return false;
+
+          final createdAt = data['createdAt'];
+          if (createdAt is Timestamp) {
+            final diff = DateTime.now().difference(createdAt.toDate());
+            return diff.inHours < 2; // Active transfer window
+          }
+          return true;
+        }).toList();
+
+        if (docs.isEmpty) return const SizedBox.shrink();
+
+        final orderDoc = docs.first;
+        final orderData = orderDoc.data() as Map<String, dynamic>;
+        final orderId = orderDoc.id;
+        final double total = ((orderData['total'] ?? 0.0) as num).toDouble();
+        final String shortId = orderId.length >= 6 ? orderId.substring(0, 6).toUpperCase() : orderId;
+
+        return Padding(
+          padding: EdgeInsets.fromLTRB(20.w, 8.h, 20.w, 4.h),
+          child: Container(
+            padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
+            decoration: BoxDecoration(
+              color: isDark ? AppTheme.darkSurface : const Color(0xFFF5F3FF),
+              borderRadius: BorderRadius.circular(16.r),
+              border: Border.all(
+                color: borderColor,
+                width: 1,
+              ),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 38.w,
+                  height: 38.w,
+                  decoration: BoxDecoration(
+                    color: purpleColor.withValues(alpha: 0.14),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    LucideIcons.landmark,
+                    color: purpleColor,
+                    size: 18.sp,
+                  ),
+                ),
+                SizedBox(width: 12.w),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'Transfer Pending • Order #$shortId',
+                        style: TextStyle(
+                          fontSize: AppTypography.font(AppFontSizes.bodySmall),
+                          fontWeight: FontWeight.w800,
+                          color: isDark ? Colors.white : const Color(0xFF15161A),
+                        ),
+                      ),
+                      SizedBox(height: 2.h),
+                      Text(
+                        '₦${total.toStringAsFixed(0)} - Tap to verify and complete',
+                        style: TextStyle(
+                          fontSize: AppTypography.font(AppFontSizes.caption),
+                          fontWeight: FontWeight.w500,
+                          color: AppTheme.mutedTextColorFor(isDark),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(width: 8.w),
+                ElevatedButton(
+                  onPressed: () {
+                    _showBankTransferVerificationSheet(
+                      orderId: orderId,
+                      orderData: orderData,
+                      isDark: isDark,
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: purpleColor,
+                    foregroundColor: Colors.white,
+                    elevation: 0,
+                    padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 8.h),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12.r),
+                    ),
+                  ),
+                  child: Text(
+                    'Verify',
+                    style: TextStyle(
+                      fontSize: AppTypography.font(AppFontSizes.bodySmall),
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  void _showBankTransferVerificationSheet({
+    required String orderId,
+    required Map<String, dynamic> orderData,
+    required bool isDark,
+  }) {
+    final primaryTextColor = isDark ? Colors.white : const Color(0xFF15161A);
+    final mutedTextColor = AppTheme.mutedTextColorFor(isDark);
+    final surfaceColor = isDark ? AppTheme.darkSurface : Colors.white;
+    final purpleColor = AppTheme.primaryPurpleFor(isDark);
+    final cardBgColor = isDark ? const Color(0xFF1E1E2E) : const Color(0xFFF3F4F6);
+
+    final bankDetails = (orderData['bankDetails'] as Map<String, dynamic>?) ?? {};
+    final String bankName = (bankDetails['bankName'] ?? bankDetails['bank_name'] ?? 'Paystack Virtual Bank').toString();
+    final String accountName = (bankDetails['accountName'] ?? bankDetails['account_name'] ?? 'MartFood Delivery').toString();
+    final String accountNumber = (bankDetails['accountNumber'] ?? bankDetails['account_number'] ?? 'N/A').toString();
+    final String reference = (orderData['paymentReference'] ?? '').toString();
+    final double amount = ((orderData['total'] ?? 0.0) as num).toDouble();
+
+    bool isVerifying = false;
+    String? verificationError;
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: surfaceColor,
+      elevation: 0,
+      isScrollControlled: true,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28.r)),
+      ),
+      builder: (sheetContext) => StatefulBuilder(
+        builder: (context, setSheetState) {
+          return Padding(
+            padding: EdgeInsets.fromLTRB(24.w, 16.h, 24.w, 24.h),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 40.w,
+                  height: 4.h,
+                  decoration: BoxDecoration(
+                    color: isDark ? Colors.grey[700] : Colors.grey[300],
+                    borderRadius: BorderRadius.circular(2.r),
+                  ),
+                ),
+                SizedBox(height: 20.h),
+                Text(
+                  'Verify Bank Transfer',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: AppTypography.font(AppFontSizes.headlineSmall),
+                    fontWeight: FontWeight.w800,
+                    color: primaryTextColor,
+                  ),
+                ),
+                SizedBox(height: 8.h),
+                Text(
+                  'Confirm your transfer for order #${orderId.length >= 6 ? orderId.substring(0, 6).toUpperCase() : orderId}.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: AppTypography.font(AppFontSizes.bodySmall),
+                    color: mutedTextColor,
+                  ),
+                ),
+                SizedBox(height: 20.h),
+
+                // Bank Account Details Card
+                Container(
+                  width: double.infinity,
+                  padding: EdgeInsets.all(16.w),
+                  decoration: BoxDecoration(
+                    color: cardBgColor,
+                    borderRadius: BorderRadius.circular(16.r),
+                    border: Border.all(
+                      color: isDark ? AppTheme.darkBorder : AppTheme.lightInputBorder,
+                      width: 1,
+                    ),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Bank Name',
+                        style: TextStyle(
+                          fontSize: AppTypography.font(AppFontSizes.caption),
+                          fontWeight: FontWeight.w500,
+                          color: mutedTextColor,
+                        ),
+                      ),
+                      SizedBox(height: 4.h),
+                      Text(
+                        bankName,
+                        style: TextStyle(
+                          fontSize: AppTypography.font(AppFontSizes.bodyLarge),
+                          fontWeight: FontWeight.w800,
+                          color: primaryTextColor,
+                        ),
+                      ),
+                      SizedBox(height: 14.h),
+                      Text(
+                        'Account Name',
+                        style: TextStyle(
+                          fontSize: AppTypography.font(AppFontSizes.caption),
+                          fontWeight: FontWeight.w500,
+                          color: mutedTextColor,
+                        ),
+                      ),
+                      SizedBox(height: 4.h),
+                      Text(
+                        accountName,
+                        style: TextStyle(
+                          fontSize: AppTypography.font(AppFontSizes.bodyLarge),
+                          fontWeight: FontWeight.w800,
+                          color: primaryTextColor,
+                        ),
+                      ),
+                      SizedBox(height: 14.h),
+                      Text(
+                        'Account Number',
+                        style: TextStyle(
+                          fontSize: AppTypography.font(AppFontSizes.caption),
+                          fontWeight: FontWeight.w500,
+                          color: mutedTextColor,
+                        ),
+                      ),
+                      SizedBox(height: 4.h),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            accountNumber,
+                            style: TextStyle(
+                              fontSize: AppTypography.font(AppFontSizes.bodyLarge),
+                              fontWeight: FontWeight.w800,
+                              color: primaryTextColor,
+                            ),
+                          ),
+                          if (accountNumber != 'N/A')
+                            IconButton(
+                              icon: Icon(LucideIcons.copy,
+                                  size: 18.sp, color: purpleColor),
+                              onPressed: () {
+                                Clipboard.setData(
+                                    ClipboardData(text: accountNumber));
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text(
+                                        'Account number copied to clipboard'),
+                                    duration: Duration(seconds: 2),
+                                  ),
+                                );
+                              },
+                            ),
+                        ],
+                      ),
+                      SizedBox(height: 14.h),
+                      Text(
+                        'Amount',
+                        style: TextStyle(
+                          fontSize: AppTypography.font(AppFontSizes.caption),
+                          fontWeight: FontWeight.w500,
+                          color: mutedTextColor,
+                        ),
+                      ),
+                      SizedBox(height: 4.h),
+                      Text(
+                        '₦${amount.toStringAsFixed(2)}',
+                        style: TextStyle(
+                          fontSize: AppTypography.font(AppFontSizes.bodyLarge),
+                          fontWeight: FontWeight.w800,
+                          color: primaryTextColor,
+                        ),
+                      ),
+                      if (reference.isNotEmpty) ...[
+                        SizedBox(height: 14.h),
+                        Text(
+                          'Reference',
+                          style: TextStyle(
+                            fontSize: AppTypography.font(AppFontSizes.caption),
+                            fontWeight: FontWeight.w500,
+                            color: mutedTextColor,
+                          ),
+                        ),
+                        SizedBox(height: 4.h),
+                        SelectableText(
+                          reference,
+                          style: TextStyle(
+                            fontSize: AppTypography.font(AppFontSizes.bodySmall),
+                            fontWeight: FontWeight.w600,
+                            color: primaryTextColor,
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+                SizedBox(height: 14.h),
+
+                if (verificationError != null) ...[
+                  Container(
+                    width: double.infinity,
+                    padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
+                    decoration: BoxDecoration(
+                      color: isDark
+                          ? const Color(0xFF3B1515)
+                          : const Color(0xFFFEE2E2),
+                      borderRadius: BorderRadius.circular(14.r),
+                      border: Border.all(
+                        color: isDark
+                            ? const Color(0xFFEF4444).withValues(alpha: 0.4)
+                            : const Color(0xFFFCA5A5),
+                        width: 1,
+                      ),
+                    ),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Icon(
+                          LucideIcons.alertTriangle,
+                          size: 18.sp,
+                          color: const Color(0xFFEF4444),
+                        ),
+                        SizedBox(width: 10.w),
+                        Expanded(
+                          child: Text(
+                            verificationError!,
+                            style: TextStyle(
+                              fontSize: AppTypography.font(AppFontSizes.caption),
+                              fontWeight: FontWeight.w600,
+                              color: isDark
+                                  ? const Color(0xFFFCA5A5)
+                                  : const Color(0xFFB91C1C),
+                              height: 1.35,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  SizedBox(height: 14.h),
+                ],
+
+                Text(
+                  'Payments are usually confirmed within a few minutes.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: AppTypography.font(AppFontSizes.bodySmall),
+                    fontWeight: FontWeight.w500,
+                    color: mutedTextColor,
+                  ),
+                ),
+                SizedBox(height: 20.h),
+
+                // Primary Button: Verify Transfer
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: isVerifying
+                        ? null
+                        : () async {
+                            setSheetState(() {
+                              isVerifying = true;
+                              verificationError = null;
+                            });
+
+                            bool isSuccess = false;
+                            try {
+                              if (reference.isNotEmpty) {
+                                final verifyRes =
+                                    await PaystackService.verifyTransaction(reference);
+                                if (verifyRes != null &&
+                                    (verifyRes['status'] == 'success' ||
+                                        verifyRes['status'] == true)) {
+                                  isSuccess = true;
+                                }
+                              }
+                            } catch (_) {}
+
+                            if (!sheetContext.mounted) return;
+
+                            if (isSuccess) {
+                              final messenger = ScaffoldMessenger.of(context);
+                              Navigator.pop(sheetContext);
+                              await OrderCompletionService.completeOrderPayment(
+                                orderId: orderId,
+                              );
+                              if (mounted) {
+                                messenger.showSnackBar(
+                                  const SnackBar(
+                                    content: Text('Payment verified! Order confirmed.'),
+                                  ),
+                                );
+                              }
+                            } else {
+                              setSheetState(() {
+                                isVerifying = false;
+                                verificationError =
+                                    "We haven't received your transfer yet. Please make sure you completed the payment in your banking app. If you just sent it, please wait a minute and tap to retry.";
+                              });
+                            }
+                          },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: purpleColor,
+                      foregroundColor: Colors.white,
+                      minimumSize: Size(double.infinity, 56.h),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(999.r),
+                      ),
+                      elevation: 0,
+                    ),
+                    child: isVerifying
+                        ? Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              SizedBox(
+                                width: 20.w,
+                                height: 20.w,
+                                child: const CircularProgressIndicator(
+                                  strokeWidth: 2.2,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              SizedBox(width: 12.w),
+                              Text(
+                                'Verifying Transfer...',
+                                style: TextStyle(
+                                  fontSize:
+                                      AppTypography.font(AppFontSizes.bodyMedium),
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ],
+                          )
+                        : Text(
+                            verificationError != null
+                                ? 'Retry Verification'
+                                : "I've Made the Transfer",
+                            style: TextStyle(
+                              fontSize:
+                                  AppTypography.font(AppFontSizes.bodyMedium),
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                  ),
+                ),
+                SizedBox(height: 12.h),
+
+                TextButton.icon(
+                  onPressed: () => Navigator.pop(sheetContext),
+                  icon: Icon(
+                    LucideIcons.xCircle,
+                    size: 20.sp,
+                    color: mutedTextColor,
+                  ),
+                  label: Text(
+                    'Close',
+                    style: TextStyle(
+                      fontSize: AppTypography.font(AppFontSizes.bodyMedium),
+                      fontWeight: FontWeight.w600,
+                      color: mutedTextColor,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
     );
   }
 
@@ -1067,45 +1568,53 @@ class _HomeScreenState extends State<HomeScreen> {
   // ── Swipeable banner ────────────────────────────────────────────────────────
 
   Widget _buildBannerSection(bool isDark) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        SizedBox(height: 4.h),
-        Padding(
-          padding: EdgeInsets.symmetric(horizontal: 20.w),
-          child: StreamBuilder<QuerySnapshot>(
-            stream: _promosStream,
-            builder: (context, snapshot) {
-              final now = DateTime.now();
-              final promos = snapshot.data?.docs
-                      .map((doc) => doc.data() as Map<String, dynamic>)
-                      .where((promo) {
-                    if (promo['startDate'] != null &&
-                        promo['startDate'].toString().isNotEmpty) {
-                      try {
-                        final start = DateTime.parse(promo['startDate']);
-                        if (start.isAfter(now)) return false;
-                      } catch (_) {}
-                    }
-                    if (promo['endDate'] != null &&
-                        promo['endDate'].toString().isNotEmpty) {
-                      try {
-                        final end = DateTime.parse(promo['endDate']);
-                        if (end.isBefore(now)) return false;
-                      } catch (_) {}
-                    }
-                    final imageUrl = promo['imageUrl'] ?? '';
-                    return imageUrl.toString().isNotEmpty;
-                  }).toList() ??
-                  [];
+    return StreamBuilder<QuerySnapshot>(
+      stream: _promosStream,
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) {
+          return const SizedBox.shrink();
+        }
 
-              final count =
-                  promos.isNotEmpty ? promos.length : _bannerAssets.length;
-              if (_bannerLength != count) {
-                _bannerLength = count;
+        final now = DateTime.now();
+        final promos = snapshot.data!.docs
+            .map((doc) => doc.data() as Map<String, dynamic>)
+            .where((promo) {
+              if (promo['isActive'] == false) return false;
+
+              if (promo['startDate'] != null &&
+                  promo['startDate'].toString().isNotEmpty) {
+                try {
+                  final start = DateTime.parse(promo['startDate']);
+                  if (start.isAfter(now)) return false;
+                } catch (_) {}
               }
+              if (promo['endDate'] != null &&
+                  promo['endDate'].toString().isNotEmpty) {
+                try {
+                  final end = DateTime.parse(promo['endDate']);
+                  if (end.isBefore(now)) return false;
+                } catch (_) {}
+              }
+              final imageUrl = promo['imageUrl'] ?? '';
+              return imageUrl.toString().trim().isNotEmpty;
+            }).toList();
 
-              return Column(
+        if (promos.isEmpty) {
+          return const SizedBox.shrink();
+        }
+
+        final count = promos.length;
+        if (_bannerLength != count) {
+          _bannerLength = count;
+        }
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SizedBox(height: 4.h),
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 20.w),
+              child: Column(
                 children: [
                   SizedBox(
                     height: 165.h,
@@ -1115,61 +1624,67 @@ class _HomeScreenState extends State<HomeScreen> {
                       onPageChanged: (p) =>
                           setState(() => _currentBannerPage = p),
                       itemBuilder: (context, index) {
+                        final imageUrl = (promos[index]['imageUrl'] ?? '').toString();
                         return ClipRRect(
                           borderRadius: BorderRadius.circular(24.r),
-                          child: promos.isNotEmpty
-                              ? CachedNetworkImage(
-                                  imageUrl: promos[index]['imageUrl'] ?? '',
-                                  fit: BoxFit.cover,
-                                  width: double.infinity,
-                                  placeholder: (_, __) => Container(
-                                    color: isDark
-                                        ? Colors.grey[900]
-                                        : Colors.grey[200],
-                                    child: const Center(
-                                        child: CircularProgressIndicator(
-                                            color: AppTheme.primaryColor)),
-                                  ),
-                                  errorWidget: (_, __, ___) => Image.asset(
-                                    _bannerAssets[index % _bannerAssets.length],
-                                    fit: BoxFit.cover,
-                                    width: double.infinity,
-                                  ),
-                                )
-                              : Image.asset(
-                                  _bannerAssets[index],
-                                  fit: BoxFit.cover,
-                                  width: double.infinity,
+                          child: CachedNetworkImage(
+                            imageUrl: imageUrl,
+                            fit: BoxFit.cover,
+                            width: double.infinity,
+                            placeholder: (_, __) => Container(
+                              color: isDark
+                                  ? Colors.grey[900]
+                                  : Colors.grey[200],
+                              child: const Center(
+                                child: CircularProgressIndicator(
+                                  color: AppTheme.primaryColor,
                                 ),
+                              ),
+                            ),
+                            errorWidget: (_, __, ___) => Container(
+                              color: isDark
+                                  ? AppTheme.darkSurface
+                                  : Colors.grey[100],
+                              child: Center(
+                                child: Icon(
+                                  LucideIcons.imageOff,
+                                  color: AppTheme.mutedTextColorFor(isDark),
+                                  size: 28.sp,
+                                ),
+                              ),
+                            ),
+                          ),
                         );
                       },
                     ),
                   ),
-                  SizedBox(height: 6.h),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: List.generate(count, (index) {
-                      final isActive = _currentBannerPage == index;
-                      return AnimatedContainer(
-                        duration: const Duration(milliseconds: 300),
-                        margin: EdgeInsets.symmetric(horizontal: 3.w),
-                        width: isActive ? 20.w : 6.w,
-                        height: 6.h,
-                        decoration: BoxDecoration(
-                          color: isActive
-                              ? AppTheme.primaryPurpleFor(isDark)
-                              : (isDark ? Colors.grey[800] : Colors.grey[300]),
-                          borderRadius: BorderRadius.circular(10.r),
-                        ),
-                      );
-                    }),
-                  ),
+                  if (count > 1) ...[
+                    SizedBox(height: 6.h),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: List.generate(count, (index) {
+                        final isActive = _currentBannerPage == index;
+                        return AnimatedContainer(
+                          duration: const Duration(milliseconds: 300),
+                          margin: EdgeInsets.symmetric(horizontal: 3.w),
+                          width: isActive ? 20.w : 6.w,
+                          height: 6.h,
+                          decoration: BoxDecoration(
+                            color: isActive
+                                ? AppTheme.primaryPurpleFor(isDark)
+                                : (isDark ? Colors.grey[800] : Colors.grey[300]),
+                            borderRadius: BorderRadius.circular(10.r),
+                          ),
+                        );
+                      }),
+                    ),
+                  ],
                 ],
-              );
-            },
-          ),
-        ),
-      ],
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -1581,7 +2096,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   Text(
                     subtitle,
                     style: TextStyle(
-                      fontSize: AppTypography.font(AppFontSizes.bodySmall),
+                      fontSize: AppTypography.font(AppFontSizes.caption),
                       color: mutedTextColor,
                       fontWeight: FontWeight.w500,
                       height: 1.3,
@@ -1619,15 +2134,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
   // ── Section Thick Divider Helper ───────────────────────────────────────────
   Widget _buildSectionDivider(bool isDark) {
-    return Padding(
-      padding: EdgeInsets.fromLTRB(20.w, 14.h, 20.w, 18.h),
-      child: Container(
-        height: 4.h,
-        decoration: BoxDecoration(
-          color: isDark ? Colors.black : const Color(0xFFE5E7EB),
-          borderRadius: BorderRadius.circular(2.r),
-        ),
-      ),
+    return SectionDivider(
+      margin: EdgeInsets.only(top: 14.h, bottom: 18.h),
     );
   }
 

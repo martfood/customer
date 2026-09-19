@@ -219,17 +219,17 @@ class AppFontSizes {
 
   static const double headlineLarge = 24;
   static const double headlineMedium = 22;
-  static const double headlineSmall = 18.0;
+  static const double headlineSmall = 18;
 
-  static const double titleLarge = 18;
-  static const double titleMedium = 16;
-  static const double titleSmall = 14;
+  static const double titleLarge = 19;
+  static const double titleMedium = 17;
+  static const double titleSmall = 15;
 
-  static const double bodyLarge = 17;
-  static const double bodyMedium = 15.5;
-  static const double bodySmall = 13.5;
+  static const double bodyLarge = 18;
+  static const double bodyMedium = 16;
+  static const double bodySmall = 14;
 
-  static const double caption = 12.5;
+  static const double caption = 12;
 }
 
 class AppTypography {
