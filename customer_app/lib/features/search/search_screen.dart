@@ -908,152 +908,202 @@ class _SearchScreenState extends State<SearchScreen> {
     final borderColor =
         isDark ? Colors.white.withAlpha(15) : const Color(0xFFE9EAF0);
 
+    final isTablet = MediaQuery.of(context).size.width >= 600;
+    final double headerHeight = 116.h;
+    final double categoryHeight = (isTablet ? 104.h : 88.h) + 12.h;
+
     return Scaffold(
       backgroundColor: backgroundColor,
-      appBar: AppBar(
-        automaticallyImplyLeading: false,
-        backgroundColor: backgroundColor,
-        elevation: 0,
-        scrolledUnderElevation: 0,
-        centerTitle: true,
-        title: Text(
-          'Search',
-          style: TextStyle(
-            color: purpleColor,
-            fontSize: AppTypography.font(AppFontSizes.displaySmall),
-            fontWeight: FontWeight.w800,
-          ),
-        ),
-      ),
-      body: Column(
-        children: [
-          Expanded(
-            child: SafeArea(
-              bottom: false,
-              child: Column(
-                children: [
-                  // ─── Search Bar ───────────────────────────────────────────────
-                  Padding(
-                    padding:
-                        EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: Container(
-                            padding: EdgeInsets.symmetric(
-                                horizontal: 16.w, vertical: 4.h),
-                            decoration: BoxDecoration(
-                              color: surfaceColor,
-                              borderRadius: BorderRadius.circular(18.r),
-                              border: Border.all(color: borderColor),
-                              boxShadow: null,
-                            ),
-                            child: Row(
-                              children: [
-                                Icon(LucideIcons.search,
-                                    color: mutedTextColor, size: 20.sp),
-                                SizedBox(width: 12.w),
-                                Expanded(
-                                  child: TextField(
-                                    controller: _searchController,
-                                    onChanged: (val) {
-                                      setState(() => _searchText = val.trim());
-                                    },
+      body: SafeArea(
+        bottom: false,
+        child: NestedScrollView(
+          floatHeaderSlivers: true,
+          headerSliverBuilder: (context, innerBoxIsScrolled) {
+            return [
+              SliverAppBar(
+                automaticallyImplyLeading: false,
+                backgroundColor: backgroundColor,
+                elevation: 0,
+                scrolledUnderElevation: 0,
+                floating: true,
+                pinned: false,
+                snap: false,
+                toolbarHeight: 0,
+                collapsedHeight: 0,
+                expandedHeight: headerHeight,
+                flexibleSpace: LayoutBuilder(
+                  builder: (context, constraints) {
+                    final currentHeight = constraints.biggest.height;
+                    final t = (currentHeight / headerHeight).clamp(0.0, 1.0);
+                    return Opacity(
+                      opacity: t,
+                      child: SingleChildScrollView(
+                        physics: const NeverScrollableScrollPhysics(),
+                        child: SizedBox(
+                          height: headerHeight,
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              // ─── Screen Text Header: Search ──────────────
+                              Padding(
+                                padding: EdgeInsets.only(top: 8.h, bottom: 4.h),
+                                child: Center(
+                                  child: Text(
+                                    'Search',
                                     style: TextStyle(
-                                      color: primaryTextColor,
+                                      color: purpleColor,
                                       fontSize: AppTypography.font(
-                                          AppFontSizes.bodyMedium),
-                                    ),
-                                    decoration: InputDecoration(
-                                      hintText:
-                                          'Search restaurants, groceries...',
-                                      hintStyle: TextStyle(
-                                          color: mutedTextColor,
-                                          fontSize: AppTypography.font(
-                                              AppFontSizes.bodyMedium)),
-                                      border: InputBorder.none,
-                                      isDense: true,
+                                          AppFontSizes.displaySmall),
+                                      fontWeight: FontWeight.w800,
                                     ),
                                   ),
                                 ),
-                                if (_searchText.isNotEmpty)
-                                  GestureDetector(
-                                    onTap: () {
-                                      _searchController.clear();
-                                      setState(() => _searchText = '');
-                                    },
-                                    child: Icon(Icons.close_rounded,
-                                        color: mutedTextColor, size: 20.sp),
-                                  ),
-                              ],
-                            ),
-                          ),
-                        ),
-                        SizedBox(width: 10.w),
-                        // Filter Icon Button
-                        GestureDetector(
-                          onTap: () => _showFilterBottomSheet(context),
-                          child: Container(
-                            width: 48.w,
-                            height: 48.w,
-                            decoration: BoxDecoration(
-                              color: _hasActiveFilters
-                                  ? AppTheme.primaryPurpleFor(isDark)
-                                      .withValues(alpha: 0.15)
-                                  : surfaceColor,
-                              borderRadius: BorderRadius.circular(18.r),
-                              border: Border.all(
-                                color: _hasActiveFilters
-                                    ? AppTheme.primaryPurpleFor(isDark)
-                                    : borderColor,
-                                width: 1,
                               ),
-                              boxShadow: null,
-                            ),
-                            child: Stack(
-                              alignment: Alignment.center,
-                              children: [
-                                Icon(
-                                  LucideIcons.filter,
-                                  color: _hasActiveFilters
-                                      ? AppTheme.primaryPurpleFor(isDark)
-                                      : mutedTextColor,
-                                  size: 20.sp,
-                                ),
-                                if (_hasActiveFilters)
-                                  Positioned(
-                                    top: 10.h,
-                                    right: 10.w,
-                                    child: Container(
-                                      width: 7.w,
-                                      height: 7.w,
-                                      decoration: BoxDecoration(
-                                        color:
-                                            AppTheme.primaryPurpleFor(isDark),
-                                        shape: BoxShape.circle,
+
+                              // ─── Search Bar & Filter ─────────────────────
+                              Padding(
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: 20.w, vertical: 6.h),
+                                child: Row(
+                                  children: [
+                                    Expanded(
+                                      child: Container(
+                                        padding: EdgeInsets.symmetric(
+                                            horizontal: 16.w, vertical: 4.h),
+                                        decoration: BoxDecoration(
+                                          color: surfaceColor,
+                                          borderRadius:
+                                              BorderRadius.circular(18.r),
+                                          border:
+                                              Border.all(color: borderColor),
+                                          boxShadow: null,
+                                        ),
+                                        child: Row(
+                                          children: [
+                                            Icon(LucideIcons.search,
+                                                color: mutedTextColor,
+                                                size: 20.sp),
+                                            SizedBox(width: 12.w),
+                                            Expanded(
+                                              child: TextField(
+                                                controller: _searchController,
+                                                onChanged: (val) {
+                                                  setState(() =>
+                                                      _searchText = val.trim());
+                                                },
+                                                style: TextStyle(
+                                                  color: primaryTextColor,
+                                                  fontSize: AppTypography.font(
+                                                      AppFontSizes.bodyMedium),
+                                                ),
+                                                decoration: InputDecoration(
+                                                  hintText:
+                                                      'Search restaurants, groceries...',
+                                                  hintStyle: TextStyle(
+                                                      color: mutedTextColor,
+                                                      fontSize:
+                                                          AppTypography.font(
+                                                              AppFontSizes
+                                                                  .bodyMedium)),
+                                                  border: InputBorder.none,
+                                                  isDense: true,
+                                                ),
+                                              ),
+                                            ),
+                                            if (_searchText.isNotEmpty)
+                                              GestureDetector(
+                                                onTap: () {
+                                                  _searchController.clear();
+                                                  setState(() =>
+                                                      _searchText = '');
+                                                },
+                                                child: Icon(
+                                                    Icons.close_rounded,
+                                                    color: mutedTextColor,
+                                                    size: 20.sp),
+                                              ),
+                                          ],
+                                        ),
                                       ),
                                     ),
-                                  ),
-                              ],
-                            ),
+                                    SizedBox(width: 10.w),
+                                    // Filter Icon Button
+                                    GestureDetector(
+                                      onTap: () =>
+                                          _showFilterBottomSheet(context),
+                                      child: Container(
+                                        width: 48.w,
+                                        height: 48.w,
+                                        decoration: BoxDecoration(
+                                          color: _hasActiveFilters
+                                              ? AppTheme.primaryPurpleFor(isDark)
+                                                  .withValues(alpha: 0.15)
+                                              : surfaceColor,
+                                          borderRadius:
+                                              BorderRadius.circular(18.r),
+                                          border: Border.all(
+                                            color: _hasActiveFilters
+                                                ? AppTheme.primaryPurpleFor(isDark)
+                                                : borderColor,
+                                            width: 1,
+                                          ),
+                                          boxShadow: null,
+                                        ),
+                                        child: Stack(
+                                          alignment: Alignment.center,
+                                          children: [
+                                            Icon(
+                                              LucideIcons.filter,
+                                              color: _hasActiveFilters
+                                                  ? AppTheme.primaryPurpleFor(isDark)
+                                                  : mutedTextColor,
+                                              size: 20.sp),
+                                            if (_hasActiveFilters)
+                                              Positioned(
+                                                top: 10.h,
+                                                right: 10.w,
+                                                child: Container(
+                                                  width: 7.w,
+                                                  height: 7.w,
+                                                  decoration: BoxDecoration(
+                                                    color: AppTheme
+                                                        .primaryPurpleFor(isDark),
+                                                    shape: BoxShape.circle,
+                                                  ),
+                                                ),
+                                              ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                      ],
-                    ),
-                  ),
+                      ),
+                    );
+                  },
+                ),
+              ),
 
-                  // ─── Category Tabs ────────────────────────────────────────────
-                  Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 20.w),
+              // ─── Category Tabs (Pinned) ──────────────────────────────────
+              SliverPersistentHeader(
+                pinned: true,
+                delegate: _PinnedHeaderDelegate(
+                  height: categoryHeight,
+                  backgroundColor: backgroundColor,
+                  child: Padding(
+                    padding: EdgeInsets.fromLTRB(20.w, 4.h, 20.w, 8.h),
                     child: SizedBox(
-                      height: MediaQuery.of(context).size.width >= 600
-                          ? 104.h
-                          : 88.h,
+                      height: isTablet ? 104.h : 88.h,
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: _categories.map((cat) {
                           final title = cat['title'] as String;
-                          final imageUrl = (cat['imageUrl'] ?? '').toString();
+                          final imageUrl =
+                              (cat['imageUrl'] ?? '').toString();
                           final iconData = cat['icon'] as IconData?;
                           final isSelected = _selectedTab == title;
 
@@ -1072,12 +1122,13 @@ class _SearchScreenState extends State<SearchScreen> {
                       ),
                     ),
                   ),
+                ),
+              ),
+            ];
+          },
 
-                  SizedBox(height: 12.h),
-
-                  // ─── Results ──────────────────────────────────────────────────
-                  Expanded(
-                    child: !_isServiceAvailable
+          // ─── Results Body ──────────────────────────────────────────────
+          body: !_isServiceAvailable
                         ? _buildServiceUnavailableView(isDark)
                         : StreamBuilder<List<Map<String, dynamic>>>(
                             stream: _combinedStream,
@@ -1323,12 +1374,7 @@ class _SearchScreenState extends State<SearchScreen> {
                               );
                             },
                           ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
+        ),
       ),
       bottomNavigationBar: MartFoodBottomNavBar(
         currentIndex: 1,
@@ -1340,6 +1386,41 @@ class _SearchScreenState extends State<SearchScreen> {
         },
       ),
     );
+  }
+}
+
+class _PinnedHeaderDelegate extends SliverPersistentHeaderDelegate {
+  final double height;
+  final Color backgroundColor;
+  final Widget child;
+
+  _PinnedHeaderDelegate({
+    required this.height,
+    required this.backgroundColor,
+    required this.child,
+  });
+
+  @override
+  double get minExtent => height;
+
+  @override
+  double get maxExtent => height;
+
+  @override
+  Widget build(
+      BuildContext context, double shrinkOffset, bool overlapsContent) {
+    return Container(
+      height: height,
+      color: backgroundColor,
+      child: child,
+    );
+  }
+
+  @override
+  bool shouldRebuild(covariant _PinnedHeaderDelegate oldDelegate) {
+    return oldDelegate.height != height ||
+        oldDelegate.backgroundColor != backgroundColor ||
+        oldDelegate.child != child;
   }
 }
 

@@ -5,7 +5,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:shared_widgets/core/theme/app_theme.dart';
 
 /// Global controller to manually query or toggle connectivity state
-class ConnectivityController extends ChangeNotifier {
+class ConnectivityController extends ChangeNotifier with WidgetsBindingObserver {
   static final ConnectivityController instance = ConnectivityController._();
   ConnectivityController._();
 
@@ -16,31 +16,69 @@ class ConnectivityController extends ChangeNotifier {
   bool get isChecking => _isChecking;
 
   Timer? _pingTimer;
+  Timer? _resumeGraceTimer;
+  int _consecutiveFailures = 0;
+  bool _isAppInForeground = true;
 
   void initialize() {
+    WidgetsBinding.instance.removeObserver(this);
+    WidgetsBinding.instance.addObserver(this);
+
     // Initial check
     checkConnectivity();
 
-    // Periodic heartbeat verification every 5 seconds
+    // Start periodic heartbeat verification
+    _startPeriodicPing();
+  }
+
+  void _startPeriodicPing() {
     _pingTimer?.cancel();
     _pingTimer = Timer.periodic(const Duration(seconds: 5), (_) {
-      checkConnectivity();
+      if (_isAppInForeground) {
+        checkConnectivity();
+      }
     });
   }
 
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _isAppInForeground = true;
+      // Reset failure counter so a stale check from before pause doesn't count
+      _consecutiveFailures = 0;
+      // Android radios take 1-2 seconds to wake up from Doze / sleep.
+      // Delay active network check by 2.5 seconds to give the device's radio/WiFi time to reconnect.
+      _resumeGraceTimer?.cancel();
+      _pingTimer?.cancel();
+      _resumeGraceTimer = Timer(const Duration(milliseconds: 2500), () {
+        checkConnectivity();
+        _startPeriodicPing();
+      });
+    } else if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.inactive ||
+        state == AppLifecycleState.detached) {
+      _isAppInForeground = false;
+      _resumeGraceTimer?.cancel();
+      _pingTimer?.cancel();
+      // Reset consecutive failures while in background to avoid triggering when resuming
+      _consecutiveFailures = 0;
+    }
+  }
+
   Future<bool> checkConnectivity() async {
+    // If app is not in foreground, skip check
+    if (!_isAppInForeground) return !_isDisconnected;
+
     _isChecking = true;
     notifyListeners();
 
+    bool success = false;
     try {
       // 100% Reliable socket lookup to check true internet reachability
       final lookup = await InternetAddress.lookup('google.com')
           .timeout(const Duration(seconds: 3));
       if (lookup.isNotEmpty && lookup[0].rawAddress.isNotEmpty) {
-        _setDisconnected(false);
-        _isChecking = false;
-        notifyListeners();
-        return true;
+        success = true;
       }
     } catch (_) {
       try {
@@ -48,11 +86,26 @@ class ConnectivityController extends ChangeNotifier {
         final socket = await Socket.connect('1.1.1.1', 53,
             timeout: const Duration(seconds: 3));
         socket.destroy();
-        _setDisconnected(false);
-        _isChecking = false;
-        notifyListeners();
-        return true;
+        success = true;
       } catch (_) {
+        success = false;
+      }
+    }
+
+    if (!_isAppInForeground) {
+      _isChecking = false;
+      notifyListeners();
+      return !_isDisconnected;
+    }
+
+    if (success) {
+      _consecutiveFailures = 0;
+      _setDisconnected(false);
+    } else {
+      _consecutiveFailures++;
+      // Require at least 2 consecutive failures before showing the full-screen "No Internet" overlay.
+      // This prevents momentary blips or network handoffs from flashing the disconnected screen.
+      if (_consecutiveFailures >= 2) {
         _setDisconnected(true);
       }
     }
@@ -71,6 +124,8 @@ class ConnectivityController extends ChangeNotifier {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _resumeGraceTimer?.cancel();
     _pingTimer?.cancel();
     super.dispose();
   }

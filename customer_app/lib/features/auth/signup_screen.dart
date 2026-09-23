@@ -9,8 +9,6 @@ import 'dart:math';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:google_sign_in/google_sign_in.dart';
 import 'package:country_picker/country_picker.dart';
 import 'email_service.dart';
 import 'auth_error_handler.dart';

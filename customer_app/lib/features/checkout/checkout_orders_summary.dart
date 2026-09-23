@@ -2207,6 +2207,8 @@ class _CheckoutOrdersSummaryScreenState
 
     bool isVerifying = false;
     String? verificationError;
+    bool isCopied = false;
+    Timer? copyTimer;
 
     return showModalBottomSheet<bool>(
       context: context,
@@ -2330,6 +2332,15 @@ class _CheckoutOrdersSummaryScreenState
                           InkWell(
                             onTap: () {
                               Clipboard.setData(ClipboardData(text: accountNumber));
+                              copyTimer?.cancel();
+                              setSheetState(() {
+                                isCopied = true;
+                              });
+                              copyTimer = Timer(const Duration(seconds: 2), () {
+                                setSheetState(() {
+                                  isCopied = false;
+                                });
+                              });
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
                                   content: Text('Account number copied to clipboard!'),
@@ -2340,10 +2351,14 @@ class _CheckoutOrdersSummaryScreenState
                             },
                             child: Padding(
                               padding: EdgeInsets.all(4.w),
-                              child: Icon(
-                                LucideIcons.copy,
-                                size: 18.sp,
-                                color: purpleColor,
+                              child: AnimatedSwitcher(
+                                duration: const Duration(milliseconds: 200),
+                                child: Icon(
+                                  isCopied ? LucideIcons.check : LucideIcons.copy,
+                                  key: ValueKey<bool>(isCopied),
+                                  size: 18.sp,
+                                  color: isCopied ? Colors.green : purpleColor,
+                                ),
                               ),
                             ),
                           ),

@@ -391,213 +391,257 @@ class _ScheduleMealScreenState extends State<ScheduleMealScreen> {
         isDark ? AppTheme.darkBorder : AppTheme.lightInputBorder;
     final purpleColor = AppTheme.primaryPurpleFor(isDark);
 
+    final isTablet = MediaQuery.of(context).size.width >= 600;
+    final double headerHeight = 156.h;
+    final double categoryHeight = (isTablet ? 104.h : 88.h) + 12.h;
+
     return Scaffold(
       backgroundColor: backgroundColor,
       body: SafeArea(
         bottom: false,
-        child: Column(
-          children: [
-            // ─── 1. Delivery Location Top Bar ──────────────────────────────
-            Padding(
-              padding: EdgeInsets.fromLTRB(20.w, 10.h, 20.w, 8.h),
-              child: InkWell(
-                onTap: () async {
-                  final result =
-                      await context.push('/profile/address/location');
-                  if (result != null && result is Map<String, dynamic>) {
-                    final newAddr = result['address'] ?? '';
-                    final double? lat = result['latitude'] != null
-                        ? (result['latitude'] as num).toDouble()
-                        : null;
-                    final double? lng = result['longitude'] != null
-                        ? (result['longitude'] as num).toDouble()
-                        : null;
+        child: NestedScrollView(
+          floatHeaderSlivers: true,
+          headerSliverBuilder: (context, innerBoxIsScrolled) {
+            return [
+              SliverAppBar(
+                automaticallyImplyLeading: false,
+                backgroundColor: backgroundColor,
+                elevation: 0,
+                scrolledUnderElevation: 0,
+                floating: true,
+                pinned: false,
+                snap: false,
+                toolbarHeight: 0,
+                collapsedHeight: 0,
+                expandedHeight: headerHeight,
+                flexibleSpace: LayoutBuilder(
+                  builder: (context, constraints) {
+                    final currentHeight = constraints.biggest.height;
+                    final t = (currentHeight / headerHeight).clamp(0.0, 1.0);
+                    return Opacity(
+                      opacity: t,
+                      child: SingleChildScrollView(
+                        physics: const NeverScrollableScrollPhysics(),
+                        child: SizedBox(
+                          height: headerHeight,
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              // ─── 1. Delivery Location Top Bar ──────────────
+                              Padding(
+                                padding: EdgeInsets.fromLTRB(20.w, 10.h, 20.w, 8.h),
+                                child: InkWell(
+                                  onTap: () async {
+                                    final result =
+                                        await context.push('/profile/address/location');
+                                    if (result != null && result is Map<String, dynamic>) {
+                                      final newAddr = result['address'] ?? '';
+                                      final double? lat = result['latitude'] != null
+                                          ? (result['latitude'] as num).toDouble()
+                                          : null;
+                                      final double? lng = result['longitude'] != null
+                                          ? (result['longitude'] as num).toDouble()
+                                          : null;
 
-                    setState(() {
-                      _currentAddress = result['title'] ?? _currentAddress;
-                      _fullAddress = newAddr;
-                    });
-                    PriceHelper.currentAddress = _currentAddress;
-                    PriceHelper.fullAddress = _fullAddress;
+                                      setState(() {
+                                        _currentAddress = result['title'] ?? _currentAddress;
+                                        _fullAddress = newAddr;
+                                      });
+                                      PriceHelper.currentAddress = _currentAddress;
+                                      PriceHelper.fullAddress = _fullAddress;
 
-                    if (lat != null && lng != null) {
-                      final newPos = Position(
-                        latitude: lat,
-                        longitude: lng,
-                        timestamp: DateTime.now(),
-                        accuracy: 0.0,
-                        altitude: 0.0,
-                        altitudeAccuracy: 0.0,
-                        heading: 0.0,
-                        headingAccuracy: 0.0,
-                        speed: 0.0,
-                        speedAccuracy: 0.0,
-                      );
-                      if (mounted) {
-                        setState(() {
-                          _currentPosition = newPos;
-                        });
-                      }
-                      PriceHelper.currentPosition = newPos;
-                    } else {
-                      _geocodeAddress(
-                          newAddr.isNotEmpty ? newAddr : _currentAddress);
-                    }
-                  }
-                },
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.location_on, color: purpleColor, size: 16.sp),
-                    SizedBox(width: 4.w),
-                    Flexible(
-                      child: Text(
-                        _currentAddress,
-                        style: TextStyle(
-                          fontSize: AppTypography.font(AppFontSizes.bodySmall),
-                          fontWeight: FontWeight.w600,
-                          color: primaryTextColor,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                    Icon(Icons.keyboard_arrow_down,
-                        color: Colors.grey[600], size: 18.sp),
-                  ],
-                ),
-              ),
-            ),
+                                      if (lat != null && lng != null) {
+                                        final newPos = Position(
+                                          latitude: lat,
+                                          longitude: lng,
+                                          timestamp: DateTime.now(),
+                                          accuracy: 0.0,
+                                          altitude: 0.0,
+                                          altitudeAccuracy: 0.0,
+                                          heading: 0.0,
+                                          headingAccuracy: 0.0,
+                                          speed: 0.0,
+                                          speedAccuracy: 0.0,
+                                        );
+                                        if (mounted) {
+                                          setState(() {
+                                            _currentPosition = newPos;
+                                          });
+                                        }
+                                        PriceHelper.currentPosition = newPos;
+                                      } else {
+                                        _geocodeAddress(
+                                            newAddr.isNotEmpty ? newAddr : _currentAddress);
+                                      }
+                                    }
+                                  },
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(Icons.location_on, color: purpleColor, size: 16.sp),
+                                      SizedBox(width: 4.w),
+                                      Flexible(
+                                        child: Text(
+                                          _currentAddress,
+                                          style: TextStyle(
+                                            fontSize: AppTypography.font(AppFontSizes.bodySmall),
+                                            fontWeight: FontWeight.w600,
+                                            color: primaryTextColor,
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                      Icon(Icons.keyboard_arrow_down,
+                                          color: Colors.grey[600], size: 18.sp),
+                                    ],
+                                  ),
+                                ),
+                              ),
 
-            // ─── 2. Header Row: "Schedule Meal" (Left) & Cart (Right) ───────
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 6.h),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Row(
-                    children: [
-                      GestureDetector(
-                        onTap: () => context.pop(),
-                        child: Container(
-                          padding: EdgeInsets.all(6.w),
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: isDark
-                                ? Colors.white.withAlpha(15)
-                                : const Color(0xFFF3F4F6),
+                              // ─── 2. Header Row: "Schedule Meal" (Left) & Cart (Right) ───────
+                              Padding(
+                                padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 6.h),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        GestureDetector(
+                                          onTap: () => context.pop(),
+                                          child: Container(
+                                            padding: EdgeInsets.all(6.w),
+                                            decoration: BoxDecoration(
+                                              shape: BoxShape.circle,
+                                              color: isDark
+                                                  ? Colors.white.withAlpha(15)
+                                                  : const Color(0xFFF3F4F6),
+                                            ),
+                                            child: Icon(
+                                              Icons.arrow_back_ios_new_rounded,
+                                              size: 18.sp,
+                                              color: primaryTextColor,
+                                            ),
+                                          ),
+                                        ),
+                                        SizedBox(width: 10.w),
+                                        Text(
+                                          'Schedule Meal',
+                                          style: TextStyle(
+                                            color: purpleColor,
+                                            fontSize:
+                                                AppTypography.font(AppFontSizes.headlineSmall),
+                                            fontWeight: FontWeight.w800,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    _buildCartAction(isDark),
+                                  ],
+                                ),
+                              ),
+
+                              // ─── 3. Search Bar ─────────────────────────────────────────────
+                              Padding(
+                                padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
+                                child: Container(
+                                  padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),
+                                  decoration: BoxDecoration(
+                                    color:
+                                        isDark ? AppTheme.darkSurface : AppTheme.lightInputFill,
+                                    borderRadius: BorderRadius.circular(18.r),
+                                    border: Border.all(color: borderColor),
+                                    boxShadow: null,
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Icon(LucideIcons.search,
+                                          color: mutedTextColor, size: 20.sp),
+                                      SizedBox(width: 12.w),
+                                      Expanded(
+                                        child: TextField(
+                                          controller: _searchController,
+                                          onChanged: (val) {
+                                            setState(() => _searchText = val.trim());
+                                          },
+                                          style: TextStyle(
+                                            color: primaryTextColor,
+                                            fontSize: AppTypography.font(AppFontSizes.bodyMedium),
+                                          ),
+                                          decoration: InputDecoration(
+                                            hintText: 'Search scheduled meals...',
+                                            hintStyle: TextStyle(
+                                              color: mutedTextColor,
+                                              fontSize:
+                                                  AppTypography.font(AppFontSizes.bodyMedium),
+                                            ),
+                                            border: InputBorder.none,
+                                            isDense: true,
+                                          ),
+                                        ),
+                                      ),
+                                      if (_searchText.isNotEmpty)
+                                        GestureDetector(
+                                          onTap: () {
+                                            _searchController.clear();
+                                            setState(() => _searchText = '');
+                                          },
+                                          child: Icon(Icons.close_rounded,
+                                              color: mutedTextColor, size: 20.sp),
+                                        ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
-                          child: Icon(
-                            Icons.arrow_back_ios_new_rounded,
-                            size: 18.sp,
-                            color: primaryTextColor,
-                          ),
                         ),
-                      ),
-                      SizedBox(width: 10.w),
-                      Text(
-                        'Schedule Meal',
-                        style: TextStyle(
-                          color: purpleColor,
-                          fontSize:
-                              AppTypography.font(AppFontSizes.headlineSmall),
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                    ],
-                  ),
-                  _buildCartAction(isDark),
-                ],
-              ),
-            ),
-
-            // ─── 3. Search Bar ─────────────────────────────────────────────
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
-              child: Container(
-                padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),
-                decoration: BoxDecoration(
-                  color:
-                      isDark ? AppTheme.darkSurface : AppTheme.lightInputFill,
-                  borderRadius: BorderRadius.circular(18.r),
-                  border: Border.all(color: borderColor),
-                  boxShadow: null,
-                ),
-                child: Row(
-                  children: [
-                    Icon(LucideIcons.search,
-                        color: mutedTextColor, size: 20.sp),
-                    SizedBox(width: 12.w),
-                    Expanded(
-                      child: TextField(
-                        controller: _searchController,
-                        onChanged: (val) {
-                          setState(() => _searchText = val.trim());
-                        },
-                        style: TextStyle(
-                          color: primaryTextColor,
-                          fontSize: AppTypography.font(AppFontSizes.bodyMedium),
-                        ),
-                        decoration: InputDecoration(
-                          hintText: 'Search scheduled meals...',
-                          hintStyle: TextStyle(
-                            color: mutedTextColor,
-                            fontSize:
-                                AppTypography.font(AppFontSizes.bodyMedium),
-                          ),
-                          border: InputBorder.none,
-                          isDense: true,
-                        ),
-                      ),
-                    ),
-                    if (_searchText.isNotEmpty)
-                      GestureDetector(
-                        onTap: () {
-                          _searchController.clear();
-                          setState(() => _searchText = '');
-                        },
-                        child: Icon(Icons.close_rounded,
-                            color: mutedTextColor, size: 20.sp),
-                      ),
-                  ],
-                ),
-              ),
-            ),
-
-            // ─── 4. Category Tabs ──────────────────────────────────────────
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20.w),
-              child: SizedBox(
-                height: MediaQuery.of(context).size.width >= 600 ? 104.h : 88.h,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: _categories.map((cat) {
-                    final title = cat['title'] as String;
-                    final imageUrl = (cat['imageUrl'] ?? '').toString();
-                    final iconData = cat['icon'] as IconData?;
-                    final isSelected = _selectedTab == title;
-
-                    return Expanded(
-                      child: _buildCategoryItem(
-                        context: context,
-                        title: title,
-                        imageUrl: imageUrl,
-                        iconData: iconData,
-                        isSelected: isSelected,
-                        onTap: () => _onTabSelected(title),
-                        isDark: isDark,
                       ),
                     );
-                  }).toList(),
+                  },
                 ),
               ),
-            ),
 
-            SizedBox(height: 8.h),
+              // ─── 4. Category Tabs (Pinned) ─────────────────────────────────
+              SliverPersistentHeader(
+                pinned: true,
+                delegate: _PinnedHeaderDelegate(
+                  height: categoryHeight,
+                  backgroundColor: backgroundColor,
+                  child: Padding(
+                    padding: EdgeInsets.fromLTRB(20.w, 4.h, 20.w, 8.h),
+                    child: SizedBox(
+                      height: isTablet ? 104.h : 88.h,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: _categories.map((cat) {
+                          final title = cat['title'] as String;
+                          final imageUrl = (cat['imageUrl'] ?? '').toString();
+                          final iconData = cat['icon'] as IconData?;
+                          final isSelected = _selectedTab == title;
 
-            // ─── 5. Results Grid ───────────────────────────────────────────
-            Expanded(
-              child: StreamBuilder<List<Map<String, dynamic>>>(
+                          return Expanded(
+                            child: _buildCategoryItem(
+                              context: context,
+                              title: title,
+                              imageUrl: imageUrl,
+                              iconData: iconData,
+                              isSelected: isSelected,
+                              onTap: () => _onTabSelected(title),
+                              isDark: isDark,
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ];
+          },
+
+          // ─── 5. Results List ───────────────────────────────────────────
+          body: StreamBuilder<List<Map<String, dynamic>>>(
                 stream: _combinedStream,
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting &&
@@ -774,8 +818,6 @@ class _ScheduleMealScreenState extends State<ScheduleMealScreen> {
                   );
                 },
               ),
-            ),
-          ],
         ),
       ),
       bottomNavigationBar: MartFoodBottomNavBar(
@@ -789,6 +831,41 @@ class _ScheduleMealScreenState extends State<ScheduleMealScreen> {
         },
       ),
     );
+  }
+}
+
+class _PinnedHeaderDelegate extends SliverPersistentHeaderDelegate {
+  final double height;
+  final Color backgroundColor;
+  final Widget child;
+
+  _PinnedHeaderDelegate({
+    required this.height,
+    required this.backgroundColor,
+    required this.child,
+  });
+
+  @override
+  double get minExtent => height;
+
+  @override
+  double get maxExtent => height;
+
+  @override
+  Widget build(
+      BuildContext context, double shrinkOffset, bool overlapsContent) {
+    return Container(
+      height: height,
+      color: backgroundColor,
+      child: child,
+    );
+  }
+
+  @override
+  bool shouldRebuild(covariant _PinnedHeaderDelegate oldDelegate) {
+    return oldDelegate.height != height ||
+        oldDelegate.backgroundColor != backgroundColor ||
+        oldDelegate.child != child;
   }
 }
 

@@ -71,6 +71,19 @@ class BulkMealCard extends StatelessWidget {
     final showBanner =
         orderClosesText != null && orderClosesText!.trim().isNotEmpty;
     final bannerText = showBanner ? orderClosesText!.trim() : '';
+    final isOrderClosed =
+        isClosed || bannerText.toLowerCase().contains('closed');
+    final bannerBgColor = isOrderClosed
+        ? (isDark ? const Color(0xFF27272A) : const Color(0xFFE5E7EB))
+        : (isDark
+            ? purpleColor.withValues(alpha: 0.18)
+            : const Color(0xFFF3E8FF));
+    final bannerIconColor = isOrderClosed
+        ? (isDark ? Colors.grey[400]! : const Color(0xFF6B7280))
+        : purpleColor;
+    final bannerTextColor = isOrderClosed
+        ? (isDark ? Colors.white : Colors.black)
+        : purpleColor;
 
     return Material(
       color: Colors.transparent,
@@ -345,9 +358,7 @@ class BulkMealCard extends StatelessWidget {
                                 isFullWidth ? 7.h : (isTablet ? 3.5.h : 3.h),
                             horizontal: 8.w),
                         decoration: BoxDecoration(
-                          color: isDark
-                              ? purpleColor.withValues(alpha: 0.18)
-                              : const Color(0xFFF3E8FF),
+                          color: bannerBgColor,
                           borderRadius: BorderRadius.circular(
                               isFullWidth ? 20.r : (isTablet ? 10.r : 8.r)),
                         ),
@@ -356,7 +367,7 @@ class BulkMealCard extends StatelessWidget {
                           children: [
                             Icon(LucideIcons.clock,
                                 size: isFullWidth ? 13 : 10,
-                                color: purpleColor),
+                                color: bannerIconColor),
                             SizedBox(width: 5.w),
                             Flexible(
                               child: Text(
@@ -364,7 +375,7 @@ class BulkMealCard extends StatelessWidget {
                                 style: TextStyle(
                                   fontSize: isFullWidth ? 12 : 9.5,
                                   fontWeight: FontWeight.w600,
-                                  color: purpleColor,
+                                  color: bannerTextColor,
                                 ),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,

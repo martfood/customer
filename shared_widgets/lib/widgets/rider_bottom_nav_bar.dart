@@ -153,7 +153,7 @@ class RiderBottomNavBar extends StatelessWidget {
           BottomNavigationBarItem(
             icon: _buildNavIcon(iconName: 'order', isSelected: false),
             activeIcon: _buildNavIcon(iconName: 'order', isSelected: true),
-            label: 'Deliveries',
+            label: 'Orders',
           ),
           BottomNavigationBarItem(
             icon: _buildBadgedIcon(
@@ -166,7 +166,7 @@ class RiderBottomNavBar extends StatelessWidget {
               unreadCount,
               selectedColor,
             ),
-            label: 'Messages',
+            label: 'Chat',
           ),
           BottomNavigationBarItem(
             icon: _buildNavIcon(iconName: 'wallet', isSelected: false),
