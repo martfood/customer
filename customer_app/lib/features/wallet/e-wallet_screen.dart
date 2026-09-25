@@ -127,9 +127,16 @@ class _EWalletScreenState extends State<EWalletScreen> {
     );
   }
 
-  String _formatTimestamp(Timestamp? timestamp) {
-    if (timestamp == null) return '';
-    final date = timestamp.toDate();
+  String _formatTimestamp(dynamic timestamp) {
+    if (timestamp == null) return 'Just now';
+    DateTime date;
+    if (timestamp is Timestamp) {
+      date = timestamp.toDate();
+    } else if (timestamp is String) {
+      date = DateTime.tryParse(timestamp) ?? DateTime.now();
+    } else {
+      return 'Just now';
+    }
     final months = [
       'Jan',
       'Feb',
@@ -237,7 +244,9 @@ class _EWalletScreenState extends State<EWalletScreen> {
           final userData =
               userSnapshot.data!.data() as Map<String, dynamic>? ?? {};
           final fullName = (userData['fullName'] ?? 'User').toString();
-          final balance = (userData['balance'] as num?) ?? 0;
+          final balance = (userData['balance'] as num?) ??
+              (userData['walletBalance'] as num?) ??
+              0;
 
           // Saved cards array from backend
           final savedCards = List<Map<String, dynamic>>.from(
@@ -656,10 +665,10 @@ class _EWalletScreenState extends State<EWalletScreen> {
 
               return _buildTransactionItem(
                 context: context,
-                title: (tx['title'] ?? 'Transaction').toString(),
-                time: _formatTimestamp(tx['createdAt'] as Timestamp?),
-                amount: '₦${_formatCurrency(amountVal)}',
-                type: (tx['type'] ?? (isExpense ? 'Orders' : 'Top up')).toString(),
+                title: (tx['title'] ?? (isExpense ? 'Debit' : 'Credit')).toString(),
+                time: _formatTimestamp(tx['createdAt'] ?? tx['timestamp']),
+                amount: '${isExpense ? '-' : '+'}₦${_formatCurrency(amountVal)}',
+                type: (tx['type'] ?? (isExpense ? 'Deduction' : 'Top up')).toString(),
                 isExpense: isExpense,
                 imageUrl: imageUrl,
                 icon: isExpense ? LucideIcons.shoppingBag : LucideIcons.wallet,
@@ -753,7 +762,9 @@ class _EWalletScreenState extends State<EWalletScreen> {
             Text(
               amount,
               style: TextStyle(
-                color: primaryTextColor,
+                color: isExpense
+                    ? (isDark ? const Color(0xFFF87171) : const Color(0xFFE11D48))
+                    : (isDark ? const Color(0xFF4ADE80) : const Color(0xFF16A34A)),
                 fontSize: AppTypography.font(AppFontSizes.bodyLarge),
                 fontWeight: FontWeight.w800,
               ),

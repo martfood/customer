@@ -1,13 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shared_widgets/core/theme/app_theme.dart';
 import 'package:go_router/go_router.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'dart:math';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:google_sign_in/google_sign_in.dart';
 import 'email_service.dart';
 import 'auth_error_handler.dart';
 import '../../core/services/account_status_service.dart';
@@ -31,15 +28,9 @@ class _LoginScreenState extends State<LoginScreen> {
   final _passwordController = TextEditingController();
   bool _isLoading = false;
 
-  String? _lastGoogleName;
-  String? _lastGoogleEmail;
-  String? _lastGooglePhoto;
-  bool _hasPreviousGoogleLogin = false;
-
   @override
   void initState() {
     super.initState();
-    _loadLastGoogleAccount();
 
     if (widget.suspensionReason != null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -51,103 +42,6 @@ class _LoginScreenState extends State<LoginScreen> {
           );
         }
       });
-    }
-  }
-
-  Future<void> _loadLastGoogleAccount() async {
-    final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      _lastGoogleName = prefs.getString('last_google_name');
-      _lastGoogleEmail = prefs.getString('last_google_email');
-      _lastGooglePhoto = prefs.getString('last_google_photo');
-      _hasPreviousGoogleLogin = prefs.getBool('has_previous_google_login') ?? false;
-    });
-  }
-
-  Future<void> _saveGoogleAccount(User user) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('last_google_name', user.displayName ?? 'Google User');
-    await prefs.setString('last_google_email', user.email ?? '');
-    await prefs.setString('last_google_photo', user.photoURL ?? '');
-    await prefs.setBool('has_previous_google_login', true);
-    _loadLastGoogleAccount();
-  }
-
-  Future<void> _handleGoogleSignIn({required bool switchAccount}) async {
-    final router = GoRouter.of(context);
-    setState(() {
-      _isLoading = true;
-    });
-    try {
-      final googleSignIn = GoogleSignIn(
-        serverClientId: '45361321160-9ofs6jkpgbk539bjl5bdro0fnknhavtl.apps.googleusercontent.com',
-      );
-      if (switchAccount) {
-        await googleSignIn.signOut();
-      }
-      final googleUser = await googleSignIn.signIn();
-      if (googleUser == null) {
-        setState(() {
-          _isLoading = false;
-        });
-        return;
-      }
-
-      final googleAuth = await googleUser.authentication;
-      final credential = GoogleAuthProvider.credential(
-        accessToken: googleAuth.accessToken,
-        idToken: googleAuth.idToken,
-      );
-
-      final userCredential = await FirebaseAuth.instance
-          .signInWithCredential(credential)
-          .timeout(const Duration(seconds: 10));
-
-      final user = userCredential.user;
-      if (user != null) {
-        await _saveGoogleAccount(user);
-        final docRef = FirebaseFirestore.instance
-            .collection('customers')
-            .doc(user.uid);
-        final docSnap = await docRef.get();
-
-        if (!docSnap.exists) {
-          await docRef.set({
-            'uid': user.uid,
-            'email': user.email ?? '',
-            'fullName': user.displayName ?? 'Google User',
-            'phoneNumber': user.phoneNumber ?? '',
-            'profilePic': user.photoURL ?? '',
-            'balance': 0.0,
-            'createdAt': FieldValue.serverTimestamp(),
-          }).timeout(const Duration(seconds: 5));
-        } else if (AccountStatusService.isSuspended(docSnap.data())) {
-          final info = AccountStatusService.parseSuspension(docSnap.data());
-          await FirebaseAuth.instance.signOut();
-          if (mounted) {
-            AccountStatusService.showSuspensionSheet(
-              context,
-              reason: info.reason,
-              suspendedUntil: info.suspendedUntil,
-            );
-          }
-          return;
-        }
-      }
-
-      if (mounted) {
-        router.go('/home');
-      }
-    } catch (e) {
-      if (mounted) {
-        AuthErrorHandler.showError(context, e);
-      }
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
     }
   }
 

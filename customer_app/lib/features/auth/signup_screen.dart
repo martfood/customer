@@ -1,14 +1,11 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shared_widgets/core/theme/app_theme.dart';
 import 'package:go_router/go_router.dart';
 import 'dart:math';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:country_picker/country_picker.dart';
 import 'email_service.dart';
 import 'auth_error_handler.dart';
@@ -22,14 +19,6 @@ class SignupScreen extends StatefulWidget {
 
 class _SignupScreenState extends State<SignupScreen> {
   final _emailController = TextEditingController();
-  
-  Future<void> _saveGoogleAccount(User user) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('last_google_name', user.displayName ?? 'Google User');
-    await prefs.setString('last_google_email', user.email ?? '');
-    await prefs.setString('last_google_photo', user.photoURL ?? '');
-    await prefs.setBool('has_previous_google_login', true);
-  }
   final _passwordController = TextEditingController();
   final _fullNameController = TextEditingController();
   final _phoneController = TextEditingController();

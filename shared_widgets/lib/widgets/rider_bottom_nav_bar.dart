@@ -3,7 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import '../core/theme/app_theme.dart';
 
-/// Bottom navigation for the MartFood rider app (Home, Orders, Messages, Wallet, Profile).
+/// Bottom navigation for the MartFood rider app (Home, Orders, Chat, Wallet, Profile).
 class RiderBottomNavBar extends StatelessWidget {
   /// Currently selected tab index (0–4).
   final int currentIndex;

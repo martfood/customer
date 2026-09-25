@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// A reusable edge-to-edge thick divider line.
 ///
@@ -20,11 +19,11 @@ class SectionDivider extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final double effectiveHeight = thickness ?? 4.h;
+    final double effectiveHeight = thickness ?? 4.0;
 
     // Check if margin has negative horizontal components
     double extraBleed = bleedHorizontal ?? 0.0;
-    EdgeInsets resolvedMargin = EdgeInsets.symmetric(vertical: 16.h);
+    EdgeInsets resolvedMargin = const EdgeInsets.symmetric(vertical: 16.0);
 
     if (margin is EdgeInsets) {
       final m = margin as EdgeInsets;
