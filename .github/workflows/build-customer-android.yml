@@ -104,13 +104,13 @@ jobs:
           path: customer_app/build/app/outputs/bundle/release/*.aab
           retention-days: 14
 
-      # ── OPTIONAL: DEPLOY TO GOOGLE PLAY STORE ──────────────────────────────
-      - name: Upload to Google Play Console
+      # ── OPTIONAL: DEPLOY TO GOOGLE PLAY STORE (CLOSED TESTING) ─────────────
+      - name: Upload to Google Play Console (Closed Testing)
         if: env.PLAY_STORE_JSON_KEY != ''
         uses: r0adkll/upload-google-play@v1
         with:
           serviceAccountJsonPlainText: ${{ secrets.PLAY_STORE_JSON_KEY }}
           packageName: com.martfood.app
           releaseFiles: ${{ steps.find_aab.outputs.aab_path }}
-          track: internal
+          track: alpha # 'alpha' corresponds to Closed Testing in Google Play Console
           status: completed
