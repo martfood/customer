@@ -223,182 +223,244 @@ class _RestaurantCategoryScreenState extends State<RestaurantCategoryScreen> {
     final purpleColor = AppTheme.primaryPurpleFor(isDark);
     final borderColor = isDark ? AppTheme.darkBorder : AppTheme.lightInputBorder;
 
+    final double headerHeight = 94.h;
+    final double searchBarHeight = 60.h;
+
     return Scaffold(
       backgroundColor: backgroundColor,
       body: SafeArea(
         bottom: false,
-        child: Column(
-          children: [
-            // ─── 1. Delivery Location Top Bar ──────────────────────────────
-            Padding(
-              padding: EdgeInsets.fromLTRB(20.w, 10.h, 20.w, 8.h),
-              child: InkWell(
-                onTap: () async {
-                  final result =
-                      await context.push('/profile/address/location');
-                  if (result != null && result is Map<String, dynamic>) {
-                    final newAddr = result['address'] ?? '';
-                    final double? lat = result['latitude'] != null
-                        ? (result['latitude'] as num).toDouble()
-                        : null;
-                    final double? lng = result['longitude'] != null
-                        ? (result['longitude'] as num).toDouble()
-                        : null;
+        child: NestedScrollView(
+          floatHeaderSlivers: true,
+          headerSliverBuilder: (context, innerBoxIsScrolled) {
+            return [
+              SliverAppBar(
+                automaticallyImplyLeading: false,
+                backgroundColor: backgroundColor,
+                elevation: 0,
+                scrolledUnderElevation: 0,
+                floating: true,
+                pinned: false,
+                snap: false,
+                toolbarHeight: 0,
+                collapsedHeight: 0,
+                expandedHeight: headerHeight,
+                flexibleSpace: LayoutBuilder(
+                  builder: (context, constraints) {
+                    final currentHeight = constraints.biggest.height;
+                    final t = (currentHeight / headerHeight).clamp(0.0, 1.0);
+                    return Opacity(
+                      opacity: t,
+                      child: SingleChildScrollView(
+                        physics: const NeverScrollableScrollPhysics(),
+                        child: SizedBox(
+                          height: headerHeight,
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              // ─── 1. Delivery Location Top Bar ──────────────
+                              Padding(
+                                padding:
+                                    EdgeInsets.fromLTRB(20.w, 8.h, 20.w, 4.h),
+                                child: InkWell(
+                                  onTap: () async {
+                                    final result = await context
+                                        .push('/profile/address/location');
+                                    if (result != null &&
+                                        result is Map<String, dynamic>) {
+                                      final newAddr = result['address'] ?? '';
+                                      final double? lat = result['latitude'] !=
+                                              null
+                                          ? (result['latitude'] as num)
+                                              .toDouble()
+                                          : null;
+                                      final double? lng = result['longitude'] !=
+                                              null
+                                          ? (result['longitude'] as num)
+                                              .toDouble()
+                                          : null;
 
-                    setState(() {
-                      _currentAddress = result['title'] ?? _currentAddress;
-                      _fullAddress = newAddr;
-                    });
-                    PriceHelper.currentAddress = _currentAddress;
-                    PriceHelper.fullAddress = _fullAddress;
+                                      setState(() {
+                                        _currentAddress = result['title'] ??
+                                            _currentAddress;
+                                        _fullAddress = newAddr;
+                                      });
+                                      PriceHelper.currentAddress =
+                                          _currentAddress;
+                                      PriceHelper.fullAddress = _fullAddress;
 
-                    if (lat != null && lng != null) {
-                      final newPos = Position(
-                        latitude: lat,
-                        longitude: lng,
-                        timestamp: DateTime.now(),
-                        accuracy: 0.0,
-                        altitude: 0.0,
-                        altitudeAccuracy: 0.0,
-                        heading: 0.0,
-                        headingAccuracy: 0.0,
-                        speed: 0.0,
-                        speedAccuracy: 0.0,
-                      );
-                      if (mounted) {
-                        setState(() {
-                          _currentPosition = newPos;
-                        });
-                      }
-                      PriceHelper.currentPosition = newPos;
-                    } else {
-                      _geocodeAddress(
-                          newAddr.isNotEmpty ? newAddr : _currentAddress);
-                    }
-                  }
-                },
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.location_on, color: purpleColor, size: 16.sp),
-                    SizedBox(width: 4.w),
-                    Flexible(
-                      child: Text(
-                        _currentAddress,
-                        style: TextStyle(
-                          fontSize: AppTypography.font(AppFontSizes.bodySmall),
-                          fontWeight: FontWeight.w600,
-                          color: primaryTextColor,
+                                      if (lat != null && lng != null) {
+                                        final newPos = Position(
+                                          latitude: lat,
+                                          longitude: lng,
+                                          timestamp: DateTime.now(),
+                                          accuracy: 0.0,
+                                          altitude: 0.0,
+                                          altitudeAccuracy: 0.0,
+                                          heading: 0.0,
+                                          headingAccuracy: 0.0,
+                                          speed: 0.0,
+                                          speedAccuracy: 0.0,
+                                        );
+                                        if (mounted) {
+                                          setState(() {
+                                            _currentPosition = newPos;
+                                          });
+                                        }
+                                        PriceHelper.currentPosition = newPos;
+                                      } else {
+                                        _geocodeAddress(newAddr.isNotEmpty
+                                            ? newAddr
+                                            : _currentAddress);
+                                      }
+                                    }
+                                  },
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(Icons.location_on,
+                                          color: purpleColor, size: 16.sp),
+                                      SizedBox(width: 4.w),
+                                      Flexible(
+                                        child: Text(
+                                          _currentAddress,
+                                          style: TextStyle(
+                                            fontSize: AppTypography.font(
+                                                AppFontSizes.bodySmall),
+                                            fontWeight: FontWeight.w600,
+                                            color: primaryTextColor,
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                      Icon(Icons.keyboard_arrow_down,
+                                          color: Colors.grey[600], size: 18.sp),
+                                    ],
+                                  ),
+                                ),
+                              ),
+
+                              // ─── 2. Header Row: "Restaurants" (Left) & Cart (Right) ───────────
+                              Padding(
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: 20.w, vertical: 4.h),
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        GestureDetector(
+                                          onTap: () => context.pop(),
+                                          child: Container(
+                                            padding: EdgeInsets.all(6.w),
+                                            decoration: BoxDecoration(
+                                              shape: BoxShape.circle,
+                                              color: isDark
+                                                  ? Colors.white.withAlpha(15)
+                                                  : const Color(0xFFF3F4F6),
+                                            ),
+                                            child: Icon(
+                                              Icons.arrow_back_ios_new_rounded,
+                                              size: 18.sp,
+                                              color: primaryTextColor,
+                                            ),
+                                          ),
+                                        ),
+                                        SizedBox(width: 10.w),
+                                        Text(
+                                          'Restaurants',
+                                          style: TextStyle(
+                                            color: primaryTextColor,
+                                            fontSize: AppTypography.font(
+                                                AppFontSizes.displaySmall),
+                                            fontWeight: FontWeight.w800,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    _buildCartAction(isDark),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
                       ),
-                    ),
-                    Icon(Icons.keyboard_arrow_down,
-                        color: Colors.grey[600], size: 18.sp),
-                  ],
+                    );
+                  },
                 ),
               ),
-            ),
 
-            // ─── 2. Header Row: "Restaurants" (Left) & Cart (Right) ───────────
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 6.h),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Row(
-                    children: [
-                      GestureDetector(
-                        onTap: () => context.pop(),
-                        child: Container(
-                          padding: EdgeInsets.all(6.w),
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: isDark
-                                ? Colors.white.withAlpha(15)
-                                : const Color(0xFFF3F4F6),
-                          ),
-                          child: Icon(
-                            Icons.arrow_back_ios_new_rounded,
-                            size: 18.sp,
-                            color: primaryTextColor,
-                          ),
-                        ),
+              // ─── 3. Search Bar (Pinned) ──────────────────────────────────
+              SliverPersistentHeader(
+                pinned: true,
+                delegate: _PinnedHeaderDelegate(
+                  height: searchBarHeight,
+                  backgroundColor: backgroundColor,
+                  child: Padding(
+                    padding:
+                        EdgeInsets.fromLTRB(20.w, 4.h, 20.w, 8.h),
+                    child: Container(
+                      padding: EdgeInsets.symmetric(
+                          horizontal: 16.w, vertical: 4.h),
+                      decoration: BoxDecoration(
+                        color: isDark
+                            ? AppTheme.darkSurface
+                            : AppTheme.lightInputFill,
+                        borderRadius: BorderRadius.circular(18.r),
+                        border: Border.all(color: borderColor),
+                        boxShadow: null,
                       ),
-                      SizedBox(width: 10.w),
-                      Text(
-                        'Restaurants',
-                        style: TextStyle(
-                          color: primaryTextColor,
-                          fontSize:
-                              AppTypography.font(AppFontSizes.displaySmall),
-                          fontWeight: FontWeight.w800,
-                        ),
+                      child: Row(
+                        children: [
+                          Icon(LucideIcons.search,
+                              color: mutedTextColor, size: 20.sp),
+                          SizedBox(width: 12.w),
+                          Expanded(
+                            child: TextField(
+                              controller: _searchController,
+                              onChanged: (val) {
+                                setState(() => _searchText = val.trim());
+                              },
+                              style: TextStyle(
+                                color: primaryTextColor,
+                                fontSize:
+                                    AppTypography.font(AppFontSizes.bodyMedium),
+                              ),
+                              decoration: InputDecoration(
+                                hintText: 'Search restaurants...',
+                                hintStyle: TextStyle(
+                                  color: mutedTextColor,
+                                  fontSize: AppTypography.font(
+                                      AppFontSizes.bodyMedium),
+                                ),
+                                border: InputBorder.none,
+                                isDense: true,
+                              ),
+                            ),
+                          ),
+                          if (_searchText.isNotEmpty)
+                            GestureDetector(
+                              onTap: () {
+                                _searchController.clear();
+                                setState(() => _searchText = '');
+                              },
+                              child: Icon(Icons.close_rounded,
+                                  color: mutedTextColor, size: 20.sp),
+                            ),
+                        ],
                       ),
-                    ],
+                    ),
                   ),
-                  _buildCartAction(isDark),
-                ],
-              ),
-            ),
-
-            // ─── 3. Search Bar ─────────────────────────────────────────────
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
-              child: Container(
-                padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),
-                decoration: BoxDecoration(
-                  color:
-                      isDark ? AppTheme.darkSurface : AppTheme.lightInputFill,
-                  borderRadius: BorderRadius.circular(18.r),
-                  border: Border.all(color: borderColor),
-                  boxShadow: null,
-                ),
-                child: Row(
-                  children: [
-                    Icon(LucideIcons.search,
-                        color: mutedTextColor, size: 20.sp),
-                    SizedBox(width: 12.w),
-                    Expanded(
-                      child: TextField(
-                        controller: _searchController,
-                        onChanged: (val) {
-                          setState(() => _searchText = val.trim());
-                        },
-                        style: TextStyle(
-                          color: primaryTextColor,
-                          fontSize: AppTypography.font(AppFontSizes.bodyMedium),
-                        ),
-                        decoration: InputDecoration(
-                          hintText: 'Search restaurants...',
-                          hintStyle: TextStyle(
-                            color: mutedTextColor,
-                            fontSize:
-                                AppTypography.font(AppFontSizes.bodyMedium),
-                          ),
-                          border: InputBorder.none,
-                          isDense: true,
-                        ),
-                      ),
-                    ),
-                    if (_searchText.isNotEmpty)
-                      GestureDetector(
-                        onTap: () {
-                          _searchController.clear();
-                          setState(() => _searchText = '');
-                        },
-                        child: Icon(Icons.close_rounded,
-                            color: mutedTextColor, size: 20.sp),
-                      ),
-                  ],
                 ),
               ),
-            ),
+            ];
+          },
 
-            // ─── 4. Restaurant Card List ────────────────────────────────────
-            Expanded(
-              child: StreamBuilder<QuerySnapshot>(
+          // ─── 4. Restaurant Card List ────────────────────────────────────
+          body: StreamBuilder<QuerySnapshot>(
                 stream: FirebaseFirestore.instance
                     .collection('vendors')
                     .where('businessProfile.status', isEqualTo: 'verified')
@@ -484,45 +546,48 @@ class _RestaurantCategoryScreenState extends State<RestaurantCategoryScreen> {
 
                   if (filteredDocs.isEmpty) {
                     return Center(
-                      child: Padding(
-                        padding: EdgeInsets.symmetric(
-                            horizontal: 24.w, vertical: 40.h),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Image.asset(
-                              'assets/emoji/sad.png',
-                              width: 140.w,
-                              height: 140.w,
-                              fit: BoxFit.contain,
-                            ),
-                            SizedBox(height: 24.h),
-                            Text(
-                              _searchText.isNotEmpty
-                                  ? 'No matching restaurants'
-                                  : 'No Restaurants Available',
-                              style: TextStyle(
-                                color: primaryTextColor,
-                                fontSize: AppTypography.font(
-                                    AppFontSizes.bodyLarge + 2),
-                                fontWeight: FontWeight.w800,
+                      child: SingleChildScrollView(
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 24.w, vertical: 40.h),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Image.asset(
+                                'assets/emoji/sad.png',
+                                width: 140.w,
+                                height: 140.w,
+                                fit: BoxFit.contain,
                               ),
-                            ),
-                            SizedBox(height: 10.h),
-                            Text(
-                              _searchText.isNotEmpty
-                                  ? 'No verified restaurants matched your search query. Try searching for a different keyword.'
-                                  : 'There are no verified restaurants available in your location right now. We are expanding quickly, check back soon!',
-                              style: TextStyle(
-                                color: mutedTextColor,
-                                fontSize: AppTypography.font(
-                                    AppFontSizes.bodySmall),
-                                fontWeight: FontWeight.w500,
-                                height: 1.4,
+                              SizedBox(height: 24.h),
+                              Text(
+                                _searchText.isNotEmpty
+                                    ? 'No matching restaurants'
+                                    : 'No Restaurants Available',
+                                style: TextStyle(
+                                  color: primaryTextColor,
+                                  fontSize: AppTypography.font(
+                                      AppFontSizes.bodyLarge + 2),
+                                  fontWeight: FontWeight.w800,
+                                ),
                               ),
-                              textAlign: TextAlign.center,
-                            ),
-                          ],
+                              SizedBox(height: 10.h),
+                              Text(
+                                _searchText.isNotEmpty
+                                    ? 'No verified restaurants matched your search query. Try searching for a different keyword.'
+                                    : 'There are no verified restaurants available in your location right now. We are expanding quickly, check back soon!',
+                                style: TextStyle(
+                                  color: mutedTextColor,
+                                  fontSize: AppTypography.font(
+                                      AppFontSizes.bodySmall),
+                                  fontWeight: FontWeight.w500,
+                                  height: 1.4,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     );
@@ -569,8 +634,6 @@ class _RestaurantCategoryScreenState extends State<RestaurantCategoryScreen> {
                   );
                 },
               ),
-            ),
-          ],
         ),
       ),
     );
@@ -825,5 +888,40 @@ class _RestaurantCategoryScreenState extends State<RestaurantCategoryScreen> {
         ),
       ),
     );
+  }
+}
+
+class _PinnedHeaderDelegate extends SliverPersistentHeaderDelegate {
+  final double height;
+  final Color backgroundColor;
+  final Widget child;
+
+  _PinnedHeaderDelegate({
+    required this.height,
+    required this.backgroundColor,
+    required this.child,
+  });
+
+  @override
+  double get minExtent => height;
+
+  @override
+  double get maxExtent => height;
+
+  @override
+  Widget build(
+      BuildContext context, double shrinkOffset, bool overlapsContent) {
+    return Container(
+      height: height,
+      color: backgroundColor,
+      child: child,
+    );
+  }
+
+  @override
+  bool shouldRebuild(covariant _PinnedHeaderDelegate oldDelegate) {
+    return oldDelegate.height != height ||
+        oldDelegate.backgroundColor != backgroundColor ||
+        oldDelegate.child != child;
   }
 }
