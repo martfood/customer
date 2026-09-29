@@ -54,8 +54,7 @@ class _MessageScreenState extends State<MessageScreen> {
     final unreadMap = chat['unreadCount'] as Map<String, dynamic>?;
     if (unreadMap == null) return 0;
     final customerId = chat['customerId']?.toString();
-    final riderId = chat['riderId']?.toString();
-    if (customerId == userId && riderId == userId) {
+    if ((customerId == null || customerId == userId) && unreadMap.containsKey('customer_unread')) {
       final roleUnread = unreadMap['customer_unread'];
       if (roleUnread is num) return roleUnread.toInt();
     }

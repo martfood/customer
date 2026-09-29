@@ -90,10 +90,19 @@ class MartFoodBottomNavBar extends StatelessWidget {
             final data = doc.data() as Map<String, dynamic>?;
             if (data != null) {
               final counts = data['unreadCount'] as Map<String, dynamic>?;
-              if (counts != null && counts.containsKey(currentUser.uid)) {
-                final unread = counts[currentUser.uid];
-                if (unread is int) totalUnread += unread;
-                if (unread is num) totalUnread += unread.toInt();
+              if (counts != null) {
+                final customerId = data['customerId']?.toString();
+                if ((customerId == null || customerId == currentUser.uid) && counts.containsKey('customer_unread')) {
+                  final roleUnread = counts['customer_unread'];
+                  if (roleUnread is num) {
+                    totalUnread += roleUnread.toInt();
+                  }
+                } else if (counts.containsKey(currentUser.uid)) {
+                  final unread = counts[currentUser.uid];
+                  if (unread is num) {
+                    totalUnread += unread.toInt();
+                  }
+                }
               }
             }
           }

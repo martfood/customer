@@ -226,7 +226,7 @@ class _ConversationScreenState extends State<ConversationScreen> {
         'unreadCount': unreadMap,
       }, SetOptions(merge: true));
 
-      if (!isSelfChat) {
+      if (widget.riderId.isNotEmpty) {
         await _firestore.collection('notifications').add({
           'userId': widget.riderId,
           'customerId': widget.riderId,

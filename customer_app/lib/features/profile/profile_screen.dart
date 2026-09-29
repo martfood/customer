@@ -281,8 +281,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               final counts = data['unreadCount'] as Map<String, dynamic>?;
               if (counts != null) {
                 final customerId = data['customerId']?.toString();
-                final riderId = data['riderId']?.toString();
-                if (customerId == userId && riderId == userId) {
+                if ((customerId == null || customerId == userId) && counts.containsKey('customer_unread')) {
                   final unread = counts['customer_unread'];
                   if (unread is num) totalUnread += unread.toInt();
                 } else if (counts.containsKey(userId)) {
