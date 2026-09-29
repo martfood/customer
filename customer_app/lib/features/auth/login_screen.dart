@@ -80,15 +80,23 @@ class _LoginScreenState extends State<LoginScreen> {
             .doc(user.uid)
             .get();
 
-        if (docSnap.exists && AccountStatusService.isSuspended(docSnap.data())) {
-          final info = AccountStatusService.parseSuspension(docSnap.data());
-          await FirebaseAuth.instance.signOut();
+        if (docSnap.exists) {
+          if (AccountStatusService.isSuspended(docSnap.data())) {
+            final info = AccountStatusService.parseSuspension(docSnap.data());
+            await FirebaseAuth.instance.signOut();
+            if (mounted) {
+              AccountStatusService.showSuspensionSheet(
+                context,
+                reason: info.reason,
+                suspendedUntil: info.suspendedUntil,
+              );
+            }
+            return;
+          }
+        } else {
+          // Document does not exist in customers collection -> prompt customer profile activation
           if (mounted) {
-            AccountStatusService.showSuspensionSheet(
-              context,
-              reason: info.reason,
-              suspendedUntil: info.suspendedUntil,
-            );
+            _showActivateCustomerProfileBottomSheet(user);
           }
           return;
         }
@@ -108,6 +116,209 @@ class _LoginScreenState extends State<LoginScreen> {
         });
       }
     }
+  }
+
+  void _showActivateCustomerProfileBottomSheet(User user) async {
+    String existingName = '';
+    String existingPhone = '';
+    String existingPhotoUrl = '';
+
+    try {
+      final riderDoc = await FirebaseFirestore.instance
+          .collection('riders')
+          .doc(user.uid)
+          .get();
+      if (riderDoc.exists && riderDoc.data() != null) {
+        final d = riderDoc.data()!;
+        existingName = (d['fullName'] ?? '').toString();
+        existingPhone = (d['phone'] ?? '').toString();
+        existingPhotoUrl = (d['photoUrl'] ?? '').toString();
+      } else {
+        final vendorDoc = await FirebaseFirestore.instance
+            .collection('vendors')
+            .doc(user.uid)
+            .get();
+        if (vendorDoc.exists && vendorDoc.data() != null) {
+          final d = vendorDoc.data()!;
+          existingName = (d['fullName'] ?? '').toString();
+          existingPhone = (d['phone'] ?? '').toString();
+        }
+      }
+    } catch (_) {}
+
+    if (!mounted) return;
+
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final purpleColor = AppTheme.primaryPurpleFor(isDark);
+    final sheetBg = isDark ? AppTheme.darkSurface : Colors.white;
+    final primaryTextColor = isDark ? Colors.white : const Color(0xFF1E1E1E);
+    final mutedTextColor = AppTheme.mutedTextColorFor(isDark);
+    final borderColor = isDark ? AppTheme.darkBorder : AppTheme.lightInputBorder;
+    final cardBg = isDark ? AppTheme.darkSurface : AppTheme.lightInputFill;
+
+    bool isActivating = false;
+
+    showModalBottomSheet(
+      context: context,
+      isDismissible: false,
+      enableDrag: false,
+      elevation: 0,
+      backgroundColor: sheetBg,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+      ),
+      builder: (sheetContext) {
+        return StatefulBuilder(
+          builder: (ctx, setSheetState) {
+            return SafeArea(
+              child: Responsive.maxContainer(
+                context: ctx,
+                maxWidth: 450,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Center(
+                        child: Container(
+                          width: 40,
+                          height: 4,
+                          decoration: BoxDecoration(
+                            color: borderColor,
+                            borderRadius: BorderRadius.circular(2),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      Container(
+                        width: 64,
+                        height: 64,
+                        decoration: BoxDecoration(
+                          color: cardBg,
+                          shape: BoxShape.circle,
+                          border: Border.all(color: borderColor, width: 1),
+                        ),
+                        child: Center(
+                          child: Icon(
+                            Icons.shopping_bag_outlined,
+                            color: purpleColor,
+                            size: 32,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Activate Customer Account',
+                        style: TextStyle(
+                          fontSize: AppTypography.font(20),
+                          fontWeight: FontWeight.bold,
+                          color: primaryTextColor,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'We found your MartFood account (${user.email}). Would you like to activate customer ordering with this account?',
+                        style: TextStyle(
+                          fontSize: AppTypography.font(14),
+                          color: mutedTextColor,
+                          height: 1.4,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 24),
+                      ElevatedButton(
+                        onPressed: isActivating
+                            ? null
+                            : () async {
+                                setSheetState(() => isActivating = true);
+                                try {
+                                  final fullName = existingName.isNotEmpty
+                                      ? existingName
+                                      : (user.displayName ?? user.email!.split('@').first);
+                                  await FirebaseFirestore.instance
+                                      .collection('customers')
+                                      .doc(user.uid)
+                                      .set({
+                                    'uid': user.uid,
+                                    'email': user.email ?? '',
+                                    'fullName': fullName,
+                                    'phoneNumber': existingPhone,
+                                    'profilePic': existingPhotoUrl,
+                                    'balance': 0.0,
+                                    'createdAt': FieldValue.serverTimestamp(),
+                                  });
+
+                                  if (ctx.mounted) {
+                                    Navigator.pop(ctx);
+                                  }
+                                  if (mounted) {
+                                    context.go('/home');
+                                  }
+                                } catch (e) {
+                                  if (ctx.mounted) {
+                                    setSheetState(() => isActivating = false);
+                                  }
+                                  if (mounted) {
+                                    AuthErrorHandler.showError(context, e);
+                                  }
+                                }
+                              },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: purpleColor,
+                          foregroundColor: Colors.white,
+                          elevation: 0,
+                          minimumSize: const Size(double.infinity, 50),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                        ),
+                        child: isActivating
+                            ? const SizedBox(
+                                height: 20,
+                                width: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Colors.white,
+                                ),
+                              )
+                            : Text(
+                                'Activate & Order Now',
+                                style: TextStyle(
+                                  fontSize: AppTypography.font(15),
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                      ),
+                      const SizedBox(height: 8),
+                      TextButton(
+                        onPressed: isActivating
+                            ? null
+                            : () async {
+                                Navigator.pop(ctx);
+                                await FirebaseAuth.instance.signOut();
+                              },
+                        style: TextButton.styleFrom(
+                          minimumSize: const Size(double.infinity, 44),
+                        ),
+                        child: Text(
+                          'Cancel',
+                          style: TextStyle(
+                            fontSize: AppTypography.font(14),
+                            fontWeight: FontWeight.w600,
+                            color: mutedTextColor,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
   }
 
 

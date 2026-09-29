@@ -120,15 +120,50 @@ class _OtpScreenState extends State<OtpScreen> {
       });
 
       try {
-        // 1. Create firebase user
-        final userCredential = await FirebaseAuth.instance
-            .createUserWithEmailAndPassword(
-              email: widget.email,
-              password: widget.password,
-            )
-            .timeout(const Duration(seconds: 5));
-
-        final uid = userCredential.user?.uid;
+        // 1. Create firebase user or link existing MartFood account
+        String? uid;
+        try {
+          final userCredential = await FirebaseAuth.instance
+              .createUserWithEmailAndPassword(
+                email: widget.email,
+                password: widget.password,
+              )
+              .timeout(const Duration(seconds: 5));
+          uid = userCredential.user?.uid;
+        } on FirebaseAuthException catch (authEx) {
+          if (authEx.code == 'email-already-in-use') {
+            try {
+              final existingCred = await FirebaseAuth.instance
+                  .signInWithEmailAndPassword(
+                    email: widget.email,
+                    password: widget.password,
+                  )
+                  .timeout(const Duration(seconds: 5));
+              final existingUid = existingCred.user?.uid;
+              if (existingUid != null) {
+                final custDoc = await FirebaseFirestore.instance
+                    .collection('customers')
+                    .doc(existingUid)
+                    .get();
+                if (custDoc.exists) {
+                  throw Exception(
+                    'A customer account with this email already exists. Please log in directly.',
+                  );
+                }
+                uid = existingUid;
+              }
+            } on FirebaseAuthException catch (signInEx) {
+              if (signInEx.code == 'wrong-password' || signInEx.code == 'invalid-credential') {
+                throw Exception(
+                  'An account with this email already exists on MartFood. Please enter your existing MartFood account password to activate your Customer profile.',
+                );
+              }
+              rethrow;
+            }
+          } else {
+            rethrow;
+          }
+        }
         if (uid != null) {
           String profilePicUrl = '';
 
