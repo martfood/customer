@@ -32,7 +32,7 @@ class LeaveAReviewScreen extends StatefulWidget {
 }
 
 class _LeaveAReviewScreenState extends State<LeaveAReviewScreen> {
-  int _rating = 5;
+  int _rating = 0;
   bool _isSubmitting = false;
   final TextEditingController _feedbackController = TextEditingController();
 
@@ -43,6 +43,13 @@ class _LeaveAReviewScreenState extends State<LeaveAReviewScreen> {
   }
 
   void _submitReview() async {
+    if (_rating == 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please select a star rating first.')),
+      );
+      return;
+    }
+
     if (widget.vendorId.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Vendor identity not found.')),
@@ -457,7 +464,9 @@ class _LeaveAReviewScreenState extends State<LeaveAReviewScreen> {
                                       selected
                                           ? Icons.star_rounded
                                           : Icons.star_outline_rounded,
-                                      color: const Color(0xFFFFC107),
+                                      color: selected
+                                          ? const Color(0xFFFFC107)
+                                          : (isDark ? Colors.grey[600] : const Color(0xFFD1D5DB)),
                                       size: 36.sp,
                                     ),
                                   ),

@@ -318,6 +318,12 @@ class _TrackDriverScreenState extends State<TrackDriverScreen> {
                 final paymentMethod = (order['paymentMethod'] is Map)
                     ? (order['paymentMethod']['label'] ?? 'Wallet').toString()
                     : (order['paymentMethod'] ?? 'Wallet').toString();
+                final isRiderRated = (order['isRiderRated'] == true) ||
+                    (order['isRiderRated']?.toString() == 'true') ||
+                    (order['isDriverRated'] == true) ||
+                    (order['isDriverRated']?.toString() == 'true') ||
+                    (order['riderRated'] == true) ||
+                    (order['riderRated']?.toString() == 'true');
 
                 return SafeArea(
                   top: false,
@@ -823,7 +829,7 @@ class _TrackDriverScreenState extends State<TrackDriverScreen> {
                           ),
                         ),
                       ),
-                      if (status == 'delivered')
+                      if (status == 'delivered' && !isRiderRated)
                         Container(
                           padding: EdgeInsets.fromLTRB(20.w, 14.h, 20.w, 20.h),
                           decoration: BoxDecoration(
