@@ -402,6 +402,7 @@ final appRouter = GoRouter(
       builder: (context, state) {
         final extra = state.extra as Map<String, dynamic>?;
         return ConversationScreen(
+          chatId: extra?['chatId']?.toString(),
           riderId: state.pathParameters['riderId'] ?? '',
           riderName: extra?['riderName']?.toString(),
           riderPhotoUrl: extra?['riderPhotoUrl']?.toString(),

@@ -8,6 +8,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/services.dart';
 import 'paystack_service.dart';
 import 'paystack_webview_screen.dart';
+import '../../core/utils/custom_snackbar.dart';
 
 class TopUpPaymentMethodScreen extends StatefulWidget {
   final double amount;
@@ -343,13 +344,11 @@ class _TopUpPaymentMethodScreenState extends State<TopUpPaymentMethodScreen> {
                               setSheetState(() {
                                 isAccountCopied = true;
                               });
-                              ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text('Account number copied to clipboard!'),
-                                  backgroundColor: Colors.green,
-                                  duration: Duration(seconds: 2),
-                                ),
+                              CustomSnackBar.show(
+                                context,
+                                message: 'Account number copied to clipboard!',
+                                type: SnackBarType.success,
+                                duration: const Duration(seconds: 2),
                               );
                               Future.delayed(const Duration(seconds: 3), () {
                                 if (sheetContext.mounted) {

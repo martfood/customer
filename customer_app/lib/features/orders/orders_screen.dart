@@ -13,6 +13,7 @@ import 'package:shared_widgets/widgets/verification_badge.dart';
 import '../../core/widgets/guest_auth_prompt_sheet.dart';
 import '../../core/services/order_completion_service.dart';
 import '../wallet/paystack_service.dart';
+import '../../core/utils/custom_snackbar.dart';
 
 class OrdersScreen extends StatefulWidget {
   final bool showSuccess;
@@ -185,13 +186,11 @@ class _OrdersScreenState extends State<OrdersScreen>
                             setSheetState(() {
                               isCopied = true;
                             });
-                            ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Payment link copied to clipboard!'),
-                                backgroundColor: Colors.green,
-                                duration: Duration(seconds: 2),
-                              ),
+                            CustomSnackBar.show(
+                              context,
+                              message: 'Payment link copied to clipboard!',
+                              type: SnackBarType.success,
+                              duration: const Duration(seconds: 2),
                             );
                             Future.delayed(const Duration(seconds: 3), () {
                               if (sheetContext.mounted) {
@@ -2367,11 +2366,10 @@ class _OrdersScreenState extends State<OrdersScreen>
       await Clipboard.setData(ClipboardData(text: newUrl));
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('New payment link generated and copied to clipboard!'),
-            backgroundColor: Colors.green,
-          ),
+        CustomSnackBar.show(
+          context,
+          message: 'New payment link generated and copied to clipboard!',
+          type: SnackBarType.success,
         );
       }
     } catch (e) {

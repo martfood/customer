@@ -1,5 +1,6 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:shared_widgets/core/theme/app_theme.dart';
 import 'package:go_router/go_router.dart';
@@ -38,7 +39,12 @@ class _SignupScreenState extends State<SignupScreen> {
 
   Future<void> _pickImage() async {
     try {
-      final pickedFile = await _picker.pickImage(source: ImageSource.gallery, imageQuality: 75);
+      final pickedFile = await _picker.pickImage(
+        source: ImageSource.gallery,
+        maxWidth: 512,
+        maxHeight: 512,
+        imageQuality: 70,
+      );
       if (pickedFile != null) {
         setState(() {
           _imageFile = File(pickedFile.path);
@@ -76,15 +82,29 @@ class _SignupScreenState extends State<SignupScreen> {
     }
 
     final cleanPhone = phoneNumber.replaceAll(RegExp(r'\D'), '');
-    final sanitizedPhone = cleanPhone.startsWith('0') ? cleanPhone.substring(1) : cleanPhone;
-    if (sanitizedPhone.length < 10 || sanitizedPhone.length > 11) {
-      AuthErrorHandler.showError(context, 'Enter a valid 10-digit phone number');
+    if (cleanPhone.length < 10) {
+      AuthErrorHandler.showError(
+        context,
+        'Phone number must be at least 10 digits.',
+      );
       return;
     }
 
+    if (cleanPhone.length > 11) {
+      AuthErrorHandler.showError(
+        context,
+        'Phone number cannot exceed 11 digits.',
+      );
+      return;
+    }
+
+    final sanitizedPhone = cleanPhone.startsWith('0') ? cleanPhone.substring(1) : cleanPhone;
     final phoneRegex = RegExp(r'^[789]\d{9}$');
     if (_selectedCountryCode == '+234' && !phoneRegex.hasMatch(sanitizedPhone)) {
-      AuthErrorHandler.showError(context, 'Please enter a valid Nigerian phone number (e.g. 8031234567).');
+      AuthErrorHandler.showError(
+        context,
+        'Please enter a valid Nigerian phone number (e.g. 08012345678 or 8012345678).',
+      );
       return;
     }
 
@@ -279,6 +299,10 @@ class _SignupScreenState extends State<SignupScreen> {
                       child: TextField(
                         controller: _phoneController,
                         keyboardType: TextInputType.phone,
+                        inputFormatters: [
+                          FilteringTextInputFormatter.digitsOnly,
+                          LengthLimitingTextInputFormatter(11),
+                        ],
                         style: TextStyle(
                           color: textColor,
                           fontSize: AppTypography.font(AppFontSizes.bodyMedium),

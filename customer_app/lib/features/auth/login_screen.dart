@@ -8,6 +8,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'email_service.dart';
 import 'auth_error_handler.dart';
 import '../../core/services/account_status_service.dart';
+import '../../core/utils/custom_snackbar.dart';
 
 class LoginScreen extends StatefulWidget {
   final String? suspensionReason;
@@ -468,11 +469,10 @@ class _LoginScreenState extends State<LoginScreen> {
                                 if (context.mounted) {
                                   Navigator.pop(context); // Close bottom sheet
                                   if (sent) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: Text('Verification code sent to $email'),
-                                        backgroundColor: Colors.green,
-                                      ),
+                                    CustomSnackBar.show(
+                                      context,
+                                      message: 'Verification code sent to $email',
+                                      type: SnackBarType.success,
                                     );
                                   } else {
                                     AuthErrorHandler.showError(context, 'Failed to send email. Please try again.');

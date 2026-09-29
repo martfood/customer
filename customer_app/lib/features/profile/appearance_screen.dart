@@ -11,6 +11,7 @@ import '../../main.dart';
 import '../auth/auth_error_handler.dart';
 import '../auth/email_service.dart';
 import 'change_email_bottom_sheet.dart';
+import '../../core/utils/custom_snackbar.dart';
 
 class AppearanceScreen extends StatefulWidget {
   const AppearanceScreen({super.key});
@@ -371,13 +372,10 @@ class _AppearanceScreenState extends State<AppearanceScreen> {
                                 if (context.mounted) {
                                   Navigator.pop(context);
                                   if (sent) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: Text(
-                                          'Verification code sent to $email',
-                                        ),
-                                        backgroundColor: Colors.green,
-                                      ),
+                                    CustomSnackBar.show(
+                                      context,
+                                      message: 'Verification code sent to $email',
+                                      type: SnackBarType.success,
                                     );
                                   } else {
                                     AuthErrorHandler.showError(

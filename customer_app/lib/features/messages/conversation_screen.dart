@@ -8,12 +8,14 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:customer_app/core/services/notification_service.dart';
 
 class ConversationScreen extends StatefulWidget {
+  final String? chatId;
   final String riderId;
   final String? riderName;
   final String? riderPhotoUrl;
 
   const ConversationScreen({
     super.key,
+    this.chatId,
     required this.riderId,
     this.riderName,
     this.riderPhotoUrl,
@@ -64,9 +66,17 @@ class _ConversationScreenState extends State<ConversationScreen> {
     return 'chat_${list[0]}_${list[1]}';
   }
 
+  String get effectiveChatId {
+    if (widget.chatId != null && widget.chatId!.trim().isNotEmpty) {
+      return widget.chatId!.trim();
+    }
+    final currentUid = _auth.currentUser?.uid ?? '';
+    return _getChatId(currentUid, widget.riderId);
+  }
+
   Future<void> _loadMetadata() async {
     final currentUser = _auth.currentUser;
-    if (currentUser == null || widget.riderId.isEmpty) return;
+    if (currentUser == null) return;
 
     try {
       // Load customer profile info
@@ -75,6 +85,29 @@ class _ConversationScreenState extends State<ConversationScreen> {
         final cData = custDoc.data()!;
         _customerName = (cData['fullName'] ?? cData['name'] ?? 'Customer').toString();
         _customerPhoto = (cData['profilePic'] ?? cData['photoUrl'] ?? '').toString();
+      }
+
+      // Check existing chat document to inspect rider details if self-chat
+      final chatSnap = await _firestore.collection('chats').doc(effectiveChatId).get();
+      if (chatSnap.exists && chatSnap.data() != null) {
+        final cData = chatSnap.data()!;
+        if (_riderName == 'Rider' || _riderName.isEmpty) {
+          final savedName = cData['riderName'];
+          if (savedName != null && savedName.toString().trim().isNotEmpty) {
+            _riderName = savedName.toString().trim();
+          }
+        }
+        if (_riderPhoto.isEmpty) {
+          final savedPhoto = cData['riderPhoto'];
+          if (savedPhoto != null && savedPhoto.toString().trim().isNotEmpty) {
+            _riderPhoto = savedPhoto.toString().trim();
+          }
+        }
+      }
+
+      if (widget.riderId.isEmpty || widget.riderId == currentUser.uid) {
+        if (mounted) setState(() {});
+        return;
       }
 
       // Load rider metadata
@@ -131,11 +164,11 @@ class _ConversationScreenState extends State<ConversationScreen> {
     final currentUser = _auth.currentUser;
     if (currentUser == null) return;
 
-    final chatId = _getChatId(currentUser.uid, widget.riderId);
     try {
-      await _firestore.collection('chats').doc(chatId).set({
+      await _firestore.collection('chats').doc(effectiveChatId).set({
         'unreadCount': {
           currentUser.uid: 0,
+          'customer_unread': 0,
         }
       }, SetOptions(merge: true));
     } catch (e) {
@@ -150,24 +183,38 @@ class _ConversationScreenState extends State<ConversationScreen> {
     final currentUser = _auth.currentUser;
     if (currentUser == null) return;
 
-    final chatId = _getChatId(currentUser.uid, widget.riderId);
+    final currentChatId = effectiveChatId;
     _messageController.clear();
 
     try {
       final now = FieldValue.serverTimestamp();
       await _firestore
           .collection('chats')
-          .doc(chatId)
+          .doc(currentChatId)
           .collection('messages')
           .add({
         'senderId': currentUser.uid,
+        'senderRole': 'customer',
         'receiverId': widget.riderId,
         'text': text,
         'createdAt': now,
       });
 
-      await _firestore.collection('chats').doc(chatId).set({
-        'members': [currentUser.uid, widget.riderId],
+      final isSelfChat = widget.riderId == currentUser.uid || widget.riderId.isEmpty;
+      final unreadMap = <String, dynamic>{
+        'customer_unread': 0,
+        'rider_unread': FieldValue.increment(1),
+        currentUser.uid: 0,
+      };
+      if (!isSelfChat) {
+        unreadMap[widget.riderId] = FieldValue.increment(1);
+      }
+
+      await _firestore.collection('chats').doc(currentChatId).set({
+        'members': [
+          currentUser.uid,
+          if (widget.riderId.isNotEmpty && widget.riderId != currentUser.uid) widget.riderId,
+        ],
         'lastMessage': text,
         'lastMessageTime': now,
         'customerId': currentUser.uid,
@@ -176,37 +223,37 @@ class _ConversationScreenState extends State<ConversationScreen> {
         'riderId': widget.riderId,
         'riderName': _riderName,
         'riderPhoto': _riderPhoto,
-        'unreadCount': {
-          widget.riderId: FieldValue.increment(1),
-        }
+        'unreadCount': unreadMap,
       }, SetOptions(merge: true));
 
-      await _firestore.collection('notifications').add({
-        'userId': widget.riderId,
-        'customerId': widget.riderId,
-        'title': 'New Message from $_customerName',
-        'body': text,
-        'description': text,
-        'type': 'chat_message',
-        'chatId': chatId,
-        'senderId': currentUser.uid,
-        'isRead': false,
-        'createdAt': now,
-      });
-
-      // Dispatch FCM Push Notification to Rider directly
-      NotificationService.sendPushToRider(
-        riderId: widget.riderId,
-        title: 'New Message from $_customerName',
-        body: text,
-        data: {
+      if (!isSelfChat) {
+        await _firestore.collection('notifications').add({
+          'userId': widget.riderId,
+          'customerId': widget.riderId,
+          'title': 'New Message from $_customerName',
+          'body': text,
+          'description': text,
           'type': 'chat_message',
-          'chatId': chatId,
+          'chatId': currentChatId,
           'senderId': currentUser.uid,
-          'senderName': _customerName,
-          'senderPhoto': _customerPhoto,
-        },
-      );
+          'isRead': false,
+          'createdAt': now,
+        });
+
+        // Dispatch FCM Push Notification to Rider directly
+        NotificationService.sendPushToRider(
+          riderId: widget.riderId,
+          title: 'New Message from $_customerName',
+          body: text,
+          data: {
+            'type': 'chat_message',
+            'chatId': currentChatId,
+            'senderId': currentUser.uid,
+            'senderName': _customerName,
+            'senderPhoto': _customerPhoto,
+          },
+        );
+      }
 
       _scrollToBottom();
     } catch (e) {
@@ -242,7 +289,7 @@ class _ConversationScreenState extends State<ConversationScreen> {
       );
     }
 
-    final chatId = _getChatId(currentUser.uid, widget.riderId);
+    final chatId = effectiveChatId;
 
     return Scaffold(
       backgroundColor: backgroundColor,
@@ -350,8 +397,11 @@ class _ConversationScreenState extends State<ConversationScreen> {
                   itemBuilder: (context, index) {
                     final msg = messages[index].data() as Map<String, dynamic>;
                     final senderId = msg['senderId'] ?? '';
+                    final senderRole = msg['senderRole'] as String?;
                     final text = msg['text'] ?? '';
-                    final isOutgoing = senderId == currentUser.uid;
+                    final isOutgoing = senderRole != null
+                        ? senderRole == 'customer'
+                        : senderId == currentUser.uid;
                     final timeStamp = msg['createdAt'] as Timestamp?;
                     
                     String formattedTime = '';

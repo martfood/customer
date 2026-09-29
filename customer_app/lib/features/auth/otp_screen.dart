@@ -12,6 +12,7 @@ import 'package:shared_widgets/core/theme/app_theme.dart';
 
 import 'auth_error_handler.dart';
 import 'email_service.dart';
+import '../../core/utils/custom_snackbar.dart';
 
 class OtpScreen extends StatefulWidget {
   final String email;
@@ -93,11 +94,10 @@ class _OtpScreenState extends State<OtpScreen> {
     EmailService.sendOtpEmail(widget.email, newOtp);
 
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Verification code resent to ${widget.email}'),
-          backgroundColor: Colors.green,
-        ),
+      CustomSnackBar.show(
+        context,
+        message: 'Verification code resent to ${widget.email}',
+        type: SnackBarType.success,
       );
     }
   }
@@ -128,7 +128,7 @@ class _OtpScreenState extends State<OtpScreen> {
                 email: widget.email,
                 password: widget.password,
               )
-              .timeout(const Duration(seconds: 5));
+              .timeout(const Duration(seconds: 15));
           uid = userCredential.user?.uid;
         } on FirebaseAuthException catch (authEx) {
           if (authEx.code == 'email-already-in-use') {
@@ -138,14 +138,20 @@ class _OtpScreenState extends State<OtpScreen> {
                     email: widget.email,
                     password: widget.password,
                   )
-                  .timeout(const Duration(seconds: 5));
+                  .timeout(const Duration(seconds: 15));
               final existingUid = existingCred.user?.uid;
               if (existingUid != null) {
                 final custDoc = await FirebaseFirestore.instance
                     .collection('customers')
                     .doc(existingUid)
                     .get();
-                if (custDoc.exists) {
+                final custData = custDoc.data();
+                final bool hasCompletedProfile = custDoc.exists &&
+                    custData != null &&
+                    custData.containsKey('fullName') &&
+                    custData['fullName'] != null &&
+                    custData['fullName'].toString().trim().isNotEmpty;
+                if (hasCompletedProfile) {
                   throw Exception(
                     'A customer account with this email already exists. Please log in directly.',
                   );
@@ -165,26 +171,7 @@ class _OtpScreenState extends State<OtpScreen> {
           }
         }
         if (uid != null) {
-          String profilePicUrl = '';
-
-          // 2. Upload profile pic if selected
-          if (widget.profilePicPath.isNotEmpty) {
-            final file = File(widget.profilePicPath);
-            if (await file.exists()) {
-              final storageRef = FirebaseStorage.instance
-                  .ref()
-                  .child('profile_pics')
-                  .child('$uid.jpg');
-              await storageRef
-                  .putFile(file)
-                  .timeout(const Duration(seconds: 5));
-              profilePicUrl = await storageRef
-                  .getDownloadURL()
-                  .timeout(const Duration(seconds: 5));
-            }
-          }
-
-          // 3. Store customer in Firestore
+          // 2. Store customer profile in Firestore FIRST with merge (guarantees account is created immediately)
           await FirebaseFirestore.instance
               .collection('customers')
               .doc(uid)
@@ -193,10 +180,15 @@ class _OtpScreenState extends State<OtpScreen> {
             'email': widget.email,
             'fullName': widget.fullName,
             'phoneNumber': widget.phoneNumber,
-            'profilePic': profilePicUrl,
+            'profilePic': '',
             'balance': 0.0,
             'createdAt': FieldValue.serverTimestamp(),
-          }).timeout(const Duration(seconds: 5));
+          }, SetOptions(merge: true)).timeout(const Duration(seconds: 15));
+
+          // 3. Upload profile pic asynchronously in background so user doesn't wait
+          if (widget.profilePicPath.isNotEmpty) {
+            _uploadProfilePicInBackground(uid, widget.profilePicPath);
+          }
 
           // 4. Send welcome email in the background
           EmailService.sendWelcomeEmail(widget.email, widget.fullName);
@@ -219,6 +211,31 @@ class _OtpScreenState extends State<OtpScreen> {
     } else {
       AuthErrorHandler.showError(context, 'Invalid OTP code. Please try again.');
     }
+  }
+
+  void _uploadProfilePicInBackground(String uid, String path) {
+    Future.microtask(() async {
+      try {
+        final file = File(path);
+        if (await file.exists()) {
+          final storageRef = FirebaseStorage.instance
+              .ref()
+              .child('profile_pics')
+              .child('$uid.jpg');
+          await storageRef.putFile(
+            file,
+            SettableMetadata(contentType: 'image/jpeg'),
+          );
+          final profilePicUrl = await storageRef.getDownloadURL();
+          await FirebaseFirestore.instance
+              .collection('customers')
+              .doc(uid)
+              .update({'profilePic': profilePicUrl});
+        }
+      } catch (e) {
+        debugPrint('Background profile picture upload error: $e');
+      }
+    });
   }
 
   @override

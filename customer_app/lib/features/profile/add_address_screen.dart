@@ -9,6 +9,7 @@ import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' as http;
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:shared_widgets/core/theme/app_theme.dart';
+import '../../core/utils/custom_snackbar.dart';
 
 enum AddressValidationStatus {
   unverified,
@@ -548,15 +549,12 @@ class _AddAddressScreenState extends State<AddAddressScreen> {
     if (!mounted) return;
 
     if (_validationStatus == AddressValidationStatus.invalid) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          backgroundColor: const Color(0xFFDC2626),
-          content: Text(
-            _validationErrorMessage.isNotEmpty
-                ? _validationErrorMessage
-                : 'Please enter a valid address that can be located.',
-          ),
-        ),
+      CustomSnackBar.show(
+        context,
+        message: _validationErrorMessage.isNotEmpty
+            ? _validationErrorMessage
+            : 'Please enter a valid address that can be located.',
+        type: SnackBarType.error,
       );
       return;
     }
@@ -606,11 +604,10 @@ class _AddAddressScreenState extends State<AddAddressScreen> {
         });
 
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              backgroundColor: Color(0xFF16A34A),
-              content: Text('Address saved successfully!'),
-            ),
+          CustomSnackBar.show(
+            context,
+            message: 'Address saved successfully!',
+            type: SnackBarType.success,
           );
           // Return new address data map to caller (e.g. DeliverToScreen)
           context.pop({
@@ -627,11 +624,10 @@ class _AddAddressScreenState extends State<AddAddressScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            backgroundColor: const Color(0xFFDC2626),
-            content: Text('Failed to save address: $e'),
-          ),
+        CustomSnackBar.show(
+          context,
+          message: 'Failed to save address: $e',
+          type: SnackBarType.error,
         );
       }
     } finally {

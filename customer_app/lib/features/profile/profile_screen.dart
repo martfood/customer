@@ -279,10 +279,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
             final data = doc.data() as Map<String, dynamic>?;
             if (data != null) {
               final counts = data['unreadCount'] as Map<String, dynamic>?;
-              if (counts != null && counts.containsKey(userId)) {
-                final unread = counts[userId];
-                if (unread is int) totalUnread += unread;
-                if (unread is num) totalUnread += unread.toInt();
+              if (counts != null) {
+                final customerId = data['customerId']?.toString();
+                final riderId = data['riderId']?.toString();
+                if (customerId == userId && riderId == userId) {
+                  final unread = counts['customer_unread'];
+                  if (unread is num) totalUnread += unread.toInt();
+                } else if (counts.containsKey(userId)) {
+                  final unread = counts[userId];
+                  if (unread is num) totalUnread += unread.toInt();
+                }
               }
             }
           }

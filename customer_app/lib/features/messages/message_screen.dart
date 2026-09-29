@@ -50,6 +50,20 @@ class _MessageScreenState extends State<MessageScreen> {
     }
   }
 
+  int _getUnreadCount(Map<String, dynamic> chat, String userId) {
+    final unreadMap = chat['unreadCount'] as Map<String, dynamic>?;
+    if (unreadMap == null) return 0;
+    final customerId = chat['customerId']?.toString();
+    final riderId = chat['riderId']?.toString();
+    if (customerId == userId && riderId == userId) {
+      final roleUnread = unreadMap['customer_unread'];
+      if (roleUnread is num) return roleUnread.toInt();
+    }
+    final count = unreadMap[userId];
+    if (count is num) return count.toInt();
+    return 0;
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -272,8 +286,11 @@ class _MessageScreenState extends State<MessageScreen> {
           );
         }
 
-        var chatList =
-            docs.map((doc) => doc.data() as Map<String, dynamic>).toList();
+        var chatList = docs.map((doc) {
+          final data = Map<String, dynamic>.from(doc.data() as Map<String, dynamic>);
+          data['chatId'] = doc.id;
+          return data;
+        }).toList();
 
         // Client-side search filtering
         if (_searchQuery.isNotEmpty) {
@@ -321,16 +338,16 @@ class _MessageScreenState extends State<MessageScreen> {
             final otherMemberId = members
                 .firstWhere((m) => m.toString() != userId, orElse: () => '')
                 .toString();
-            final riderId =
+            final rawRiderId =
                 (chat['riderId'] ?? chat['driverId'] ?? otherMemberId).toString();
+            final riderId = rawRiderId.isNotEmpty ? rawRiderId : otherMemberId;
             final displayName = chat['riderName'] ??
                 chat['vendorName'] ??
                 'Rider / Delivery Partner';
             final photoUrl = chat['riderPhoto'] ?? chat['vendorPhoto'] ?? '';
             final lastMsg = chat['lastMessage'] ?? 'No messages yet';
             final lastTime = chat['lastMessageTime'] as Timestamp?;
-            final unread =
-                (chat['unreadCount'] as Map<String, dynamic>?)?[userId] ?? 0;
+            final unread = _getUnreadCount(chat, userId);
             final formattedTime = _formatTimestamp(lastTime);
 
             return Material(
@@ -340,6 +357,7 @@ class _MessageScreenState extends State<MessageScreen> {
                 onTap: () => context.push(
                   '/conversation/$riderId',
                   extra: {
+                    'chatId': chat['chatId'] ?? '',
                     'riderName': displayName,
                     'riderPhotoUrl': photoUrl,
                   },

@@ -236,7 +236,7 @@ class _VendorScreenState extends State<VendorScreen> {
             ? (physicalVerification['status']?.toString() ?? 'pending')
             : 'pending';
         final name = profile?['businessName'] ?? 'Store';
-        final tagline = profile?['tagline'] ?? '';
+        final bio = (profile?['bio'] ?? profile?['about'] ?? profile?['description'] ?? vendorData['bio'] ?? '').toString().trim();
         final category = profile?['category'] ?? 'Restaurant';
         final coverImageUrl =
             profile?['coverImageUrl'] ?? profile?['logoUrl'] ?? '';
@@ -625,15 +625,18 @@ class _VendorScreenState extends State<VendorScreen> {
                                   ],
                                 ),
 
-                                if (tagline.isNotEmpty) ...[
+                                if (bio.isNotEmpty) ...[
                                   SizedBox(height: 4.h),
                                   Text(
-                                    tagline,
+                                    bio,
                                     style: TextStyle(
-                                      fontSize: AppTypography.font(18.sp),
-                                      color: primaryTextColor,
-                                      fontWeight: FontWeight.w500,
+                                      fontSize: AppTypography.font(13.sp),
+                                      color: mutedTextColor,
+                                      fontWeight: FontWeight.w400,
+                                      height: 1.3,
                                     ),
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
                                   ),
                                 ],
 

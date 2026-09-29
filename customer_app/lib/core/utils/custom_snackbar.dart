@@ -12,39 +12,31 @@ class CustomSnackBar {
   }) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    Color backgroundColor;
-    Color borderColor;
-    Color textColor;
+    // Consistent snackbar color across the app:
+    // Light mode: background = app grey, font = black
+    // Dark mode: background = app white, font = black
+    final Color backgroundColor = isDark ? Colors.white : AppTheme.lightInputFill;
+    const Color textColor = Colors.black;
+    final Color borderColor = isDark ? const Color(0xFFE5E5EA) : AppTheme.lightInputBorder;
+
     Color iconColor;
     IconData icon;
 
     switch (type) {
       case SnackBarType.success:
-        backgroundColor = isDark ? const Color(0xFF14321A) : const Color(0xFFE8F5E9);
-        borderColor = isDark ? const Color(0xFF2E7D32) : const Color(0xFFA5D6A7);
-        textColor = isDark ? const Color(0xFF81C784) : const Color(0xFF2E7D32);
-        iconColor = textColor;
+        iconColor = const Color(0xFF2E7D32);
         icon = Icons.check_circle_rounded;
         break;
       case SnackBarType.warning:
-        backgroundColor = isDark ? const Color(0xFF3B2E1C) : const Color(0xFFFEF3C7);
-        borderColor = const Color(0xFFD97706);
-        textColor = isDark ? const Color(0xFFFBBF24) : const Color(0xFFB45309);
-        iconColor = borderColor;
+        iconColor = const Color(0xFFD97706);
         icon = Icons.warning_amber_rounded;
         break;
       case SnackBarType.error:
-        backgroundColor = isDark ? const Color(0xFF4A1515) : const Color(0xFFFFEBEE);
-        borderColor = isDark ? const Color(0xFFC62828) : const Color(0xFFEF9A9A);
-        textColor = isDark ? const Color(0xFFE57373) : const Color(0xFFC62828);
-        iconColor = textColor;
+        iconColor = const Color(0xFFC62828);
         icon = Icons.error_outline_rounded;
         break;
       case SnackBarType.info:
-        backgroundColor = isDark ? const Color(0xFF1E152A) : const Color(0xFFF3E8FF);
-        borderColor = isDark ? Colors.white.withValues(alpha: 0.08) : const Color(0xFFE9D5FF);
-        textColor = isDark ? const Color(0xFFE9D5FF) : const Color(0xFF6B21A8);
-        iconColor = textColor;
+        iconColor = AppTheme.primaryPurple;
         icon = Icons.info_outline_rounded;
         break;
     }
@@ -59,7 +51,7 @@ class CustomSnackBar {
         elevation: 0,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
-          side: BorderSide(color: borderColor, width: 1.5),
+          side: BorderSide(color: borderColor, width: 1.0),
         ),
         margin: const EdgeInsets.all(16),
         content: Row(

@@ -119,7 +119,7 @@ class VendorDetailScreen extends StatelessWidget {
         final vendorData = vendorSnapshot.data!.data() as Map<String, dynamic>;
         final profile = vendorData['businessProfile'] as Map<String, dynamic>?;
         final name = profile?['businessName'] ?? 'Vendor';
-        final about = profile?['about'] ?? profile?['description'] ?? profile?['tagline'] ?? '';
+        final bio = (profile?['bio'] ?? profile?['about'] ?? profile?['description'] ?? vendorData['bio'] ?? '').toString().trim();
         final location = profile?['address'] ?? profile?['businessAddress'] ?? profile?['locationAddress'] ?? '';
         final operatingHoursText = _getTodayOperatingHoursText(vendorData['operatingHours'] as Map<String, dynamic>?);
 
@@ -226,7 +226,7 @@ class VendorDetailScreen extends StatelessWidget {
                     SizedBox(height: 24.h),
 
                     // ── About Section ──────────────────────────────────────
-                    if (about.toString().trim().isNotEmpty) ...[
+                    if (bio.isNotEmpty) ...[
                       Text(
                         'About',
                         style: TextStyle(
@@ -237,7 +237,7 @@ class VendorDetailScreen extends StatelessWidget {
                       ),
                       SizedBox(height: 8.h),
                       Text(
-                        about.toString(),
+                        bio,
                         style: TextStyle(
                           fontSize: AppTypography.font(14),
                           color: mutedTextColor,

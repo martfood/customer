@@ -21,6 +21,7 @@ import '../../core/services/order_completion_service.dart';
 import '../../core/services/price_helper.dart';
 import '../wallet/paystack_service.dart';
 import 'add_card_bottom_sheet.dart';
+import '../../core/utils/custom_snackbar.dart';
 
 /// Result of checking delivery address service coverage.
 class CoverageCheckResult {
@@ -610,19 +611,18 @@ class _CheckoutOrdersSummaryScreenState
           _isCheckingCoverage = false;
         });
 
+        final isDark = Theme.of(context).brightness == Brightness.dark;
         ScaffoldMessenger.of(context).hideCurrentSnackBar();
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            backgroundColor: const Color(0xFFDC2626),
             duration: const Duration(seconds: 5),
             content: Text(
               _coverageErrorMessage!,
-              style: const TextStyle(
-                  color: Colors.white, fontWeight: FontWeight.w600),
+              style: const TextStyle(fontWeight: FontWeight.w600),
             ),
             action: SnackBarAction(
               label: 'Change',
-              textColor: Colors.white,
+              textColor: AppTheme.primaryPurpleFor(isDark),
               onPressed: _openDeliverToScreen,
             ),
           ),
@@ -930,16 +930,16 @@ class _CheckoutOrdersSummaryScreenState
 
     if (_isAddressOutOfCoverage) {
       _showOutOfCoverageBottomSheet(_selectedAddress!);
+      final isDark = Theme.of(context).brightness == Brightness.dark;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          backgroundColor: const Color(0xFFDC2626),
           content: Text(
             _coverageErrorMessage ??
                 'The delivery address is out of service coverage so change to an address that service coverage covers.',
           ),
           action: SnackBarAction(
             label: 'Change',
-            textColor: Colors.white,
+            textColor: AppTheme.primaryPurpleFor(isDark),
             onPressed: _openDeliverToScreen,
           ),
         ),
@@ -2341,12 +2341,11 @@ class _CheckoutOrdersSummaryScreenState
                                   isCopied = false;
                                 });
                               });
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text('Account number copied to clipboard!'),
-                                  backgroundColor: Colors.green,
-                                  duration: Duration(seconds: 2),
-                                ),
+                              CustomSnackBar.show(
+                                context,
+                                message: 'Account number copied to clipboard!',
+                                type: SnackBarType.success,
+                                duration: const Duration(seconds: 2),
                               );
                             },
                             child: Padding(

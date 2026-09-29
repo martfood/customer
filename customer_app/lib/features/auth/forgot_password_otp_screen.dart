@@ -9,6 +9,7 @@ import 'package:shared_widgets/core/theme/app_theme.dart';
 
 import 'auth_error_handler.dart';
 import 'email_service.dart';
+import '../../core/utils/custom_snackbar.dart';
 
 class ForgotPasswordOtpScreen extends StatefulWidget {
   final String email;
@@ -96,11 +97,10 @@ class _ForgotPasswordOtpScreenState extends State<ForgotPasswordOtpScreen> {
       _startTimer();
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('New verification code sent to ${widget.email}'),
-            backgroundColor: Colors.green,
-          ),
+        CustomSnackBar.show(
+          context,
+          message: 'New verification code sent to ${widget.email}',
+          type: SnackBarType.success,
         );
       }
     } catch (e) {
