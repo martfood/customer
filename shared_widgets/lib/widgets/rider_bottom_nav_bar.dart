@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -11,7 +12,7 @@ class RiderBottomNavBar extends StatelessWidget {
   /// Called when a tab is selected.
   final ValueChanged<int> onTap;
 
-  /// Optional explicit unread message count override.
+  /// Optional explicit unread message/chat count override.
   final int? unreadMessageCount;
 
   const RiderBottomNavBar({
@@ -37,7 +38,7 @@ class RiderBottomNavBar extends StatelessWidget {
     );
   }
 
-  Widget _buildBadgedIcon(Widget iconWidget, int count, Color badgeColor) {
+  Widget _buildBadgedIcon(Widget iconWidget, int count, Color badgeColor, Color surfaceColor) {
     if (count <= 0) return iconWidget;
 
     final badgeText = count > 99 ? '99+' : '$count';
@@ -49,12 +50,15 @@ class RiderBottomNavBar extends StatelessWidget {
           right: -6,
           top: -3,
           child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+            padding: EdgeInsets.symmetric(
+              horizontal: count > 9 ? 5 : 4,
+              vertical: 1.5,
+            ),
             decoration: BoxDecoration(
               color: badgeColor,
               shape: BoxShape.rectangle,
               borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: Colors.white, width: 1),
+              border: Border.all(color: surfaceColor, width: 1.5),
             ),
             constraints: const BoxConstraints(
               minWidth: 16,
@@ -65,8 +69,9 @@ class RiderBottomNavBar extends StatelessWidget {
                 badgeText,
                 style: TextStyle(
                   color: Colors.white,
-                  fontSize: AppTypography.font(11.5),
+                  fontSize: AppTypography.font(AppFontSizes.caption),
                   fontWeight: FontWeight.bold,
+                  height: 1.1,
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -77,44 +82,84 @@ class RiderBottomNavBar extends StatelessWidget {
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final currentUser = FirebaseAuth.instance.currentUser;
+  int _getChatUnreadCount(Map<String, dynamic> data, String userId) {
+    int unread = 0;
+    final rawCounts = data['unreadCount'];
+    if (rawCounts is Map) {
+      final userVal = rawCounts[userId];
+      if (userVal is num && userVal > 0) {
+        unread = math.max(unread, userVal.toInt());
+      } else if (userVal is String) {
+        final parsed = int.tryParse(userVal) ?? 0;
+        if (parsed > 0) unread = math.max(unread, parsed);
+      }
 
-    if (unreadMessageCount != null || currentUser == null) {
-      return _buildNavBar(context, unreadMessageCount ?? 0);
+      final riderId = data['riderId']?.toString();
+      if (riderId == null || riderId == userId || riderId.isEmpty) {
+        final roleVal = rawCounts['rider_unread'];
+        if (roleVal is num && roleVal > 0) {
+          unread = math.max(unread, roleVal.toInt());
+        } else if (roleVal is String) {
+          final parsed = int.tryParse(roleVal) ?? 0;
+          if (parsed > 0) unread = math.max(unread, parsed);
+        }
+      }
+    } else if (rawCounts is num && rawCounts > 0) {
+      final lastSenderId = data['lastSenderId']?.toString() ?? data['senderId']?.toString();
+      if (lastSenderId != userId) {
+        unread = math.max(unread, rawCounts.toInt());
+      }
     }
 
-    return StreamBuilder<QuerySnapshot>(
-      stream: FirebaseFirestore.instance
-          .collection('chats')
-          .where('members', arrayContains: currentUser.uid)
-          .snapshots(),
-      builder: (context, snapshot) {
-        int totalUnread = 0;
-        if (snapshot.hasData && snapshot.data != null) {
-          for (var doc in snapshot.data!.docs) {
-            final data = doc.data() as Map<String, dynamic>?;
-            if (data != null) {
-              final counts = data['unreadCount'] as Map<String, dynamic>?;
-              if (counts != null) {
-                final riderId = data['riderId']?.toString();
-                if ((riderId == null || riderId == currentUser.uid) && counts.containsKey('rider_unread')) {
-                  final roleUnread = counts['rider_unread'];
-                  if (roleUnread is num) {
-                    totalUnread += roleUnread.toInt();
-                  }
-                } else if (counts.containsKey(currentUser.uid)) {
-                  final unread = counts[currentUser.uid];
-                  if (unread is num) {
-                    totalUnread += unread.toInt();
+    final topRider = data['rider_unread'];
+    if (topRider is num && topRider > 0) {
+      unread = math.max(unread, topRider.toInt());
+    }
+
+    final topUid = data['unreadCount_$userId'] ?? data['unread_$userId'];
+    if (topUid is num && topUid > 0) {
+      unread = math.max(unread, topUid.toInt());
+    }
+
+    return unread;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (unreadMessageCount != null) {
+      return _buildNavBar(context, unreadMessageCount!);
+    }
+
+    return StreamBuilder<User?>(
+      stream: FirebaseAuth.instance.authStateChanges(),
+      initialData: FirebaseAuth.instance.currentUser,
+      builder: (context, authSnapshot) {
+        final currentUser = authSnapshot.data ?? FirebaseAuth.instance.currentUser;
+        if (currentUser == null) {
+          return _buildNavBar(context, 0);
+        }
+
+        return StreamBuilder<QuerySnapshot>(
+          stream: FirebaseFirestore.instance
+              .collection('chats')
+              .where('members', arrayContains: currentUser.uid)
+              .snapshots(),
+          builder: (context, snapshot) {
+            int unreadChatsCount = 0;
+            if (snapshot.hasData && snapshot.data != null) {
+              for (var doc in snapshot.data!.docs) {
+                final data = doc.data() as Map<String, dynamic>?;
+                if (data != null) {
+                  final unread = _getChatUnreadCount(data, currentUser.uid);
+                  if (unread > 0) {
+                    unreadChatsCount++;
                   }
                 }
               }
             }
-          }
-        }
-        return _buildNavBar(context, totalUnread);
+            return _buildNavBar(context, unreadChatsCount);
+          },
+        );
       },
     );
   }
@@ -169,11 +214,13 @@ class RiderBottomNavBar extends StatelessWidget {
               _buildNavIcon(iconName: 'message', isSelected: false),
               unreadCount,
               selectedColor,
+              surfaceColor,
             ),
             activeIcon: _buildBadgedIcon(
               _buildNavIcon(iconName: 'message', isSelected: true),
               unreadCount,
               selectedColor,
+              surfaceColor,
             ),
             label: 'Chat',
           ),

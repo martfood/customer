@@ -73,30 +73,109 @@ class MealTimeHelper {
     return '';
   }
 
+  /// Parses a time window string (e.g. "12:00 PM - 2:00 PM", "08:00 - 11:30", "12:00 to 14:00")
+  /// into start and end hour/minute.
+  static ({({int hour, int minute})? start, ({int hour, int minute})? end}) parseWindow(String? windowStr) {
+    if (windowStr == null) return (start: null, end: null);
+    final clean = windowStr.trim();
+    if (clean.isEmpty) return (start: null, end: null);
+
+    final separator = RegExp(r'\s*[-–—]\s*|\s+to\s+', caseSensitive: false);
+    final parts = clean.split(separator);
+    if (parts.length >= 2) {
+      return (
+        start: parseTime(parts[0]),
+        end: parseTime(parts[1]),
+      );
+    } else if (parts.length == 1) {
+      return (
+        start: null,
+        end: parseTime(parts[0]),
+      );
+    }
+    return (start: null, end: null);
+  }
+
   /// Computes a real dynamic countdown status string:
-  /// - "Order closes in 2h 30m"
-  /// - "Order closes in 45m"
-  /// - "Order opens in 1h 10m"
-  /// - "Order closed"
+  /// - During delivery time period: "Delivery ongoing"
+  /// - When delivery time is over: "Order opens in 14h 30m"
+  /// - Before order window opens: "Order opens in 1h 10m"
+  /// - During active ordering window: "Order closes in 2h 30m"
+  /// - Between order close and delivery start: "Order closed"
   /// Returns empty string if no valid time is configured.
   static String calculateOrderClosesText({
     String? startTimeStr,
     String? closeTimeStr,
+    String? deliveryStartTimeStr,
+    String? deliveryEndTimeStr,
+    String? orderWindowStr,
+    String? deliveryWindowStr,
     DateTime? now,
   }) {
-    final close = parseTime(closeTimeStr);
-    if (close == null) return '';
+    // Resolve order start and close
+    ({int hour, int minute})? start = parseTime(startTimeStr);
+    ({int hour, int minute})? close = parseTime(closeTimeStr);
+    if (start == null && close == null && orderWindowStr != null && orderWindowStr.trim().isNotEmpty) {
+      final parsedOrd = parseWindow(orderWindowStr);
+      start = parsedOrd.start;
+      close = parsedOrd.end;
+    }
+
+    // Resolve delivery start and end
+    ({int hour, int minute})? delStart = parseTime(deliveryStartTimeStr);
+    ({int hour, int minute})? delEnd = parseTime(deliveryEndTimeStr);
+    if (delStart == null && delEnd == null && deliveryWindowStr != null && deliveryWindowStr.trim().isNotEmpty) {
+      final parsedDel = parseWindow(deliveryWindowStr);
+      delStart = parsedDel.start;
+      delEnd = parsedDel.end;
+    }
 
     final current = now ?? DateTime.now();
     final nowMinutes = current.hour * 60 + current.minute;
-    final closeMinutes = close.hour * 60 + close.minute;
 
-    final start = parseTime(startTimeStr);
-    final startMinutes = start != null ? (start.hour * 60 + start.minute) : null;
+    final delStartMin = delStart != null ? delStart.hour * 60 + delStart.minute : null;
+    final delEndMin = delEnd != null ? delEnd.hour * 60 + delEnd.minute : null;
+    final ordStartMin = start != null ? start.hour * 60 + start.minute : null;
+    final ordCloseMin = close != null ? close.hour * 60 + close.minute : null;
 
-    // If order window hasn't opened yet today
-    if (startMinutes != null && nowMinutes < startMinutes) {
-      final diff = startMinutes - nowMinutes;
+    // 1. During the delivery time period -> "Delivery ongoing"
+    if (delStartMin != null && delEndMin != null) {
+      if (delStartMin <= delEndMin) {
+        if (nowMinutes >= delStartMin && nowMinutes <= delEndMin) {
+          return 'Delivery ongoing';
+        }
+      } else {
+        // Across midnight delivery
+        if (nowMinutes >= delStartMin || nowMinutes <= delEndMin) {
+          return 'Delivery ongoing';
+        }
+      }
+    } else if (delEndMin != null && ordCloseMin != null) {
+      if (nowMinutes >= ordCloseMin && nowMinutes <= delEndMin) {
+        return 'Delivery ongoing';
+      }
+    }
+
+    // 2. When delivery time is over -> "Order opens in..."
+    if (delEndMin != null && nowMinutes > delEndMin) {
+      if (ordStartMin != null) {
+        final diff = (24 * 60 - nowMinutes) + ordStartMin;
+        final hours = diff ~/ 60;
+        final mins = diff % 60;
+        if (hours > 0 && mins > 0) {
+          return 'Order opens in ${hours}h ${mins}m';
+        } else if (hours > 0) {
+          return 'Order opens in ${hours}h';
+        } else {
+          return 'Order opens in ${mins}m';
+        }
+      }
+      return 'Order opens tomorrow';
+    }
+
+    // 3. Early morning before order opens today -> "Order opens in..."
+    if (ordStartMin != null && nowMinutes < ordStartMin) {
+      final diff = ordStartMin - nowMinutes;
       final hours = diff ~/ 60;
       final mins = diff % 60;
       if (hours > 0 && mins > 0) {
@@ -108,21 +187,25 @@ class MealTimeHelper {
       }
     }
 
-    // If current time is past cutoff time
-    if (nowMinutes >= closeMinutes) {
-      return 'Order closed';
+    // 4. Currently in active ordering window -> count down until close
+    if (ordCloseMin != null) {
+      if (nowMinutes < ordCloseMin) {
+        final diff = ordCloseMin - nowMinutes;
+        final hours = diff ~/ 60;
+        final mins = diff % 60;
+        if (hours > 0 && mins > 0) {
+          return 'Order closes in ${hours}h ${mins}m';
+        } else if (hours > 0) {
+          return 'Order closes in ${hours}h';
+        } else {
+          return 'Order closes in ${mins}m';
+        }
+      } else {
+        // Cut-off time passed, delivery hasn't started yet
+        return 'Order closed';
+      }
     }
 
-    // Currently in active ordering window -> count down until close
-    final diff = closeMinutes - nowMinutes;
-    final hours = diff ~/ 60;
-    final mins = diff % 60;
-    if (hours > 0 && mins > 0) {
-      return 'Order closes in ${hours}h ${mins}m';
-    } else if (hours > 0) {
-      return 'Order closes in ${hours}h';
-    } else {
-      return 'Order closes in ${mins}m';
-    }
+    return '';
   }
 }

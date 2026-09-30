@@ -1942,6 +1942,10 @@ class _HomeScreenState extends State<HomeScreen> {
                       : MealTimeHelper.calculateOrderClosesText(
                           startTimeStr: rawOrderStart?.toString(),
                           closeTimeStr: rawOrderClose?.toString(),
+                          deliveryStartTimeStr: rawDeliveryStart?.toString(),
+                          deliveryEndTimeStr: rawDeliveryClose?.toString(),
+                          orderWindowStr: orderWindow,
+                          deliveryWindowStr: deliveryWindow,
                         );
 
                   final isTablet = MediaQuery.of(context).size.width >= 600;
@@ -1965,6 +1969,10 @@ class _HomeScreenState extends State<HomeScreen> {
                       orderTimeWindow: orderWindow,
                       deliveryTimeWindow: deliveryWindow,
                       orderClosesText: orderClosesText,
+                      orderStartTime: rawOrderStart?.toString(),
+                      orderCloseTime: rawOrderClose?.toString(),
+                      deliveryStartTime: rawDeliveryStart?.toString(),
+                      deliveryEndTime: rawDeliveryClose?.toString(),
                       isClosed: !_isVendorOpen(vendorInfo?['operatingHours']),
                       onTap: () => context.push('/food-details/$title'),
                     ),

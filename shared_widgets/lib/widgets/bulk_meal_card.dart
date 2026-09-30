@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../core/theme/app_theme.dart';
+import '../core/utils/meal_time_helper.dart';
 import 'verification_badge.dart';
 
 class BulkMealCard extends StatelessWidget {
@@ -16,6 +17,10 @@ class BulkMealCard extends StatelessWidget {
   final String orderTimeWindow;
   final String deliveryTimeWindow;
   final String? orderClosesText;
+  final String? orderStartTime;
+  final String? orderCloseTime;
+  final String? deliveryStartTime;
+  final String? deliveryEndTime;
   final bool isClosed;
   final VoidCallback onTap;
   final VoidCallback? onAddTap;
@@ -35,6 +40,10 @@ class BulkMealCard extends StatelessWidget {
     this.orderTimeWindow = '',
     this.deliveryTimeWindow = '',
     this.orderClosesText,
+    this.orderStartTime,
+    this.orderCloseTime,
+    this.deliveryStartTime,
+    this.deliveryEndTime,
     this.isClosed = false,
     required this.onTap,
     this.onAddTap,
@@ -68,18 +77,36 @@ class BulkMealCard extends StatelessWidget {
 
     final effectivePrice =
         (promoPrice != null && promoPrice! > 0) ? promoPrice! : price;
-    final showBanner =
-        orderClosesText != null && orderClosesText!.trim().isNotEmpty;
-    final bannerText = showBanner ? orderClosesText!.trim() : '';
+
+    final dynamicStatus = MealTimeHelper.calculateOrderClosesText(
+      startTimeStr: orderStartTime,
+      closeTimeStr: orderCloseTime,
+      deliveryStartTimeStr: deliveryStartTime,
+      deliveryEndTimeStr: deliveryEndTime,
+      orderWindowStr: orderTimeWindow,
+      deliveryWindowStr: deliveryTimeWindow,
+    );
+
+    final rawCloses = (orderClosesText ?? '').trim();
+    final String bannerText;
+    if (dynamicStatus.isNotEmpty) {
+      bannerText = dynamicStatus;
+    } else {
+      bannerText = rawCloses;
+    }
+
+    final showBanner = bannerText.isNotEmpty;
+    final isDeliveryOngoing =
+        bannerText.toLowerCase().contains('delivery ongoing');
     final isOrderClosed =
-        isClosed || bannerText.toLowerCase().contains('closed');
+        isClosed || (!isDeliveryOngoing && bannerText.toLowerCase().contains('closed'));
     final bannerBgColor = isOrderClosed
-        ? (isDark ? const Color(0xFF27272A) : const Color(0xFFE5E7EB))
+        ? (isDark ? AppTheme.darkBorder : AppTheme.lightInputBorder)
         : (isDark
             ? purpleColor.withValues(alpha: 0.18)
             : const Color(0xFFF3E8FF));
     final bannerIconColor = isOrderClosed
-        ? (isDark ? Colors.grey[400]! : const Color(0xFF6B7280))
+        ? (isDark ? Colors.grey[400]! : AppTheme.lightHintText)
         : purpleColor;
     final bannerTextColor = isOrderClosed
         ? (isDark ? Colors.white : Colors.black)
@@ -365,9 +392,15 @@ class BulkMealCard extends StatelessWidget {
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(LucideIcons.clock,
-                                size: isFullWidth ? 13 : 10,
-                                color: bannerIconColor),
+                            Icon(
+                              isDeliveryOngoing
+                                  ? Icons.delivery_dining
+                                  : LucideIcons.clock,
+                              size: isDeliveryOngoing
+                                  ? (isFullWidth ? 16 : (isTablet ? 13 : 12))
+                                  : (isFullWidth ? 13 : 10),
+                              color: bannerIconColor,
+                            ),
                             SizedBox(width: 5.w),
                             Flexible(
                               child: Text(

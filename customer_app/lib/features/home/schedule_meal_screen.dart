@@ -779,6 +779,12 @@ class _ScheduleMealScreenState extends State<ScheduleMealScreen> {
                           : MealTimeHelper.calculateOrderClosesText(
                               startTimeStr: rawOrderStart?.toString(),
                               closeTimeStr: rawOrderClose?.toString(),
+                              deliveryStartTimeStr:
+                                  rawDeliveryStart?.toString(),
+                              deliveryEndTimeStr:
+                                  rawDeliveryClose?.toString(),
+                              orderWindowStr: orderWindow,
+                              deliveryWindowStr: deliveryWindow,
                             );
 
                       final isClosed = !_isVendorOpen(
@@ -803,6 +809,10 @@ class _ScheduleMealScreenState extends State<ScheduleMealScreen> {
                         orderTimeWindow: orderWindow,
                         deliveryTimeWindow: deliveryWindow,
                         orderClosesText: orderClosesText,
+                        orderStartTime: rawOrderStart?.toString(),
+                        orderCloseTime: rawOrderClose?.toString(),
+                        deliveryStartTime: rawDeliveryStart?.toString(),
+                        deliveryEndTime: rawDeliveryClose?.toString(),
                         isClosed: isClosed,
                         onTap: () => context.push(
                           '/food-details/$title',

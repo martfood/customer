@@ -10,7 +10,6 @@ import 'package:shared_widgets/core/theme/app_theme.dart';
 import '../../main.dart';
 import '../auth/auth_error_handler.dart';
 import '../auth/email_service.dart';
-import 'change_email_bottom_sheet.dart';
 import '../../core/utils/custom_snackbar.dart';
 
 class AppearanceScreen extends StatefulWidget {
@@ -823,64 +822,7 @@ class _AppearanceScreenState extends State<AppearanceScreen> {
                       endIndent: 16.w,
                     ),
 
-                    // Row 2: Change Email Address
-                    Material(
-                      color: Colors.transparent,
-                      child: InkWell(
-                        onTap: () {
-                          showChangeEmailBottomSheet(context);
-                        },
-                        borderRadius: BorderRadius.zero,
-                        child: Padding(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: 16.w,
-                            vertical: 14.h,
-                          ),
-                          child: Row(
-                            children: [
-                              Container(
-                                width: 44.w,
-                                height: 44.w,
-                                decoration: BoxDecoration(
-                                  color: purpleColor.withValues(alpha: 0.12),
-                                  shape: BoxShape.circle,
-                                ),
-                                child: Icon(
-                                  Icons.alternate_email,
-                                  color: purpleColor,
-                                  size: 20.sp,
-                                ),
-                              ),
-                              SizedBox(width: 16.w),
-                              Expanded(
-                                child: Text(
-                                  'Change Email Address',
-                                  style: TextStyle(
-                                    fontSize:
-                                        AppTypography.font(AppFontSizes.bodyLarge),
-                                    fontWeight: FontWeight.w800,
-                                    color: primaryTextColor,
-                                  ),
-                                ),
-                              ),
-                              Icon(
-                                Icons.chevron_right,
-                                color: purpleColor,
-                                size: 22.sp,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                    Divider(
-                      height: 1,
-                      color: dividerColor,
-                      indent: 64.w,
-                      endIndent: 16.w,
-                    ),
-
-                    // Row 3: Reset Password
+                    // Row 2: Reset Password
                     Material(
                       color: Colors.transparent,
                       child: InkWell(

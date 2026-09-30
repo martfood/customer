@@ -1087,6 +1087,12 @@ class _VendorScreenState extends State<VendorScreen> {
                                   : MealTimeHelper.calculateOrderClosesText(
                                       startTimeStr: rawOrderStart?.toString(),
                                       closeTimeStr: rawOrderClose?.toString(),
+                                      deliveryStartTimeStr:
+                                          rawDeliveryStart?.toString(),
+                                      deliveryEndTimeStr:
+                                          rawDeliveryClose?.toString(),
+                                      orderWindowStr: orderWindow,
+                                      deliveryWindowStr: deliveryWindow,
                                     );
 
                               return Padding(
@@ -1102,6 +1108,11 @@ class _VendorScreenState extends State<VendorScreen> {
                                   orderTimeWindow: orderWindow,
                                   deliveryTimeWindow: deliveryWindow,
                                   orderClosesText: orderClosesText,
+                                  orderStartTime: rawOrderStart?.toString(),
+                                  orderCloseTime: rawOrderClose?.toString(),
+                                  deliveryStartTime:
+                                      rawDeliveryStart?.toString(),
+                                  deliveryEndTime: rawDeliveryClose?.toString(),
                                   isClosed: !isStoreOpen,
                                   onTap: () {
                                     if (!isStoreOpen) {
@@ -1361,6 +1372,12 @@ class _VendorScreenState extends State<VendorScreen> {
                                             rawOrderStart?.toString(),
                                         closeTimeStr:
                                             rawOrderClose?.toString(),
+                                        deliveryStartTimeStr:
+                                            rawDeliveryStart?.toString(),
+                                        deliveryEndTimeStr:
+                                            rawDeliveryClose?.toString(),
+                                        orderWindowStr: orderWindow,
+                                        deliveryWindowStr: deliveryWindow,
                                       );
 
                                 return Padding(
@@ -1376,6 +1393,12 @@ class _VendorScreenState extends State<VendorScreen> {
                                     orderTimeWindow: orderWindow,
                                     deliveryTimeWindow: deliveryWindow,
                                     orderClosesText: orderClosesText,
+                                    orderStartTime: rawOrderStart?.toString(),
+                                    orderCloseTime: rawOrderClose?.toString(),
+                                    deliveryStartTime:
+                                        rawDeliveryStart?.toString(),
+                                    deliveryEndTime:
+                                        rawDeliveryClose?.toString(),
                                     isClosed: !isStoreOpen,
                                     onTap: () {
                                       if (!isStoreOpen) {

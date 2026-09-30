@@ -706,6 +706,12 @@ class _RestaurantFoodDetailsScreenState
                               : MealTimeHelper.calculateOrderClosesText(
                                   startTimeStr: rawOrderStart?.toString(),
                                   closeTimeStr: rawOrderClose?.toString(),
+                                  deliveryStartTimeStr:
+                                      rawDeliveryStart?.toString(),
+                                  deliveryEndTimeStr:
+                                      rawDeliveryClose?.toString(),
+                                  orderWindowStr: orderWindow,
+                                  deliveryWindowStr: deliveryWindow,
                                 );
 
                           if (orderWindow.isEmpty &&
@@ -843,8 +849,14 @@ class _RestaurantFoodDetailsScreenState
                                         mainAxisAlignment:
                                             MainAxisAlignment.center,
                                         children: [
-                                          Icon(LucideIcons.clock,
-                                              size: 14.sp, color: purpleColor),
+                                          Icon(
+                                              orderClosesText
+                                                      .toLowerCase()
+                                                      .contains('delivery ongoing')
+                                                  ? Icons.delivery_dining
+                                                  : LucideIcons.clock,
+                                              size: 15.sp,
+                                              color: purpleColor),
                                           SizedBox(width: 6.w),
                                           Text(
                                             orderClosesText,
