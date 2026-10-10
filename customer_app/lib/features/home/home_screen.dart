@@ -48,6 +48,7 @@ class _HomeScreenState extends State<HomeScreen> {
   int _currentBannerPage = 0;
   Timer? _bannerTimer;
   int _bannerLength = 3;
+  bool _bannerForward = true;
   late final Stream<QuerySnapshot> _promosStream;
   late final Stream<DocumentSnapshot>? _userStream;
   late final Stream<QuerySnapshot> _vendorsStream;
@@ -392,13 +393,38 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _startBannerTimer() {
+    _bannerTimer?.cancel();
     _bannerTimer = Timer.periodic(const Duration(seconds: 4), (_) {
-      if (!mounted || _bannerLength == 0) return;
-      final next = (_currentBannerPage + 1) % _bannerLength;
+      if (!mounted || _bannerLength <= 1) return;
+      if (!_bannerController.hasClients) return;
+
+      int next;
+      if (_bannerForward) {
+        if (_currentBannerPage < _bannerLength - 1) {
+          next = _currentBannerPage + 1;
+          if (next >= _bannerLength - 1) {
+            _bannerForward = false;
+          }
+        } else {
+          next = _bannerLength - 2 >= 0 ? _bannerLength - 2 : 0;
+          _bannerForward = false;
+        }
+      } else {
+        if (_currentBannerPage > 0) {
+          next = _currentBannerPage - 1;
+          if (next <= 0) {
+            _bannerForward = true;
+          }
+        } else {
+          next = 1 < _bannerLength ? 1 : 0;
+          _bannerForward = true;
+        }
+      }
+
       _bannerController.animateToPage(
         next,
-        duration: const Duration(milliseconds: 500),
-        curve: Curves.easeInOut,
+        duration: const Duration(milliseconds: 600),
+        curve: Curves.easeInOutCubic,
       );
     });
   }
@@ -1621,8 +1647,16 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: PageView.builder(
                       controller: _bannerController,
                       itemCount: count,
-                      onPageChanged: (p) =>
-                          setState(() => _currentBannerPage = p),
+                      onPageChanged: (p) {
+                        setState(() {
+                          _currentBannerPage = p;
+                          if (p >= _bannerLength - 1) {
+                            _bannerForward = false;
+                          } else if (p <= 0) {
+                            _bannerForward = true;
+                          }
+                        });
+                      },
                       itemBuilder: (context, index) {
                         final imageUrl = (promos[index]['imageUrl'] ?? '').toString();
                         return ClipRRect(

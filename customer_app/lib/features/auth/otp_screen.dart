@@ -161,7 +161,7 @@ class _OtpScreenState extends State<OtpScreen> {
             } on FirebaseAuthException catch (signInEx) {
               if (signInEx.code == 'wrong-password' || signInEx.code == 'invalid-credential') {
                 throw Exception(
-                  'An account with this email already exists on MartFood. Please enter your existing MartFood account password to activate your Customer profile.',
+                  'You already have a MartFood account. Enter your MartFood password to activate your Customer profile.',
                 );
               }
               rethrow;
