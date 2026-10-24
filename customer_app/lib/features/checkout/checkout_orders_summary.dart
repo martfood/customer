@@ -2573,11 +2573,11 @@ class _CheckoutOrdersSummaryScreenState
       prefix = 'MART';
     }
 
-    // 2. Loop to ensure zero collision no matter the order volume
-    for (int attempt = 0; attempt < 5; attempt++) {
-      final timePart = (DateTime.now().millisecondsSinceEpoch % 100000).toString().padLeft(5, '0');
-      final randPart = Random().nextInt(90 + 10).toString();
-      final candidate = '$prefix$timePart$randPart';
+    // 2. Loop to ensure zero collision with a max 5-digit purely random number
+    final random = Random();
+    for (int attempt = 0; attempt < 10; attempt++) {
+      final randNum = 10000 + random.nextInt(90000);
+      final candidate = '$prefix$randNum';
 
       final docSnap = await _firestore.collection('orders').doc(candidate).get();
       if (!docSnap.exists) {
@@ -2585,9 +2585,8 @@ class _CheckoutOrdersSummaryScreenState
       }
     }
 
-    final epochMs = DateTime.now().millisecondsSinceEpoch.toString();
-    final tail = epochMs.length > 6 ? epochMs.substring(epochMs.length - 6) : epochMs;
-    return '$prefix$tail${Random().nextInt(900 + 100)}';
+    // Fallback: guaranteed max 5 random digits
+    return '$prefix${10000 + random.nextInt(90000)}';
   }
 
   void _deletePackItem(int index) {
