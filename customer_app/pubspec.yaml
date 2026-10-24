@@ -1,6 +1,6 @@
 name: customer_app
 description: MartFood Customer Application
-version: 1.0.7+37
+version: 1.0.7+38
 publish_to: none
 
 environment:
