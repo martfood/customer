@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../../core/utils/vendor_status_helper.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -734,55 +735,67 @@ class _OrdersScreenState extends State<OrdersScreen>
               ),
             ),
             if (hasMultipleItems)
-              Container(
-                padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 20.h),
-                decoration: BoxDecoration(
-                  color: surfaceColor,
-                  border: Border(top: BorderSide(color: borderColor, width: 1)),
+              StreamBuilder<bool>(
+                stream: VendorStatusHelper.streamVendorOpenStatus(
+                  vendorId: cartItems.firstWhere((it) => it['vendorId'] != null, orElse: () => {})['vendorId']?.toString(),
+                  vendorName: cartItems.firstWhere((it) => it['restaurant'] != null, orElse: () => {})['restaurant']?.toString(),
                 ),
-                child: SafeArea(
-                  top: false,
-                  child: SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: () => context.push('/checkout'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: purpleColor,
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(18.r),
-                        ),
-                        padding: EdgeInsets.symmetric(vertical: 16.h, horizontal: 20.w),
-                        elevation: 0,
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Row(
+                initialData: true,
+                builder: (context, openSnap) {
+                  final isAllOpen = openSnap.data ?? true;
+                  return Container(
+                    padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 20.h),
+                    decoration: BoxDecoration(
+                      color: surfaceColor,
+                      border: Border(top: BorderSide(color: borderColor, width: 1)),
+                    ),
+                    child: SafeArea(
+                      top: false,
+                      child: SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: isAllOpen ? () => context.push('/checkout') : null,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: isAllOpen
+                                ? purpleColor
+                                : (isDark ? const Color(0xFF374151) : const Color(0xFFE5E7EB)),
+                            foregroundColor: isAllOpen
+                                ? Colors.white
+                                : (isDark ? const Color(0xFF9CA3AF) : const Color(0xFF6B7280)),
+                            disabledBackgroundColor: isDark ? const Color(0xFF374151) : const Color(0xFFE5E7EB),
+                            disabledForegroundColor: isDark ? const Color(0xFF9CA3AF) : const Color(0xFF6B7280),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(18.r),
+                            ),
+                            padding: EdgeInsets.symmetric(vertical: 16.h, horizontal: 20.w),
+                            elevation: 0,
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text(
-                                'Checkout ($totalQuantity item${totalQuantity > 1 ? 's' : ''})',
+                                isAllOpen
+                                    ? 'Checkout ($totalQuantity item${totalQuantity > 1 ? 's' : ''})'
+                                    : 'Checkout (Store Closed)',
                                 style: TextStyle(
                                   fontSize: AppTypography.font(AppFontSizes.bodyMedium),
                                   fontWeight: FontWeight.w800,
                                 ),
                               ),
-                              SizedBox(width: 6.w),
-                              const Icon(LucideIcons.arrowRight, size: 18),
+                              Text(
+                                _formatCurrency(subtotal),
+                                style: TextStyle(
+                                  fontSize: AppTypography.font(AppFontSizes.bodyMedium),
+                                  fontWeight: FontWeight.w800,
+                                ),
+                              ),
                             ],
                           ),
-                          Text(
-                            _formatCurrency(subtotal),
-                            style: TextStyle(
-                              fontSize: AppTypography.font(AppFontSizes.bodyMedium),
-                              fontWeight: FontWeight.w800,
-                            ),
-                          ),
-                        ],
+                        ),
                       ),
                     ),
-                  ),
-                ),
+                  );
+                },
               ),
           ],
         );
@@ -809,7 +822,15 @@ class _OrdersScreenState extends State<OrdersScreen>
     final selectedChoices = item['selectedChoices'] as List<dynamic>? ?? [];
     final selectedAddOns = item['selectedAddOns'] as List<dynamic>? ?? [];
 
-    return Dismissible(
+    return StreamBuilder<bool>(
+      stream: VendorStatusHelper.streamVendorOpenStatus(
+        vendorId: item['vendorId']?.toString(),
+        vendorName: restaurant,
+      ),
+      initialData: true,
+      builder: (context, openSnap) {
+        final bool isOpen = openSnap.data ?? true;
+        return Dismissible(
       key: Key(docId),
       direction: DismissDirection.endToStart,
       onDismissed: (direction) async {
@@ -850,27 +871,57 @@ class _OrdersScreenState extends State<OrdersScreen>
               padding: EdgeInsets.all(16.w),
               child: Row(
                 children: [
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(18.r),
-                    child: imageUrl.isNotEmpty
-                        ? CachedNetworkImage(
-                            imageUrl: imageUrl,
-                            width: 92.w,
-                            height: 92.w,
-                            fit: BoxFit.cover,
-                            errorWidget: (_, __, ___) => Container(
-                              width: 92.w,
-                              height: 92.w,
-                              color: isDark ? Colors.grey[800] : Colors.grey[300],
-                              child: Icon(Icons.fastfood, color: Colors.grey, size: 24.sp),
+                  Stack(
+                    children: [
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(18.r),
+                        child: imageUrl.isNotEmpty
+                            ? CachedNetworkImage(
+                                imageUrl: imageUrl,
+                                width: 92.w,
+                                height: 92.w,
+                                fit: BoxFit.cover,
+                                errorWidget: (_, __, ___) => Container(
+                                  width: 92.w,
+                                  height: 92.w,
+                                  color: isDark ? Colors.grey[800] : Colors.grey[300],
+                                  child: Icon(Icons.fastfood, color: Colors.grey, size: 24.sp),
+                                ),
+                              )
+                            : Container(
+                                width: 92.w,
+                                height: 92.w,
+                                color: isDark ? Colors.grey[800] : Colors.grey[300],
+                                child: Icon(Icons.fastfood, color: Colors.grey, size: 24.sp),
+                              ),
+                      ),
+                      if (!isOpen)
+                        Positioned.fill(
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: Colors.black.withValues(alpha: 0.6),
+                              borderRadius: BorderRadius.circular(18.r),
                             ),
-                          )
-                        : Container(
-                            width: 92.w,
-                            height: 92.w,
-                            color: isDark ? Colors.grey[800] : Colors.grey[300],
-                            child: Icon(Icons.fastfood, color: Colors.grey, size: 24.sp),
+                            alignment: Alignment.center,
+                            child: Container(
+                              padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                              decoration: BoxDecoration(
+                                color: Colors.red.withValues(alpha: 0.95),
+                                borderRadius: BorderRadius.circular(8.r),
+                              ),
+                              child: Text(
+                                'CLOSED',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: AppTypography.font(10),
+                                  letterSpacing: 0.5,
+                                ),
+                              ),
+                            ),
                           ),
+                        ),
+                    ],
                   ),
                   SizedBox(width: 14.w),
                   Expanded(
@@ -1002,31 +1053,32 @@ class _OrdersScreenState extends State<OrdersScreen>
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
-                        onPressed: () {
-                          context.push('/checkout');
-                        },
+                        onPressed: isOpen
+                            ? () {
+                                context.push('/checkout');
+                              }
+                            : null,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: purpleColor,
-                          foregroundColor: Colors.white,
+                          backgroundColor: isOpen
+                              ? purpleColor
+                              : (isDark ? const Color(0xFF374151) : const Color(0xFFE5E7EB)),
+                          foregroundColor: isOpen
+                              ? Colors.white
+                              : (isDark ? const Color(0xFF9CA3AF) : const Color(0xFF6B7280)),
+                          disabledBackgroundColor: isDark ? const Color(0xFF374151) : const Color(0xFFE5E7EB),
+                          disabledForegroundColor: isDark ? const Color(0xFF9CA3AF) : const Color(0xFF6B7280),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(18.r),
                           ),
                           padding: EdgeInsets.symmetric(vertical: 14.h),
                           elevation: 0,
                         ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              'Checkout',
-                              style: TextStyle(
-                                fontSize: AppTypography.font(AppFontSizes.bodyMedium),
-                                fontWeight: FontWeight.w800,
-                              ),
-                            ),
-                            SizedBox(width: 6.w),
-                            const Icon(LucideIcons.arrowRight, size: 18),
-                          ],
+                        child: Text(
+                          isOpen ? 'Checkout' : 'Checkout (Store Closed)',
+                          style: TextStyle(
+                            fontSize: AppTypography.font(AppFontSizes.bodyMedium),
+                            fontWeight: FontWeight.w800,
+                          ),
                         ),
                       ),
                     ),
@@ -1069,6 +1121,8 @@ class _OrdersScreenState extends State<OrdersScreen>
         ),
       ),
     );
+  },
+);
   }
 
   Widget _buildCartQuantityButton(

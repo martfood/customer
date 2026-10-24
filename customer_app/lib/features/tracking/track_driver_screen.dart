@@ -315,9 +315,21 @@ class _TrackDriverScreenState extends State<TrackDriverScreen> {
                 final deliveryFee = _toDouble(order['deliveryFee']);
                 final platformFee = _toDouble(order['platformFee']);
                 final totalCost = _toDouble(order['total']);
-                final paymentMethod = (order['paymentMethod'] is Map)
-                    ? (order['paymentMethod']['label'] ?? 'Wallet').toString()
-                    : (order['paymentMethod'] ?? 'Wallet').toString();
+                final rawPm = order['paymentMethod'];
+                final String rawPmStr = (rawPm is Map)
+                    ? (rawPm['name'] ?? rawPm['label'] ?? rawPm['type'] ?? '').toString()
+                    : (rawPm ?? '').toString();
+                final String lowerPm = rawPmStr.toLowerCase();
+                final String paymentMethod;
+                if (lowerPm.contains('bank') || lowerPm.contains('transfer')) {
+                  paymentMethod = 'bank transfer';
+                } else if (lowerPm.contains('someone') || lowerPm.contains('had') || lowerPm.contains('have')) {
+                  paymentMethod = 'Had someone paid';
+                } else if (lowerPm.contains('card') || lowerPm.contains('visa') || lowerPm.contains('mastercard')) {
+                  paymentMethod = 'Card';
+                } else {
+                  paymentMethod = 'Martfood Wallet';
+                }
                 final isRiderRated = (order['isRiderRated'] == true) ||
                     (order['isRiderRated']?.toString() == 'true') ||
                     (order['isDriverRated'] == true) ||
@@ -736,6 +748,7 @@ class _TrackDriverScreenState extends State<TrackDriverScreen> {
                                       _toDouble(item['price']) * qty;
 
                                   return Row(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
                                       ClipRRect(
                                         borderRadius:
@@ -773,15 +786,59 @@ class _TrackDriverScreenState extends State<TrackDriverScreen> {
                                       ),
                                       SizedBox(width: 12.w),
                                       Expanded(
-                                        child: Text(
-                                          '$title X $qty',
-                                          style: TextStyle(
-                                            fontSize: AppTypography.font(14),
-                                            fontWeight: FontWeight.w600,
-                                            color: primaryTextColor,
-                                          ),
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              '$title X $qty',
+                                              style: TextStyle(
+                                                fontSize: AppTypography.font(14),
+                                                fontWeight: FontWeight.w600,
+                                                color: primaryTextColor,
+                                              ),
+                                            ),
+                                            if ((item['selectedChoices'] as List? ?? []).isNotEmpty) ...[
+                                              SizedBox(height: 4.h),
+                                              ...(item['selectedChoices'] as List).map((c) {
+                                                final cMap = c is Map ? c : {};
+                                                final group = cMap['groupTitle'] ?? cMap['group'] ?? '';
+                                                final label = cMap['choiceLabel'] ?? cMap['label'] ?? cMap['name'] ?? c.toString();
+                                                final text = group.toString().isNotEmpty ? '$group: $label' : label.toString();
+                                                return Padding(
+                                                  padding: EdgeInsets.only(top: 2.h),
+                                                  child: Text(
+                                                    '• $text',
+                                                    style: TextStyle(
+                                                      fontSize: AppTypography.font(12),
+                                                      color: mutedTextColor,
+                                                      fontWeight: FontWeight.w400,
+                                                    ),
+                                                  ),
+                                                );
+                                              }),
+                                            ],
+                                            if ((item['selectedAddOns'] as List? ?? []).isNotEmpty) ...[
+                                              SizedBox(height: 2.h),
+                                              ...(item['selectedAddOns'] as List).map((a) {
+                                                final aMap = a is Map ? a : {};
+                                                final label = aMap['name'] ?? aMap['label'] ?? a.toString();
+                                                return Padding(
+                                                  padding: EdgeInsets.only(top: 2.h),
+                                                  child: Text(
+                                                    '+ $label',
+                                                    style: TextStyle(
+                                                      fontSize: AppTypography.font(12),
+                                                      color: mutedTextColor,
+                                                      fontWeight: FontWeight.w400,
+                                                    ),
+                                                  ),
+                                                );
+                                              }),
+                                            ],
+                                          ],
                                         ),
                                       ),
+                                      SizedBox(width: 8.w),
                                       Text(
                                         _formatCurrency(priceVal),
                                         style: TextStyle(

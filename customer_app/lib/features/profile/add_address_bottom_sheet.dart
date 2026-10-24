@@ -194,7 +194,8 @@ class _AddNewAddressSheetState extends State<_AddNewAddressSheet> {
     final inputBorderColor = isDark
         ? AppTheme.darkBorder
         : const Color(0xFFE9D5FF); // Subtle purple outline from UI spec
-    final inactivePillBg = isDark ? const Color(0xFF27272A) : const Color(0xFFF3F4F6);
+    final inactivePillBg =
+        isDark ? const Color(0xFF27272A) : const Color(0xFFF3F4F6);
 
     return Container(
       decoration: BoxDecoration(
@@ -245,7 +246,7 @@ class _AddNewAddressSheetState extends State<_AddNewAddressSheet> {
             SizedBox(height: 24.h),
 
             // ── Field 1: Address ────────────────────────────────────────────
-            _buildFieldLabel('Address', mutedText),
+            _buildFieldLabel('Your Current Address', mutedText),
             SizedBox(height: 8.h),
             TextFormField(
               controller: _addressController,
@@ -310,12 +311,19 @@ class _AddNewAddressSheetState extends State<_AddNewAddressSheet> {
                       final suggestion = _suggestions[index];
                       final description =
                           (suggestion['description'] ?? '').toString();
-                      final mainText = (suggestion['structured_formatting']?['main_text'] ?? description).toString();
-                      final secondaryText = (suggestion['structured_formatting']?['secondary_text'] ?? '').toString();
+                      final mainText = (suggestion['structured_formatting']
+                                  ?['main_text'] ??
+                              description)
+                          .toString();
+                      final secondaryText = (suggestion['structured_formatting']
+                                  ?['secondary_text'] ??
+                              '')
+                          .toString();
 
                       return ListTile(
                         dense: true,
-                        contentPadding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 2.h),
+                        contentPadding: EdgeInsets.symmetric(
+                            horizontal: 14.w, vertical: 2.h),
                         leading: Container(
                           padding: EdgeInsets.all(8.w),
                           decoration: BoxDecoration(
@@ -361,9 +369,11 @@ class _AddNewAddressSheetState extends State<_AddNewAddressSheet> {
               children: [
                 _buildCategoryPill('Home', purple, inactivePillBg, primaryText),
                 SizedBox(width: 10.w),
-                _buildCategoryPill('Work / Office', purple, inactivePillBg, primaryText),
+                _buildCategoryPill(
+                    'Work / Office', purple, inactivePillBg, primaryText),
                 SizedBox(width: 10.w),
-                _buildCategoryPill('Other', purple, inactivePillBg, primaryText),
+                _buildCategoryPill(
+                    'Other', purple, inactivePillBg, primaryText),
               ],
             ),
             SizedBox(height: 20.h),
@@ -412,8 +422,10 @@ class _AddNewAddressSheetState extends State<_AddNewAddressSheet> {
                   value: _isDefault,
                   activeThumbColor: Colors.white,
                   activeTrackColor: purple,
-                  inactiveThumbColor: isDark ? Colors.grey[400] : Colors.grey[300],
-                  inactiveTrackColor: isDark ? Colors.grey[800] : Colors.grey[200],
+                  inactiveThumbColor:
+                      isDark ? Colors.grey[400] : Colors.grey[300],
+                  inactiveTrackColor:
+                      isDark ? Colors.grey[800] : Colors.grey[200],
                   onChanged: (val) {
                     setState(() {
                       _isDefault = val;
@@ -457,7 +469,8 @@ class _AddNewAddressSheetState extends State<_AddNewAddressSheet> {
                   disabledBackgroundColor: purple.withValues(alpha: 0.5),
                   minimumSize: Size(double.infinity, 56.h),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(999.r), // Fully rounded stadium button
+                    borderRadius: BorderRadius.circular(
+                        999.r), // Fully rounded stadium button
                   ),
                   elevation: 0,
                 ),

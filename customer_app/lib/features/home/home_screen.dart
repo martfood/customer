@@ -63,6 +63,9 @@ class _HomeScreenState extends State<HomeScreen> {
   bool _vendorsLoaded = _hasLoadedVendorsOnce;
   StreamSubscription<QuerySnapshot>? _vendorsSubscription;
   StreamSubscription<QuerySnapshot>? _addressesSubscription;
+  StreamSubscription<QuerySnapshot>? _deliveredOrdersSubscription;
+  final Set<String> _promptedReviewOrderIds = {};
+  bool _isReviewPromptActive = false;
 
 
   final List<Map<String, String>> _categories = [
@@ -132,6 +135,7 @@ class _HomeScreenState extends State<HomeScreen> {
     _initLocationAndPermissions();
     _listenToCategoryStatus();
     _startBannerTimer();
+    _listenForDeliveredOrdersToReview();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
@@ -436,7 +440,241 @@ class _HomeScreenState extends State<HomeScreen> {
     _vendorsSubscription?.cancel();
     _addressesSubscription?.cancel();
     _serviceAvailabilitySubscription?.cancel();
+    _deliveredOrdersSubscription?.cancel();
     super.dispose();
+  }
+
+
+  void _listenForDeliveredOrdersToReview() {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    _deliveredOrdersSubscription?.cancel();
+    _deliveredOrdersSubscription = FirebaseFirestore.instance
+        .collection('orders')
+        .where('customerId', isEqualTo: user.uid)
+        .where('status', isEqualTo: 'delivered')
+        .snapshots()
+        .listen((snap) {
+      if (!mounted) return;
+      _checkUnratedDeliveredOrders(snap.docs);
+    });
+  }
+
+  Future<void> _checkUnratedDeliveredOrders(List<QueryDocumentSnapshot> docs) async {
+    if (_isReviewPromptActive || !mounted) return;
+
+    for (final doc in docs) {
+      final orderId = doc.id;
+      if (_promptedReviewOrderIds.contains(orderId)) continue;
+
+      final data = doc.data() as Map<String, dynamic>;
+
+      final isRiderRated = (data['isRiderRated'] == true) ||
+          (data['isRiderRated']?.toString() == 'true') ||
+          (data['isDriverRated'] == true) ||
+          (data['isDriverRated']?.toString() == 'true') ||
+          (data['riderRated'] == true) ||
+          (data['riderRated']?.toString() == 'true');
+
+      final isVendorReviewed = (data['isReviewed'] == true) ||
+          (data['isReviewed']?.toString() == 'true') ||
+          (data['reviewed'] == true) ||
+          (data['reviewed']?.toString() == 'true');
+
+      // If both rider and vendor are already rated, nothing to prompt
+      if (isRiderRated && isVendorReviewed) continue;
+
+      _promptedReviewOrderIds.add(orderId);
+      _isReviewPromptActive = true;
+
+      // Small delay to ensure any screen transitions / initial build settled
+      await Future.delayed(const Duration(milliseconds: 600));
+      if (!mounted) {
+        _isReviewPromptActive = false;
+        return;
+      }
+
+      await _showDeliveredOrderPromptBottomSheet(
+        orderId,
+        data,
+        !isRiderRated,
+        !isVendorReviewed,
+      );
+      _isReviewPromptActive = false;
+      break;
+    }
+  }
+
+  Future<void> _showDeliveredOrderPromptBottomSheet(
+    String orderId,
+    Map<String, dynamic> orderData,
+    bool needsRiderRating,
+    bool needsVendorReview,
+  ) async {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final surfaceColor = isDark ? AppTheme.darkSurface : Colors.white;
+    final primaryTextColor = isDark ? Colors.white : const Color(0xFF15161A);
+    final mutedTextColor = AppTheme.mutedTextColorFor(isDark);
+    final purpleColor = AppTheme.primaryPurpleFor(isDark);
+    final borderColor = isDark ? AppTheme.darkBorder : AppTheme.lightInputBorder;
+
+    final restaurantName = (orderData['restaurantName'] ?? orderData['restaurant'] ?? 'MartFood').toString();
+    final riderName = (orderData['riderName'] ?? 'Rider').toString();
+    final riderId = (orderData['riderId'] ?? orderData['driverId'] ?? '').toString();
+    final riderPhoto = (orderData['riderPhotoUrl'] ?? orderData['riderPhoto'] ?? orderData['photoUrl'] ?? '').toString();
+    final vendorId = (orderData['vendorId'] ?? '').toString();
+    final vendorAvatarUrl = (orderData['vendorAvatarUrl'] ?? orderData['vendorLogo'] ?? '').toString();
+    final items = (orderData['items'] as List?) ?? [];
+    final itemsSummary = items
+        .map((it) => it is Map ? (it['title'] ?? it['name'] ?? '') : '')
+        .where((s) => s.isNotEmpty)
+        .join(', ');
+    final price = (orderData['total'] as num?)?.toDouble();
+
+    final bool? shouldReview = await showModalBottomSheet<bool>(
+      context: context,
+      backgroundColor: surfaceColor,
+      elevation: 0,
+      isDismissible: true,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28.r)),
+      ),
+      builder: (ctx) {
+        return Container(
+          decoration: BoxDecoration(
+            color: surfaceColor,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(28.r)),
+            border: Border.all(color: borderColor, width: 1),
+          ),
+          padding: EdgeInsets.fromLTRB(24.w, 16.h, 24.w, 28.h),
+          child: SafeArea(
+            top: false,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Container(
+                  width: 40.w,
+                  height: 4.h,
+                  decoration: BoxDecoration(
+                    color: isDark ? Colors.grey[700] : Colors.grey[300],
+                    borderRadius: BorderRadius.circular(2.r),
+                  ),
+                ),
+                SizedBox(height: 20.h),
+                Container(
+                  width: 56.w,
+                  height: 56.w,
+                  decoration: BoxDecoration(
+                    color: purpleColor.withValues(alpha: 0.12),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    LucideIcons.packageCheck,
+                    color: purpleColor,
+                    size: 28.sp,
+                  ),
+                ),
+                SizedBox(height: 16.h),
+                Text(
+                  'Order Delivered! 🎉',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: AppTypography.font(AppFontSizes.headlineSmall),
+                    fontWeight: FontWeight.w800,
+                    color: primaryTextColor,
+                  ),
+                ),
+                SizedBox(height: 8.h),
+                Text(
+                  'Your order from $restaurantName has arrived. How was your delivery and food experience?',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: AppTypography.font(AppFontSizes.bodyMedium),
+                    fontWeight: FontWeight.w500,
+                    color: mutedTextColor,
+                    height: 1.4,
+                  ),
+                ),
+                SizedBox(height: 24.h),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () => Navigator.pop(ctx, true),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: purpleColor,
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(18.r),
+                      ),
+                      padding: EdgeInsets.symmetric(vertical: 16.h),
+                    ),
+                    child: Text(
+                      'Rate Delivery & Restaurant',
+                      style: TextStyle(
+                        fontSize: AppTypography.font(AppFontSizes.bodyMedium),
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ),
+                ),
+                SizedBox(height: 10.h),
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton(
+                    onPressed: () => Navigator.pop(ctx, false),
+                    style: OutlinedButton.styleFrom(
+                      backgroundColor: Colors.transparent,
+                      foregroundColor: mutedTextColor,
+                      elevation: 0,
+                      side: BorderSide(color: borderColor, width: 1),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(18.r),
+                      ),
+                      padding: EdgeInsets.symmetric(vertical: 14.h),
+                    ),
+                    child: Text(
+                      'Maybe Later',
+                      style: TextStyle(
+                        fontSize: AppTypography.font(AppFontSizes.bodyMedium),
+                        fontWeight: FontWeight.w600,
+                        color: mutedTextColor,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+
+    if (shouldReview == true && mounted) {
+      // 1. Prompt Rate Rider screen first (if rider was assigned and not yet rated)
+      if (needsRiderRating && riderId.isNotEmpty) {
+        await context.push('/rate_rider', extra: {
+          'orderId': orderId,
+          'riderId': riderId,
+          'riderName': riderName,
+          'riderPhoto': riderPhoto,
+        });
+      }
+
+      // 2. Prompt Leave a Review screen for vendor
+      if (needsVendorReview && mounted) {
+        await context.push('/orders/leave-review', extra: {
+          'name': restaurantName,
+          'imageUrl': vendorAvatarUrl,
+          'vendorId': vendorId,
+          'orderId': orderId,
+          'itemsSummary': itemsSummary,
+          'price': price,
+        });
+      }
+    }
   }
 
   double _getDistanceToVendor(String vendorId) {

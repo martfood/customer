@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../../core/services/notification_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
@@ -98,6 +99,23 @@ class _LeaveAReviewScreenState extends State<LeaveAReviewScreen> {
           .collection('orders')
           .doc(widget.orderId)
           .update({'isReviewed': true});
+
+      // Dispatch in-app notification & push notification to vendor
+      final reviewComment = _feedbackController.text.trim().isNotEmpty
+          ? _feedbackController.text.trim()
+          : 'Excellent service and delicious food!';
+
+      NotificationService.sendPushToVendor(
+        vendorId: widget.vendorId,
+        title: 'New Review Received! ⭐',
+        body: '$customerName left a $_rating-star review: "$reviewComment"',
+        data: {
+          'type': 'vendor_review',
+          'actionUrl': '/account/reviews',
+          'orderId': widget.orderId,
+          'rating': _rating.toString(),
+        },
+      );
 
       if (mounted) {
         _showSuccessBottomSheet(context, Theme.of(context).brightness == Brightness.dark);

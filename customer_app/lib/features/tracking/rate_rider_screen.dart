@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../../core/services/notification_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_widgets/core/theme/app_theme.dart';
@@ -75,6 +76,25 @@ class _RateRiderScreenState extends State<RateRiderScreen> {
           'orderId': widget.orderId,
           'createdAt': FieldValue.serverTimestamp(),
         });
+      }
+
+      // Dispatch in-app notification & push notification to rider
+      if (widget.riderId.isNotEmpty) {
+        final reviewComment = _feedbackController.text.trim().isNotEmpty
+            ? _feedbackController.text.trim()
+            : 'Great delivery service!';
+
+        NotificationService.sendPushToRider(
+          riderId: widget.riderId,
+          title: 'New Rating & Review! ⭐',
+          body: '$customerName rated you $_rating stars: "$reviewComment"',
+          data: {
+            'type': 'rider_review',
+            'orderId': widget.orderId,
+            'rating': _rating.toString(),
+            'actionUrl': '/account/reviews',
+          },
+        );
       }
 
       // Mark order as rider rated

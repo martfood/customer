@@ -67,6 +67,20 @@ class NotificationScreen extends StatelessWidget {
     final type = (data['type'] ?? '').toString().toLowerCase();
     final action = (data['action'] ?? '').toString().toLowerCase();
 
+    if (type == 'chat_message' ||
+        type == 'message' ||
+        type == 'chat' ||
+        lowerTitle.contains('message') ||
+        lowerTitle.contains('chat') ||
+        lowerBody.contains('message') ||
+        lowerBody.contains('sent you a message')) {
+      return {
+        'icon': LucideIcons.messageSquare,
+        'iconColor': purpleColor,
+        'bgColor': purpleColor.withValues(alpha: 0.12),
+      };
+    }
+
     if (action == 'deduct' ||
         lowerTitle.contains('debited') ||
         lowerTitle.contains('deduct') ||
@@ -312,6 +326,41 @@ class NotificationScreen extends StatelessWidget {
                   onTap: () {
                     if (!isRead) {
                       doc.reference.update({'read': true}).catchError((_) {});
+                    }
+                    final notifType = (notifData['type'] ?? data['type'] ?? '').toString().toLowerCase();
+                    final lowerT = title.toLowerCase();
+                    final lowerB = body.toLowerCase();
+                    if (notifType == 'chat_message' ||
+                        notifType == 'message' ||
+                        notifType == 'chat' ||
+                        lowerT.contains('message') ||
+                        lowerT.contains('chat') ||
+                        lowerB.contains('sent you a message')) {
+                      final riderId = notifData['riderId']?.toString() ??
+                          notifData['senderId']?.toString() ??
+                          notifData['driverId']?.toString() ??
+                          '';
+                      final chatId = notifData['chatId']?.toString() ??
+                          notifData['orderId']?.toString() ??
+                          '';
+                      final riderName = notifData['riderName']?.toString() ??
+                          notifData['senderName']?.toString() ??
+                          'Rider';
+                      final riderPhotoUrl = notifData['riderPhotoUrl']?.toString() ??
+                          notifData['photoUrl']?.toString();
+
+                      context.push('/conversation/${riderId.isNotEmpty ? riderId : "rider"}', extra: {
+                        'chatId': chatId,
+                        'riderName': riderName,
+                        'riderPhotoUrl': riderPhotoUrl,
+                      });
+                    } else if (notifType == 'order' || lowerT.contains('order')) {
+                      final orderId = notifData['orderId']?.toString();
+                      if (orderId != null && orderId.isNotEmpty) {
+                        context.push('/tracking', extra: orderId);
+                      }
+                    } else if (notifType == 'wallet' || lowerT.contains('wallet') || lowerT.contains('credit')) {
+                      context.push('/wallet');
                     }
                   },
                   borderRadius: BorderRadius.circular(20.r),

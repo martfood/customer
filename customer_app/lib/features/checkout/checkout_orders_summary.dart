@@ -354,7 +354,14 @@ class _CheckoutOrdersSummaryScreenState
           .toString();
 
       _baseDeliveryFee = _toDouble(data['deliveryFee']);
-      _restaurantAddress = (data['address'] ?? data['location'] ?? '').toString();
+      _restaurantAddress = (data['address'] ??
+              profile?['address'] ??
+              profile?['businessAddress'] ??
+              data['businessAddress'] ??
+              data['location'] ??
+              profile?['location'] ??
+              '')
+          .toString();
       _restaurantType = (data['restaurantType'] ?? data['vendorType'] ?? 'resturantPosts').toString();
 
       _vendorAvatarUrl = (data['profilePic'] ??
@@ -1232,7 +1239,8 @@ class _CheckoutOrdersSummaryScreenState
         }
 
         // ── Pre-save Order with status 'awaiting_payment' BEFORE modal ──────
-        final orderRef = _firestore.collection('orders').doc();
+        final orderId = await _generateUniqueOrderId(_restaurantName);
+        final orderRef = _firestore.collection('orders').doc(orderId);
         final deliveryPin = _generateDeliveryPin();
 
         await orderRef.set({
@@ -1330,7 +1338,8 @@ class _CheckoutOrdersSummaryScreenState
         }
       }
 
-      final orderRef = _firestore.collection('orders').doc();
+      final orderId = await _generateUniqueOrderId(_restaurantName);
+      final orderRef = _firestore.collection('orders').doc(orderId);
       final deliveryPin = _generateDeliveryPin();
       final String initialStatus = (paymentType == 'someone') ? 'awaiting_payment' : 'pending';
       final String paymentStatus = (paymentType == 'someone') ? 'unpaid' : 'paid';
@@ -2133,7 +2142,7 @@ class _CheckoutOrdersSummaryScreenState
                       setState(() {
                         _selectedPayment = {
                           'type': 'bank',
-                          'name': 'Bank Transfer',
+                          'name': 'bank transfer',
                         };
                       });
                     } else if (tempSelectedType == 'someone') {
@@ -2550,13 +2559,35 @@ class _CheckoutOrdersSummaryScreenState
     );
   }
 
-  void _duplicatePackItem(int index) {
-    if (index >= 0 && index < _activeCheckoutItems.length) {
-      final copy = Map<String, dynamic>.from(_activeCheckoutItems[index]);
-      setState(() {
-        _activeCheckoutItems.insert(index + 1, copy);
-      });
+  Future<String> _generateUniqueOrderId(String vendorName) async {
+    // 1. Sanitize vendor prefix: uppercase, letters and digits only, no spaces
+    String prefix = vendorName.trim();
+    if (prefix.contains(' ')) {
+      prefix = prefix.split(RegExp(r'\s+')).first;
     }
+    prefix = prefix.replaceAll(RegExp(r'[^a-zA-Z0-9]'), '').toUpperCase();
+    if (prefix.length > 8) {
+      prefix = prefix.substring(0, 8);
+    }
+    if (prefix.isEmpty) {
+      prefix = 'MART';
+    }
+
+    // 2. Loop to ensure zero collision no matter the order volume
+    for (int attempt = 0; attempt < 5; attempt++) {
+      final timePart = (DateTime.now().millisecondsSinceEpoch % 100000).toString().padLeft(5, '0');
+      final randPart = Random().nextInt(90 + 10).toString();
+      final candidate = '$prefix$timePart$randPart';
+
+      final docSnap = await _firestore.collection('orders').doc(candidate).get();
+      if (!docSnap.exists) {
+        return candidate;
+      }
+    }
+
+    final epochMs = DateTime.now().millisecondsSinceEpoch.toString();
+    final tail = epochMs.length > 6 ? epochMs.substring(epochMs.length - 6) : epochMs;
+    return '$prefix$tail${Random().nextInt(900 + 100)}';
   }
 
   void _deletePackItem(int index) {
@@ -2836,46 +2867,21 @@ class _CheckoutOrdersSummaryScreenState
                                     fontWeight: FontWeight.w800,
                                   ),
                                 ),
-                                Row(
-                                  children: [
-                                    GestureDetector(
-                                      onTap: () => _duplicatePackItem(index),
-                                      child: Container(
-                                        width: 34.w,
-                                        height: 34.w,
-                                        decoration: BoxDecoration(
-                                          shape: BoxShape.circle,
-                                          color: isDark
-                                              ? Colors.grey[800]
-                                              : Colors.grey[100],
-                                        ),
-                                        child: Icon(
-                                          LucideIcons.copy,
-                                          color: isDark
-                                              ? Colors.grey[300]
-                                              : Colors.grey[700],
-                                          size: 16.sp,
-                                        ),
-                                      ),
+                                GestureDetector(
+                                  onTap: () => _deletePackItem(index),
+                                  child: Container(
+                                    width: 34.w,
+                                    height: 34.w,
+                                    decoration: const BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color: Color(0xFFFFEBEE),
                                     ),
-                                    SizedBox(width: 10.w),
-                                    GestureDetector(
-                                      onTap: () => _deletePackItem(index),
-                                      child: Container(
-                                        width: 34.w,
-                                        height: 34.w,
-                                        decoration: const BoxDecoration(
-                                          shape: BoxShape.circle,
-                                          color: Color(0xFFFFEBEE),
-                                        ),
-                                        child: Icon(
-                                          LucideIcons.trash2,
-                                          color: const Color(0xFFEF5350),
-                                          size: 16.sp,
-                                        ),
-                                      ),
+                                    child: Icon(
+                                      LucideIcons.trash2,
+                                      color: const Color(0xFFEF5350),
+                                      size: 16.sp,
                                     ),
-                                  ],
+                                  ),
                                 ),
                               ],
                             ),
@@ -2926,19 +2932,24 @@ class _CheckoutOrdersSummaryScreenState
                                         ),
                                       ),
                                       if (itemChoices.isNotEmpty) ...[
-                                        SizedBox(height: 3.h),
+                                        SizedBox(height: 4.h),
                                         Text(
                                           itemChoices
-                                              .map((c) => c['label'] ?? '')
-                                              .where((l) => l.toString().isNotEmpty)
+                                              .map((c) {
+                                                if (c is Map) {
+                                                  final label = (c['label'] ?? c['name'] ?? '').toString();
+                                                  final group = (c['group'] ?? '').toString();
+                                                  return group.isNotEmpty && label.isNotEmpty ? '$group: $label' : (label.isNotEmpty ? label : group);
+                                                }
+                                                return c.toString();
+                                              })
+                                              .where((l) => l.isNotEmpty)
                                               .join(' • '),
                                           style: TextStyle(
                                             color: mutedTextColor,
                                             fontSize: AppTypography.font(AppFontSizes.caption),
                                             fontWeight: FontWeight.w500,
                                           ),
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
                                         ),
                                       ],
                                       if (itemAddOns.isNotEmpty) ...[

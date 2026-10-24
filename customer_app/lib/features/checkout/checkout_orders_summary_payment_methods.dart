@@ -108,14 +108,16 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
 
   void _applyPaymentMethod() {
     if (_selectedIndex == 0) {
-      context.pop({'type': 'wallet', 'label': 'E-Wallet'});
+      context.pop({'type': 'wallet', 'label': 'Martfood Wallet', 'name': 'Martfood Wallet'});
     } else if (_selectedIndex == 1) {
-      context.pop({'type': 'bank', 'label': 'Bank Transfer'});
+      context.pop({'type': 'bank', 'label': 'bank transfer', 'name': 'bank transfer'});
     } else {
       final selectedCard = _savedCards[_selectedIndex - 2];
       context.pop({
         'type': 'card',
-        'label': "${selectedCard['brand']} (•••• ${selectedCard['last4']})",
+        'label': 'Card',
+        'name': 'Card',
+        'displayLabel': "${selectedCard['brand']} (•••• ${selectedCard['last4']})",
         'card': selectedCard
       });
     }
@@ -194,7 +196,7 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
                                   Expanded(
                                     child: Row(
                                       children: [
-                                        Text('My Wallet',
+                                        Text('Martfood Wallet',
                                             style: TextStyle(
                                                 fontWeight: FontWeight.bold,
                                                 fontSize: AppTypography.font(AppFontSizes.bodyLarge),
@@ -290,7 +292,7 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
                                   color: AppTheme.primaryColor, size: 24),
                               SizedBox(width: 16.w),
                               Expanded(
-                                child: Text('Bank Transfer',
+                                child: Text('bank transfer',
                                     style: TextStyle(
                                         fontWeight: FontWeight.bold,
                                         fontSize: AppTypography.font(AppFontSizes.bodyLarge),
