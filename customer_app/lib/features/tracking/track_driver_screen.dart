@@ -55,6 +55,7 @@ class _TrackDriverScreenState extends State<TrackDriverScreen> {
       case 'pending_verification':
         return 0;
       case 'preparing':
+      case 'ready_for_pickup':
         return 1;
       case 'accepted':
       case 'rider_assigned':
@@ -336,6 +337,9 @@ class _TrackDriverScreenState extends State<TrackDriverScreen> {
                     (order['isDriverRated']?.toString() == 'true') ||
                     (order['riderRated'] == true) ||
                     (order['riderRated']?.toString() == 'true');
+                final isUnassigned = order['broadcastStatus'] == 'unassigned' ||
+                    (order['status'] == 'ready_for_pickup' && order['unassignedAt'] != null) ||
+                    (order['broadcastStatus'] == 'broadcasting' && riderId.isEmpty);
 
                 return SafeArea(
                   top: false,
@@ -347,6 +351,70 @@ class _TrackDriverScreenState extends State<TrackDriverScreen> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
+                              if (isUnassigned) ...[
+                                Container(
+                                  margin: EdgeInsets.only(bottom: 16.h),
+                                  padding: EdgeInsets.symmetric(
+                                      horizontal: 14.w, vertical: 12.h),
+                                  decoration: BoxDecoration(
+                                    color: isDark
+                                        ? AppTheme.darkSurface
+                                        : AppTheme.lightInputFill,
+                                    borderRadius: BorderRadius.circular(16.r),
+                                    border: Border.all(
+                                      color: purpleColor.withValues(
+                                          alpha: isDark ? 0.4 : 0.25),
+                                      width: 1,
+                                    ),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Container(
+                                        width: 36.w,
+                                        height: 36.w,
+                                        decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          color: purpleColor
+                                              .withValues(alpha: 0.12),
+                                        ),
+                                        child: Icon(
+                                          LucideIcons.bike,
+                                          size: 18.sp,
+                                          color: purpleColor,
+                                        ),
+                                      ),
+                                      SizedBox(width: 12.w),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              'Finding a replacement rider...',
+                                              style: TextStyle(
+                                                fontSize: AppTypography.font(13),
+                                                fontWeight: FontWeight.w700,
+                                                color: primaryTextColor,
+                                              ),
+                                            ),
+                                            SizedBox(height: 2.h),
+                                            Text(
+                                              'The previous rider was unassigned. We are dispatching a new driver to collect your order.',
+                                              style: TextStyle(
+                                                fontSize: AppTypography.font(
+                                                    AppFontSizes.caption),
+                                                fontWeight: FontWeight.w500,
+                                                color: mutedTextColor,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+
                               // ── Estimated Arrival Time ────────────────────
                               Text(
                                 'Estimated Arrival Time',
@@ -804,14 +872,15 @@ class _TrackDriverScreenState extends State<TrackDriverScreen> {
                                                 final group = cMap['groupTitle'] ?? cMap['group'] ?? '';
                                                 final label = cMap['choiceLabel'] ?? cMap['label'] ?? cMap['name'] ?? c.toString();
                                                 final text = group.toString().isNotEmpty ? '$group: $label' : label.toString();
+                                                final cQty = (cMap['quantity'] ?? cMap['qty'] ?? cMap['count'] as num?)?.toInt() ?? 1;
                                                 return Padding(
                                                   padding: EdgeInsets.only(top: 2.h),
                                                   child: Text(
-                                                    '• $text',
+                                                    '• $text (x$cQty)',
                                                     style: TextStyle(
                                                       fontSize: AppTypography.font(12),
                                                       color: mutedTextColor,
-                                                      fontWeight: FontWeight.w400,
+                                                      fontWeight: FontWeight.w500,
                                                     ),
                                                   ),
                                                 );
@@ -821,18 +890,54 @@ class _TrackDriverScreenState extends State<TrackDriverScreen> {
                                               SizedBox(height: 2.h),
                                               ...(item['selectedAddOns'] as List).map((a) {
                                                 final aMap = a is Map ? a : {};
-                                                final label = aMap['name'] ?? aMap['label'] ?? a.toString();
+                                                final label = aMap['name'] ?? aMap['label'] ?? aMap['title'] ?? a.toString();
+                                                final aQty = (aMap['quantity'] ?? aMap['qty'] ?? aMap['count'] as num?)?.toInt() ?? 1;
                                                 return Padding(
                                                   padding: EdgeInsets.only(top: 2.h),
                                                   child: Text(
-                                                    '+ $label',
+                                                    '+ $label (x$aQty)',
                                                     style: TextStyle(
                                                       fontSize: AppTypography.font(12),
                                                       color: mutedTextColor,
-                                                      fontWeight: FontWeight.w400,
+                                                      fontWeight: FontWeight.w500,
                                                     ),
                                                   ),
                                                 );
+                                              }),
+                                            ],
+                                            if ((item['selectedOptions'] as List? ?? item['options'] as List? ?? []).isNotEmpty &&
+                                                (item['selectedChoices'] as List? ?? []).isEmpty) ...[
+                                              SizedBox(height: 2.h),
+                                              ...(item['selectedOptions'] as List? ?? item['options'] as List? ?? []).map((o) {
+                                                if (o is Map) {
+                                                  final group = o['groupTitle'] ?? o['group'] ?? '';
+                                                  final label = o['name'] ?? o['label'] ?? o['title'] ?? o['choice'] ?? o.toString();
+                                                  final text = group.toString().isNotEmpty ? '$group: $label' : label.toString();
+                                                  final oQty = (o['quantity'] ?? o['qty'] ?? o['count'] as num?)?.toInt() ?? 1;
+                                                  return Padding(
+                                                    padding: EdgeInsets.only(top: 2.h),
+                                                    child: Text(
+                                                      '• $text (x$oQty)',
+                                                      style: TextStyle(
+                                                        fontSize: AppTypography.font(12),
+                                                        color: mutedTextColor,
+                                                        fontWeight: FontWeight.w500,
+                                                      ),
+                                                    ),
+                                                  );
+                                                } else {
+                                                  return Padding(
+                                                    padding: EdgeInsets.only(top: 2.h),
+                                                    child: Text(
+                                                      '• ${o.toString()} (x1)',
+                                                      style: TextStyle(
+                                                        fontSize: AppTypography.font(12),
+                                                        color: mutedTextColor,
+                                                        fontWeight: FontWeight.w500,
+                                                      ),
+                                                    ),
+                                                  );
+                                                }
                                               }),
                                             ],
                                           ],

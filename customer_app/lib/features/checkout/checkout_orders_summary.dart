@@ -121,6 +121,11 @@ class _CheckoutOrdersSummaryScreenState
     return double.tryParse(value?.toString() ?? '') ?? 0.0;
   }
 
+  double _roundToNearest10(double value) {
+    if (value <= 0) return 0.0;
+    return ((value / 10.0).round() * 10).toDouble();
+  }
+
   String _formatCurrency(double value) {
     final formatted = value.toStringAsFixed(0);
     final whole = formatted.replaceAllMapped(
@@ -353,7 +358,7 @@ class _CheckoutOrdersSummaryScreenState
               _restaurantName)
           .toString();
 
-      _baseDeliveryFee = _toDouble(data['deliveryFee']);
+      _baseDeliveryFee = _roundToNearest10(_toDouble(data['deliveryFee']));
       _restaurantAddress = (data['address'] ??
               profile?['address'] ??
               profile?['businessAddress'] ??
@@ -577,7 +582,7 @@ class _CheckoutOrdersSummaryScreenState
     // 4. Recalculate dynamic delivery fee
     await PriceHelper.initialize();
     final surcharge = PriceHelper.calculateDeliverySurcharge(distanceKm);
-    final recalculatedFee = _baseDeliveryFee + surcharge;
+    final recalculatedFee = _roundToNearest10(_baseDeliveryFee + surcharge);
 
     final resolved = Map<String, dynamic>.from(address);
     if (lat != 0.0 && lng != 0.0) {
@@ -839,7 +844,7 @@ class _CheckoutOrdersSummaryScreenState
     if (_selectedAddress == null) {
       _deliveryDistanceKm = 0.0;
       _deliverySurcharge = 0.0;
-      _deliveryFee = _baseDeliveryFee;
+      _deliveryFee = _roundToNearest10(_baseDeliveryFee);
       return;
     }
 
@@ -860,7 +865,7 @@ class _CheckoutOrdersSummaryScreenState
       _deliverySurcharge = 0.0;
     }
 
-    _deliveryFee = _baseDeliveryFee + _deliverySurcharge;
+    _deliveryFee = _roundToNearest10(_baseDeliveryFee + _deliverySurcharge);
   }
 
   double get _subtotal => _activeCheckoutItems.fold(
@@ -2560,33 +2565,48 @@ class _CheckoutOrdersSummaryScreenState
   }
 
   Future<String> _generateUniqueOrderId(String vendorName) async {
-    // 1. Sanitize vendor prefix: uppercase, letters and digits only, no spaces
+    const chars = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
+    final random = Random();
+
+    // 1. Sanitize vendor prefix: up to 2 uppercase alphanumeric characters
     String prefix = vendorName.trim();
     if (prefix.contains(' ')) {
       prefix = prefix.split(RegExp(r'\s+')).first;
     }
     prefix = prefix.replaceAll(RegExp(r'[^a-zA-Z0-9]'), '').toUpperCase();
-    if (prefix.length > 8) {
-      prefix = prefix.substring(0, 8);
+    if (prefix.length > 2) {
+      prefix = prefix.substring(0, 2);
     }
     if (prefix.isEmpty) {
-      prefix = 'MART';
+      prefix = 'M';
     }
 
-    // 2. Loop to ensure zero collision with a max 5-digit purely random number
-    final random = Random();
-    for (int attempt = 0; attempt < 10; attempt++) {
-      final randNum = 10000 + random.nextInt(90000);
-      final candidate = '$prefix$randNum';
+    final int randomLen = (6 - prefix.length).clamp(1, 6);
 
-      final docSnap = await _firestore.collection('orders').doc(candidate).get();
+    // 2. Loop to ensure zero collision with existing orders (strictly max 6 chars)
+    for (int attempt = 0; attempt < 15; attempt++) {
+      final buffer = StringBuffer(prefix);
+      for (int i = 0; i < randomLen; i++) {
+        buffer.write(chars[random.nextInt(chars.length)]);
+      }
+      final candidate = buffer.toString();
+      final finalCandidate =
+          candidate.length > 6 ? candidate.substring(0, 6) : candidate;
+
+      final docSnap =
+          await _firestore.collection('orders').doc(finalCandidate).get();
       if (!docSnap.exists) {
-        return candidate;
+        return finalCandidate;
       }
     }
 
-    // Fallback: guaranteed max 5 random digits
-    return '$prefix${10000 + random.nextInt(90000)}';
+    // Fallback: guaranteed strictly max 6 alphanumeric characters
+    final buffer = StringBuffer(prefix);
+    for (int i = 0; i < randomLen; i++) {
+      buffer.write(chars[random.nextInt(chars.length)]);
+    }
+    final fallback = buffer.toString();
+    return fallback.length > 6 ? fallback.substring(0, 6) : fallback;
   }
 
   void _deletePackItem(int index) {
@@ -3687,7 +3707,7 @@ class _CheckoutOrdersSummaryScreenState
                     Text(
                       _isAddressOutOfCoverage
                           ? 'Out of coverage'
-                          : _formatCurrency(_deliveryFee),
+                          : _formatCurrency(_roundToNearest10(_deliveryFee)),
                       style: TextStyle(
                         color: _isAddressOutOfCoverage
                             ? const Color(0xFFDC2626)

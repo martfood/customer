@@ -101,13 +101,24 @@ class NotificationScreen extends StatelessWidget {
         'iconColor': isDark ? const Color(0xFF6EE7B7) : const Color(0xFF059669),
         'bgColor': isDark ? const Color(0xFF064E3B) : const Color(0xFFECFDF5),
       };
+    } else if (type == 'order_unassigned' ||
+        type == 'rider_unassigned' ||
+        lowerTitle.contains('rider') ||
+        lowerBody.contains('rider') ||
+        lowerTitle.contains('delivery update') ||
+        lowerBody.contains('finding a new rider')) {
+      return {
+        'icon': LucideIcons.bike,
+        'iconColor': purpleColor,
+        'bgColor': purpleColor.withValues(alpha: 0.12),
+      };
     } else if (lowerTitle.contains('cancel') || lowerBody.contains('cancel')) {
       return {
         'icon': Icons.cancel_outlined,
         'iconColor': isDark ? const Color(0xFFFCA5A5) : const Color(0xFFDC2626),
         'bgColor': isDark ? const Color(0xFF450A0A) : const Color(0xFFFEF2F2),
       };
-    } else if (lowerTitle.contains('order') || type == 'order') {
+    } else if (lowerTitle.contains('order') || type == 'order' || type == 'order_status') {
       return {
         'icon': LucideIcons.shoppingBag,
         'iconColor': purpleColor,
@@ -354,7 +365,13 @@ class NotificationScreen extends StatelessWidget {
                         'riderName': riderName,
                         'riderPhotoUrl': riderPhotoUrl,
                       });
-                    } else if (notifType == 'order' || lowerT.contains('order')) {
+                    } else if (notifType == 'order' ||
+                        notifType == 'order_status' ||
+                        notifType == 'rider_unassigned' ||
+                        notifType == 'order_unassigned' ||
+                        lowerT.contains('order') ||
+                        lowerT.contains('delivery') ||
+                        notifData['orderId'] != null) {
                       final orderId = notifData['orderId']?.toString();
                       if (orderId != null && orderId.isNotEmpty) {
                         context.push('/tracking', extra: orderId);
