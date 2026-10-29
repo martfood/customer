@@ -1424,8 +1424,8 @@ class _CheckoutOrdersSummaryScreenState
         'updatedAt': FieldValue.serverTimestamp(),
       });
 
-      // ── Dispatch Push Notification to Vendor ──────────────────────────────
-      if (effectiveVendorId != null && effectiveVendorId.isNotEmpty) {
+      // ── Dispatch Push Notification to Vendor (Only for Paid/Confirmed Orders) ──
+      if (initialStatus != 'awaiting_payment' && effectiveVendorId != null && effectiveVendorId.isNotEmpty) {
         final orderNum = orderRef.id.length >= 6 ? orderRef.id.substring(0, 6).toUpperCase() : orderRef.id;
         NotificationService.sendPushToVendor(
           vendorId: effectiveVendorId,
@@ -1438,30 +1438,32 @@ class _CheckoutOrdersSummaryScreenState
         );
       }
 
-      // ── Decrement Stock Inventory for Purchased Items ───────────────────────
-      for (final target in resolvedItemTargets) {
-        try {
-          final coll = target['collection'] as String;
-          final docId = target['docId'] as String;
-          final deductQty = target['quantityToDeduct'] as int;
-          final curQty = target['currentQuantity'] as int?;
+      // ── Decrement Stock Inventory for Purchased Items (Only for Paid/Confirmed Orders) ──
+      if (initialStatus != 'awaiting_payment') {
+        for (final target in resolvedItemTargets) {
+          try {
+            final coll = target['collection'] as String;
+            final docId = target['docId'] as String;
+            final deductQty = target['quantityToDeduct'] as int;
+            final curQty = target['currentQuantity'] as int?;
 
-          final postRef = _firestore.collection(coll).doc(docId);
-          if (curQty != null) {
-            final int newQty = (curQty - deductQty) > 0 ? (curQty - deductQty) : 0;
-            await postRef.update({
-              'quantity': newQty,
-              'stockQuantity': newQty,
-              if (newQty <= 0) 'inStock': false,
-            });
-          } else {
-            await postRef.update({
-              'quantity': FieldValue.increment(-deductQty),
-              'stockQuantity': FieldValue.increment(-deductQty),
-            });
+            final postRef = _firestore.collection(coll).doc(docId);
+            if (curQty != null) {
+              final int newQty = (curQty - deductQty) > 0 ? (curQty - deductQty) : 0;
+              await postRef.update({
+                'quantity': newQty,
+                'stockQuantity': newQty,
+                if (newQty <= 0) 'inStock': false,
+              });
+            } else {
+              await postRef.update({
+                'quantity': FieldValue.increment(-deductQty),
+                'stockQuantity': FieldValue.increment(-deductQty),
+              });
+            }
+          } catch (err) {
+            debugPrint('Error decrementing stock for item: $err');
           }
-        } catch (err) {
-          debugPrint('Error decrementing stock for item: $err');
         }
       }
 

@@ -11,11 +11,13 @@ class ProfilePaymentMethodsScreen extends StatefulWidget {
   const ProfilePaymentMethodsScreen({super.key});
 
   @override
-  State<ProfilePaymentMethodsScreen> createState() => _ProfilePaymentMethodsScreenState();
+  State<ProfilePaymentMethodsScreen> createState() =>
+      _ProfilePaymentMethodsScreenState();
 }
 
-class _ProfilePaymentMethodsScreenState extends State<ProfilePaymentMethodsScreen> {
-  bool _isLoading = false;
+class _ProfilePaymentMethodsScreenState
+    extends State<ProfilePaymentMethodsScreen> {
+  final bool _isLoading = false;
 
   String _formatCurrency(double amount) {
     final fixed = amount.toStringAsFixed(2);
@@ -42,7 +44,8 @@ class _ProfilePaymentMethodsScreenState extends State<ProfilePaymentMethodsScree
 
     if (email.isEmpty) {
       scaffoldMessenger.showSnackBar(
-        const SnackBar(content: Text('User email not found. Please log in again.')),
+        const SnackBar(
+            content: Text('User email not found. Please log in again.')),
       );
       return;
     }
@@ -84,7 +87,8 @@ class _ProfilePaymentMethodsScreenState extends State<ProfilePaymentMethodsScree
     } else {
       if (mounted) {
         scaffoldMessenger.showSnackBar(
-          const SnackBar(content: Text('Card verification incomplete. Please try again.')),
+          const SnackBar(
+              content: Text('Card verification incomplete. Please try again.')),
         );
       }
     }
@@ -172,8 +176,7 @@ class _ProfilePaymentMethodsScreenState extends State<ProfilePaymentMethodsScree
                         'Cancel',
                         style: TextStyle(
                           fontWeight: FontWeight.w800,
-                          fontSize:
-                              AppTypography.font(AppFontSizes.bodyMedium),
+                          fontSize: AppTypography.font(AppFontSizes.bodyMedium),
                         ),
                       ),
                     ),
@@ -195,8 +198,7 @@ class _ProfilePaymentMethodsScreenState extends State<ProfilePaymentMethodsScree
                         'Remove',
                         style: TextStyle(
                           fontWeight: FontWeight.w800,
-                          fontSize:
-                              AppTypography.font(AppFontSizes.bodyMedium),
+                          fontSize: AppTypography.font(AppFontSizes.bodyMedium),
                         ),
                       ),
                     ),
@@ -232,7 +234,8 @@ class _ProfilePaymentMethodsScreenState extends State<ProfilePaymentMethodsScree
     final backgroundColor =
         isDark ? AppTheme.darkSurface : AppTheme.lightInputFill;
     final cardBg = isDark ? AppTheme.darkSurface : Colors.white;
-    final borderColor = isDark ? AppTheme.darkBorder : AppTheme.lightInputBorder;
+    final borderColor =
+        isDark ? AppTheme.darkBorder : AppTheme.lightInputBorder;
     final primaryTextColor = isDark ? Colors.white : const Color(0xFF15161A);
     final user = FirebaseAuth.instance.currentUser;
 
@@ -275,13 +278,18 @@ class _ProfilePaymentMethodsScreenState extends State<ProfilePaymentMethodsScree
       body: _isLoading
           ? Center(child: CircularProgressIndicator(color: purpleColor))
           : StreamBuilder<DocumentSnapshot>(
-              stream: FirebaseFirestore.instance.collection('customers').doc(user.uid).snapshots(),
+              stream: FirebaseFirestore.instance
+                  .collection('customers')
+                  .doc(user.uid)
+                  .snapshots(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return Center(child: CircularProgressIndicator(color: purpleColor));
+                  return Center(
+                      child: CircularProgressIndicator(color: purpleColor));
                 }
 
-                final data = snapshot.data?.data() as Map<String, dynamic>? ?? {};
+                final data =
+                    snapshot.data?.data() as Map<String, dynamic>? ?? {};
                 final balance = (data['balance'] ?? 0.0) as double;
                 final savedCards = List<Map<String, dynamic>>.from(
                   (data['savedCards'] as List<dynamic>? ?? [])
@@ -300,7 +308,8 @@ class _ProfilePaymentMethodsScreenState extends State<ProfilePaymentMethodsScree
                             _buildSectionHeader(
                               context: context,
                               title: 'Available methods',
-                              subtitle: 'Choose how you want to manage payments',
+                              subtitle:
+                                  'Choose how you want to manage payments',
                             ),
                             SizedBox(height: 12.h),
                             _buildSurface(
@@ -345,7 +354,9 @@ class _ProfilePaymentMethodsScreenState extends State<ProfilePaymentMethodsScree
                                 context: context,
                                 child: Column(
                                   children: [
-                                    for (var i = 0; i < savedCards.length; i++) ...[
+                                    for (var i = 0;
+                                        i < savedCards.length;
+                                        i++) ...[
                                       _buildMethodItem(
                                         context: context,
                                         icon: LucideIcons.creditCard,
@@ -361,12 +372,14 @@ class _ProfilePaymentMethodsScreenState extends State<ProfilePaymentMethodsScree
                                             color: Colors.red,
                                             size: 18,
                                           ),
-                                          onPressed: () => _removeCard(savedCards[i]),
+                                          onPressed: () =>
+                                              _removeCard(savedCards[i]),
                                         ),
                                       ),
                                       if (i != savedCards.length - 1)
                                         Padding(
-                                          padding: EdgeInsets.symmetric(vertical: 12.h),
+                                          padding: EdgeInsets.symmetric(
+                                              vertical: 12.h),
                                           child: Divider(
                                             height: 1,
                                             color: borderColor,
@@ -406,7 +419,8 @@ class _ProfilePaymentMethodsScreenState extends State<ProfilePaymentMethodsScree
                               'Add New Card',
                               style: TextStyle(
                                 fontWeight: FontWeight.w800,
-                                fontSize: AppTypography.font(AppFontSizes.bodyMedium),
+                                fontSize:
+                                    AppTypography.font(AppFontSizes.bodyMedium),
                               ),
                             ),
                           ),
@@ -419,8 +433,6 @@ class _ProfilePaymentMethodsScreenState extends State<ProfilePaymentMethodsScree
             ),
     );
   }
-
-
 
   Widget _buildSectionHeader({
     required BuildContext context,
@@ -461,7 +473,8 @@ class _ProfilePaymentMethodsScreenState extends State<ProfilePaymentMethodsScree
   }) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final cardBg = isDark ? AppTheme.darkSurface : Colors.white;
-    final borderColor = isDark ? AppTheme.darkBorder : AppTheme.lightInputBorder;
+    final borderColor =
+        isDark ? AppTheme.darkBorder : AppTheme.lightInputBorder;
 
     return Container(
       padding: EdgeInsets.all(18.w),
