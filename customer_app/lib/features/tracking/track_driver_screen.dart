@@ -367,22 +367,31 @@ class _TrackDriverScreenState extends State<TrackDriverScreen> {
                 final platformFee = _toDouble(order['platformFee']);
                 final totalCost = _toDouble(order['total']);
                 final rawPm = order['paymentMethod'];
+                final String pmType = (rawPm is Map)
+                    ? (rawPm['type'] ?? '').toString().toLowerCase().trim()
+                    : (rawPm ?? '').toString().toLowerCase().trim();
                 final String rawPmStr = (rawPm is Map)
-                    ? (rawPm['name'] ?? rawPm['label'] ?? rawPm['type'] ?? '')
+                    ? (rawPm['type'] ?? rawPm['name'] ?? rawPm['label'] ?? '')
                         .toString()
                     : (rawPm ?? '').toString();
                 final String lowerPm = rawPmStr.toLowerCase();
                 final String paymentMethod;
-                if (lowerPm.contains('bank') || lowerPm.contains('transfer')) {
+                if (pmType == 'card' ||
+                    (rawPm is Map && rawPm['card'] != null) ||
+                    lowerPm.contains('card') ||
+                    lowerPm.contains('visa') ||
+                    lowerPm.contains('mastercard') ||
+                    lowerPm.contains('verve')) {
+                  paymentMethod = 'Card';
+                } else if (pmType == 'bank' ||
+                    lowerPm.contains('bank') ||
+                    lowerPm.contains('transfer')) {
                   paymentMethod = 'bank transfer';
-                } else if (lowerPm.contains('someone') ||
+                } else if (pmType == 'someone' ||
+                    lowerPm.contains('someone') ||
                     lowerPm.contains('had') ||
                     lowerPm.contains('have')) {
                   paymentMethod = 'Had someone paid';
-                } else if (lowerPm.contains('card') ||
-                    lowerPm.contains('visa') ||
-                    lowerPm.contains('mastercard')) {
-                  paymentMethod = 'Card';
                 } else {
                   paymentMethod = 'Martfood Wallet';
                 }
