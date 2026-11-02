@@ -1959,6 +1959,12 @@ class _OrdersScreenState extends State<OrdersScreen>
       try {
         await _firestore.collection('orders').doc(orderId).update({
           'status': 'cancelled',
+          'cancelledBy': 'customer',
+          'customerCancellationReason': 'Cancelled by Customer',
+          'cancellationReason': 'Cancelled by Customer',
+          'vendorCancellationReason':
+              'Cancelled by Customer (Payment request cancelled before payment)',
+          'cancelledAt': FieldValue.serverTimestamp(),
           'updatedAt': FieldValue.serverTimestamp(),
         });
         if (paymentToken != null && paymentToken.isNotEmpty) {
@@ -1967,6 +1973,8 @@ class _OrdersScreenState extends State<OrdersScreen>
               .doc(paymentToken)
               .update({
             'status': 'cancelled',
+            'cancelledAt': FieldValue.serverTimestamp(),
+            'cancelledBy': 'customer',
           });
         }
         if (mounted) {

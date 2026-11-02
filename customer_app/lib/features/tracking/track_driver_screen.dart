@@ -318,9 +318,25 @@ class _TrackDriverScreenState extends State<TrackDriverScreen> {
                             '')
                         .toString()
                         .trim();
+                final cancelledBy = (order['cancelledBy'] ?? '')
+                    .toString()
+                    .toLowerCase()
+                    .trim();
+                final pmString = (order['paymentMethod'] is Map
+                            ? (order['paymentMethod']['type'] ??
+                                order['paymentMethod']['name'])
+                            : order['paymentMethod'])
+                        ?.toString()
+                        .toLowerCase() ??
+                    '';
+                final isSomeoneOrder = pmString.contains('someone') ||
+                    pmString.contains('have') ||
+                    pmString.contains('had');
                 final effectiveCancelReason = cancellationReason.isNotEmpty
                     ? cancellationReason
-                    : 'Cancelled by administrator.';
+                    : (cancelledBy == 'customer' || isSomeoneOrder
+                        ? 'Cancelled by Customer'
+                        : 'Cancelled by administrator.');
                 final currentStep = _currentStepFromStatus(status);
                 final deliveryPin = (order['deliveryPin'] ?? '----').toString();
                 final pinDigits = deliveryPin.padLeft(4, '0').split('');
