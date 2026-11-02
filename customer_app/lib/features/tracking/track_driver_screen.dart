@@ -300,20 +300,24 @@ class _TrackDriverScreenState extends State<TrackDriverScreen> {
                 }
 
                 final order = snapshot.data!.data()! as Map<String, dynamic>;
-                final status =
-                    (order['status'] ?? 'pending').toString().toLowerCase().trim();
+                final status = (order['status'] ?? 'pending')
+                    .toString()
+                    .toLowerCase()
+                    .trim();
                 final isDeliveredOrder =
                     status == 'delivered' || status == 'completed';
                 final isCancelledOrder =
                     status == 'cancelled' || status == 'rejected';
-                final cancellationReason = (order['cancellationReason'] ??
-                        order['cancelReason'] ??
-                        order['cancelledReason'] ??
-                        order['rejectedReason'] ??
-                        order['reason'] ??
-                        '')
-                    .toString()
-                    .trim();
+                final cancellationReason =
+                    (order['customerCancellationReason'] ??
+                            order['cancellationReason'] ??
+                            order['cancelReason'] ??
+                            order['cancelledReason'] ??
+                            order['rejectedReason'] ??
+                            order['reason'] ??
+                            '')
+                        .toString()
+                        .trim();
                 final effectiveCancelReason = cancellationReason.isNotEmpty
                     ? cancellationReason
                     : 'Cancelled by administrator.';
@@ -348,15 +352,20 @@ class _TrackDriverScreenState extends State<TrackDriverScreen> {
                 final totalCost = _toDouble(order['total']);
                 final rawPm = order['paymentMethod'];
                 final String rawPmStr = (rawPm is Map)
-                    ? (rawPm['name'] ?? rawPm['label'] ?? rawPm['type'] ?? '').toString()
+                    ? (rawPm['name'] ?? rawPm['label'] ?? rawPm['type'] ?? '')
+                        .toString()
                     : (rawPm ?? '').toString();
                 final String lowerPm = rawPmStr.toLowerCase();
                 final String paymentMethod;
                 if (lowerPm.contains('bank') || lowerPm.contains('transfer')) {
                   paymentMethod = 'bank transfer';
-                } else if (lowerPm.contains('someone') || lowerPm.contains('had') || lowerPm.contains('have')) {
+                } else if (lowerPm.contains('someone') ||
+                    lowerPm.contains('had') ||
+                    lowerPm.contains('have')) {
                   paymentMethod = 'Had someone paid';
-                } else if (lowerPm.contains('card') || lowerPm.contains('visa') || lowerPm.contains('mastercard')) {
+                } else if (lowerPm.contains('card') ||
+                    lowerPm.contains('visa') ||
+                    lowerPm.contains('mastercard')) {
                   paymentMethod = 'Card';
                 } else {
                   paymentMethod = 'Martfood Wallet';
@@ -412,8 +421,8 @@ class _TrackDriverScreenState extends State<TrackDriverScreen> {
                                         height: 36.w,
                                         decoration: BoxDecoration(
                                           shape: BoxShape.circle,
-                                          color: purpleColor
-                                              .withValues(alpha: 0.12),
+                                          color: purpleColor.withValues(
+                                              alpha: 0.12),
                                         ),
                                         child: Icon(
                                           LucideIcons.bike,
@@ -430,7 +439,8 @@ class _TrackDriverScreenState extends State<TrackDriverScreen> {
                                             Text(
                                               'Finding a replacement rider...',
                                               style: TextStyle(
-                                                fontSize: AppTypography.font(13),
+                                                fontSize:
+                                                    AppTypography.font(13),
                                                 fontWeight: FontWeight.w700,
                                                 color: primaryTextColor,
                                               ),
@@ -464,7 +474,8 @@ class _TrackDriverScreenState extends State<TrackDriverScreen> {
                                         : AppTheme.lightInputFill,
                                     borderRadius: BorderRadius.circular(16.r),
                                     border: Border.all(
-                                      color: Colors.green.withValues(alpha: 0.35),
+                                      color:
+                                          Colors.green.withValues(alpha: 0.35),
                                       width: 1,
                                     ),
                                   ),
@@ -474,7 +485,8 @@ class _TrackDriverScreenState extends State<TrackDriverScreen> {
                                         width: 44.w,
                                         height: 44.w,
                                         decoration: BoxDecoration(
-                                          color: Colors.green.withValues(alpha: 0.12),
+                                          color: Colors.green
+                                              .withValues(alpha: 0.12),
                                           shape: BoxShape.circle,
                                         ),
                                         child: Icon(
@@ -558,8 +570,10 @@ class _TrackDriverScreenState extends State<TrackDriverScreen> {
                                                 Text(
                                                   'Order Cancelled',
                                                   style: TextStyle(
-                                                    fontSize: AppTypography.font(
-                                                        AppFontSizes.bodyLarge),
+                                                    fontSize:
+                                                        AppTypography.font(
+                                                            AppFontSizes
+                                                                .bodyLarge),
                                                     fontWeight: FontWeight.w800,
                                                     color: Colors.red,
                                                   ),
@@ -568,8 +582,10 @@ class _TrackDriverScreenState extends State<TrackDriverScreen> {
                                                 Text(
                                                   'Cancelled on ${_formatTimestamp(order['cancelledAt'] ?? order['updatedAt'] ?? order['createdAt'])}',
                                                   style: TextStyle(
-                                                    fontSize: AppTypography.font(
-                                                        AppFontSizes.bodySmall),
+                                                    fontSize:
+                                                        AppTypography.font(
+                                                            AppFontSizes
+                                                                .bodySmall),
                                                     fontWeight: FontWeight.w500,
                                                     color: mutedTextColor,
                                                   ),
@@ -627,7 +643,11 @@ class _TrackDriverScreenState extends State<TrackDriverScreen> {
                                   ),
                                 ),
                                 SectionDivider(
-                                  margin: EdgeInsets.only(left: -20.w, right: -20.w, top: 16.h, bottom: 16.h),
+                                  margin: EdgeInsets.only(
+                                      left: -20.w,
+                                      right: -20.w,
+                                      top: 16.h,
+                                      bottom: 16.h),
                                 ),
 
                                 // ── Delivery PIN Row ──────────────────────────
@@ -689,7 +709,8 @@ class _TrackDriverScreenState extends State<TrackDriverScreen> {
                                                       AppTypography.font(18),
                                                   fontWeight: FontWeight.w900,
                                                   foreground: Paint()
-                                                    ..style = PaintingStyle.stroke
+                                                    ..style =
+                                                        PaintingStyle.stroke
                                                     ..strokeWidth = 0.5
                                                     ..color = purpleColor,
                                                 ),
@@ -715,7 +736,11 @@ class _TrackDriverScreenState extends State<TrackDriverScreen> {
                                   (riderId.isNotEmpty ||
                                       riderName.isNotEmpty)) ...[
                                 SectionDivider(
-                                  margin: EdgeInsets.only(left: -20.w, right: -20.w, top: 16.h, bottom: 16.h),
+                                  margin: EdgeInsets.only(
+                                      left: -20.w,
+                                      right: -20.w,
+                                      top: 16.h,
+                                      bottom: 16.h),
                                 ),
 
                                 // ── Rider Contact Box ────────────────────────
@@ -783,7 +808,8 @@ class _TrackDriverScreenState extends State<TrackDriverScreen> {
                                                 '/conversation/$riderId',
                                                 extra: {
                                                   'riderName': riderName,
-                                                  'riderPhotoUrl': riderPhotoUrl,
+                                                  'riderPhotoUrl':
+                                                      riderPhotoUrl,
                                                 },
                                               );
                                             } else {
@@ -801,7 +827,8 @@ class _TrackDriverScreenState extends State<TrackDriverScreen> {
                                               shape: BoxShape.circle,
                                             ),
                                             child: Icon(LucideIcons.mail,
-                                                color: purpleColor, size: 18.sp),
+                                                color: purpleColor,
+                                                size: 18.sp),
                                           ),
                                         ),
                                         SizedBox(width: 10.w),
@@ -830,7 +857,8 @@ class _TrackDriverScreenState extends State<TrackDriverScreen> {
                                               shape: BoxShape.circle,
                                             ),
                                             child: Icon(LucideIcons.phone,
-                                                color: purpleColor, size: 18.sp),
+                                                color: purpleColor,
+                                                size: 18.sp),
                                           ),
                                         ),
                                       ],
@@ -968,7 +996,11 @@ class _TrackDriverScreenState extends State<TrackDriverScreen> {
                                 ),
                               ],
                               SectionDivider(
-                                margin: EdgeInsets.only(left: -20.w, right: -20.w, top: 20.h, bottom: 20.h),
+                                margin: EdgeInsets.only(
+                                    left: -20.w,
+                                    right: -20.w,
+                                    top: 20.h,
+                                    bottom: 20.h),
                               ),
 
                               // ── Order Summary ─────────────────────────────
@@ -1018,7 +1050,8 @@ class _TrackDriverScreenState extends State<TrackDriverScreen> {
                                       _toDouble(item['price']) * qty;
 
                                   return Row(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       ClipRRect(
                                         borderRadius:
@@ -1057,85 +1090,167 @@ class _TrackDriverScreenState extends State<TrackDriverScreen> {
                                       SizedBox(width: 12.w),
                                       Expanded(
                                         child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
                                           children: [
                                             Text(
                                               '$title X $qty',
                                               style: TextStyle(
-                                                fontSize: AppTypography.font(14),
+                                                fontSize:
+                                                    AppTypography.font(14),
                                                 fontWeight: FontWeight.w600,
                                                 color: primaryTextColor,
                                               ),
                                             ),
-                                            if ((item['selectedChoices'] as List? ?? []).isNotEmpty) ...[
+                                            if ((item['selectedChoices']
+                                                        as List? ??
+                                                    [])
+                                                .isNotEmpty) ...[
                                               SizedBox(height: 4.h),
-                                              ...(item['selectedChoices'] as List).map((c) {
+                                              ...(item['selectedChoices']
+                                                      as List)
+                                                  .map((c) {
                                                 final cMap = c is Map ? c : {};
-                                                final group = cMap['groupTitle'] ?? cMap['group'] ?? '';
-                                                final label = cMap['choiceLabel'] ?? cMap['label'] ?? cMap['name'] ?? c.toString();
-                                                final text = group.toString().isNotEmpty ? '$group: $label' : label.toString();
-                                                final cQty = (cMap['quantity'] ?? cMap['qty'] ?? cMap['count'] as num?)?.toInt() ?? 1;
+                                                final group =
+                                                    cMap['groupTitle'] ??
+                                                        cMap['group'] ??
+                                                        '';
+                                                final label =
+                                                    cMap['choiceLabel'] ??
+                                                        cMap['label'] ??
+                                                        cMap['name'] ??
+                                                        c.toString();
+                                                final text =
+                                                    group.toString().isNotEmpty
+                                                        ? '$group: $label'
+                                                        : label.toString();
+                                                final cQty =
+                                                    (cMap['quantity'] ??
+                                                                cMap['qty'] ??
+                                                                cMap['count']
+                                                                    as num?)
+                                                            ?.toInt() ??
+                                                        1;
                                                 return Padding(
-                                                  padding: EdgeInsets.only(top: 2.h),
+                                                  padding:
+                                                      EdgeInsets.only(top: 2.h),
                                                   child: Text(
                                                     '• $text (x$cQty)',
                                                     style: TextStyle(
-                                                      fontSize: AppTypography.font(12),
+                                                      fontSize:
+                                                          AppTypography.font(
+                                                              12),
                                                       color: mutedTextColor,
-                                                      fontWeight: FontWeight.w500,
+                                                      fontWeight:
+                                                          FontWeight.w500,
                                                     ),
                                                   ),
                                                 );
                                               }),
                                             ],
-                                            if ((item['selectedAddOns'] as List? ?? []).isNotEmpty) ...[
+                                            if ((item['selectedAddOns']
+                                                        as List? ??
+                                                    [])
+                                                .isNotEmpty) ...[
                                               SizedBox(height: 2.h),
-                                              ...(item['selectedAddOns'] as List).map((a) {
+                                              ...(item['selectedAddOns']
+                                                      as List)
+                                                  .map((a) {
                                                 final aMap = a is Map ? a : {};
-                                                final label = aMap['name'] ?? aMap['label'] ?? aMap['title'] ?? a.toString();
-                                                final aQty = (aMap['quantity'] ?? aMap['qty'] ?? aMap['count'] as num?)?.toInt() ?? 1;
+                                                final label = aMap['name'] ??
+                                                    aMap['label'] ??
+                                                    aMap['title'] ??
+                                                    a.toString();
+                                                final aQty =
+                                                    (aMap['quantity'] ??
+                                                                aMap['qty'] ??
+                                                                aMap['count']
+                                                                    as num?)
+                                                            ?.toInt() ??
+                                                        1;
                                                 return Padding(
-                                                  padding: EdgeInsets.only(top: 2.h),
+                                                  padding:
+                                                      EdgeInsets.only(top: 2.h),
                                                   child: Text(
                                                     '+ $label (x$aQty)',
                                                     style: TextStyle(
-                                                      fontSize: AppTypography.font(12),
+                                                      fontSize:
+                                                          AppTypography.font(
+                                                              12),
                                                       color: mutedTextColor,
-                                                      fontWeight: FontWeight.w500,
+                                                      fontWeight:
+                                                          FontWeight.w500,
                                                     ),
                                                   ),
                                                 );
                                               }),
                                             ],
-                                            if ((item['selectedOptions'] as List? ?? item['options'] as List? ?? []).isNotEmpty &&
-                                                (item['selectedChoices'] as List? ?? []).isEmpty) ...[
+                                            if ((item['selectedOptions']
+                                                            as List? ??
+                                                        item['options']
+                                                            as List? ??
+                                                        [])
+                                                    .isNotEmpty &&
+                                                (item['selectedChoices']
+                                                            as List? ??
+                                                        [])
+                                                    .isEmpty) ...[
                                               SizedBox(height: 2.h),
-                                              ...(item['selectedOptions'] as List? ?? item['options'] as List? ?? []).map((o) {
+                                              ...(item['selectedOptions']
+                                                          as List? ??
+                                                      item['options']
+                                                          as List? ??
+                                                      [])
+                                                  .map((o) {
                                                 if (o is Map) {
-                                                  final group = o['groupTitle'] ?? o['group'] ?? '';
-                                                  final label = o['name'] ?? o['label'] ?? o['title'] ?? o['choice'] ?? o.toString();
-                                                  final text = group.toString().isNotEmpty ? '$group: $label' : label.toString();
-                                                  final oQty = (o['quantity'] ?? o['qty'] ?? o['count'] as num?)?.toInt() ?? 1;
+                                                  final group =
+                                                      o['groupTitle'] ??
+                                                          o['group'] ??
+                                                          '';
+                                                  final label = o['name'] ??
+                                                      o['label'] ??
+                                                      o['title'] ??
+                                                      o['choice'] ??
+                                                      o.toString();
+                                                  final text = group
+                                                          .toString()
+                                                          .isNotEmpty
+                                                      ? '$group: $label'
+                                                      : label.toString();
+                                                  final oQty = (o['quantity'] ??
+                                                              o['qty'] ??
+                                                              o['count']
+                                                                  as num?)
+                                                          ?.toInt() ??
+                                                      1;
                                                   return Padding(
-                                                    padding: EdgeInsets.only(top: 2.h),
+                                                    padding: EdgeInsets.only(
+                                                        top: 2.h),
                                                     child: Text(
                                                       '• $text (x$oQty)',
                                                       style: TextStyle(
-                                                        fontSize: AppTypography.font(12),
+                                                        fontSize:
+                                                            AppTypography.font(
+                                                                12),
                                                         color: mutedTextColor,
-                                                        fontWeight: FontWeight.w500,
+                                                        fontWeight:
+                                                            FontWeight.w500,
                                                       ),
                                                     ),
                                                   );
                                                 } else {
                                                   return Padding(
-                                                    padding: EdgeInsets.only(top: 2.h),
+                                                    padding: EdgeInsets.only(
+                                                        top: 2.h),
                                                     child: Text(
                                                       '• ${o.toString()} (x1)',
                                                       style: TextStyle(
-                                                        fontSize: AppTypography.font(12),
+                                                        fontSize:
+                                                            AppTypography.font(
+                                                                12),
                                                         color: mutedTextColor,
-                                                        fontWeight: FontWeight.w500,
+                                                        fontWeight:
+                                                            FontWeight.w500,
                                                       ),
                                                     ),
                                                   );

@@ -112,13 +112,17 @@ class NotificationScreen extends StatelessWidget {
         'iconColor': purpleColor,
         'bgColor': purpleColor.withValues(alpha: 0.12),
       };
-    } else if (lowerTitle.contains('cancel') || lowerBody.contains('cancel')) {
+    } else if (type == 'order_cancelled' ||
+        lowerTitle.contains('cancel') ||
+        lowerBody.contains('cancel')) {
       return {
         'icon': Icons.cancel_outlined,
         'iconColor': isDark ? const Color(0xFFFCA5A5) : const Color(0xFFDC2626),
         'bgColor': isDark ? const Color(0xFF450A0A) : const Color(0xFFFEF2F2),
       };
-    } else if (lowerTitle.contains('order') || type == 'order' || type == 'order_status') {
+    } else if (lowerTitle.contains('order') ||
+        type == 'order' ||
+        type == 'order_status') {
       return {
         'icon': LucideIcons.shoppingBag,
         'iconColor': purpleColor,
@@ -231,7 +235,8 @@ class NotificationScreen extends StatelessWidget {
                 value: 'read_all',
                 child: Row(
                   children: [
-                    Icon(LucideIcons.checkCheck, size: 18.sp, color: purpleColor),
+                    Icon(LucideIcons.checkCheck,
+                        size: 18.sp, color: purpleColor),
                     SizedBox(width: 8.w),
                     Text(
                       'Mark all as read',
@@ -288,7 +293,8 @@ class NotificationScreen extends StatelessWidget {
                       Text(
                         'No notifications yet',
                         style: TextStyle(
-                          fontSize: AppTypography.font(AppFontSizes.headlineSmall),
+                          fontSize:
+                              AppTypography.font(AppFontSizes.headlineSmall),
                           fontWeight: FontWeight.w800,
                           color: primaryTextColor,
                         ),
@@ -318,10 +324,10 @@ class NotificationScreen extends StatelessWidget {
                 final doc = docs[index];
                 final data = doc.data() as Map<String, dynamic>;
                 final title = (data['title'] ?? 'Notification').toString();
-                final body = (data['body'] ?? data['description'] ?? '').toString();
+                final body =
+                    (data['body'] ?? data['description'] ?? '').toString();
                 final isRead = data['read'] as bool? ?? false;
-                final notifData =
-                    data['data'] as Map<String, dynamic>? ?? {};
+                final notifData = data['data'] as Map<String, dynamic>? ?? {};
                 final createdAt = data['createdAt'];
                 final time = _formatTimestamp(createdAt);
 
@@ -338,7 +344,9 @@ class NotificationScreen extends StatelessWidget {
                     if (!isRead) {
                       doc.reference.update({'read': true}).catchError((_) {});
                     }
-                    final notifType = (notifData['type'] ?? data['type'] ?? '').toString().toLowerCase();
+                    final notifType = (notifData['type'] ?? data['type'] ?? '')
+                        .toString()
+                        .toLowerCase();
                     final lowerT = title.toLowerCase();
                     final lowerB = body.toLowerCase();
                     if (notifType == 'chat_message' ||
@@ -357,14 +365,17 @@ class NotificationScreen extends StatelessWidget {
                       final riderName = notifData['riderName']?.toString() ??
                           notifData['senderName']?.toString() ??
                           'Rider';
-                      final riderPhotoUrl = notifData['riderPhotoUrl']?.toString() ??
-                          notifData['photoUrl']?.toString();
+                      final riderPhotoUrl =
+                          notifData['riderPhotoUrl']?.toString() ??
+                              notifData['photoUrl']?.toString();
 
-                      context.push('/conversation/${riderId.isNotEmpty ? riderId : "rider"}', extra: {
-                        'chatId': chatId,
-                        'riderName': riderName,
-                        'riderPhotoUrl': riderPhotoUrl,
-                      });
+                      context.push(
+                          '/conversation/${riderId.isNotEmpty ? riderId : "rider"}',
+                          extra: {
+                            'chatId': chatId,
+                            'riderName': riderName,
+                            'riderPhotoUrl': riderPhotoUrl,
+                          });
                     } else if (notifType == 'order' ||
                         notifType == 'order_status' ||
                         notifType == 'rider_unassigned' ||
@@ -376,7 +387,9 @@ class NotificationScreen extends StatelessWidget {
                       if (orderId != null && orderId.isNotEmpty) {
                         context.push('/tracking', extra: orderId);
                       }
-                    } else if (notifType == 'wallet' || lowerT.contains('wallet') || lowerT.contains('credit')) {
+                    } else if (notifType == 'wallet' ||
+                        lowerT.contains('wallet') ||
+                        lowerT.contains('credit')) {
                       context.push('/wallet');
                     }
                   },
@@ -473,7 +486,8 @@ class NotificationScreen extends StatelessWidget {
                           Text(
                             body,
                             style: TextStyle(
-                              fontSize: AppTypography.font(AppFontSizes.bodyMedium),
+                              fontSize:
+                                  AppTypography.font(AppFontSizes.bodyMedium),
                               color: mutedTextColor,
                               height: 1.45,
                             ),

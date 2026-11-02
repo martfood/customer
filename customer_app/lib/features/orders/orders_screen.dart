@@ -1409,7 +1409,8 @@ class _OrdersScreenState extends State<OrdersScreen>
     final statusColor = isCancelledOrder
         ? Colors.red
         : (type == OrderType.completed ? Colors.green : purpleColor);
-    final cancellationReason = (orderData['cancellationReason'] ??
+    final cancellationReason = (orderData['customerCancellationReason'] ??
+            orderData['cancellationReason'] ??
             orderData['cancelReason'] ??
             orderData['cancelledReason'] ??
             orderData['rejectedReason'] ??
