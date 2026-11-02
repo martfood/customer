@@ -67,10 +67,24 @@ class _TrackDriverScreenState extends State<TrackDriverScreen> {
       case 'arrived':
       case 'ready':
       case 'delivered':
+      case 'completed':
         return 5;
       default:
         return 0;
     }
+  }
+
+  String _formatTimestamp(dynamic rawTs) {
+    DateTime? dt;
+    if (rawTs is Timestamp) {
+      dt = rawTs.toDate();
+    } else if (rawTs is DateTime) {
+      dt = rawTs;
+    } else if (rawTs is String && rawTs.isNotEmpty) {
+      dt = DateTime.tryParse(rawTs);
+    }
+    if (dt == null) return '—';
+    return DateFormat('dd MMM yyyy • hh:mm a').format(dt);
   }
 
   double _toDouble(dynamic value) {
@@ -286,7 +300,23 @@ class _TrackDriverScreenState extends State<TrackDriverScreen> {
                 }
 
                 final order = snapshot.data!.data()! as Map<String, dynamic>;
-                final status = (order['status'] ?? 'pending').toString();
+                final status =
+                    (order['status'] ?? 'pending').toString().toLowerCase().trim();
+                final isDeliveredOrder =
+                    status == 'delivered' || status == 'completed';
+                final isCancelledOrder =
+                    status == 'cancelled' || status == 'rejected';
+                final cancellationReason = (order['cancellationReason'] ??
+                        order['cancelReason'] ??
+                        order['cancelledReason'] ??
+                        order['rejectedReason'] ??
+                        order['reason'] ??
+                        '')
+                    .toString()
+                    .trim();
+                final effectiveCancelReason = cancellationReason.isNotEmpty
+                    ? cancellationReason
+                    : 'Cancelled by administrator.';
                 final currentStep = _currentStepFromStatus(status);
                 final deliveryPin = (order['deliveryPin'] ?? '----').toString();
                 final pinDigits = deliveryPin.padLeft(4, '0').split('');
@@ -331,15 +361,23 @@ class _TrackDriverScreenState extends State<TrackDriverScreen> {
                 } else {
                   paymentMethod = 'Martfood Wallet';
                 }
+                final isReviewed = (order['isReviewed'] == true) ||
+                    (order['hasBeenReviewed'] == true) ||
+                    (order['reviewed'] == true) ||
+                    (order['hasReview'] == true);
                 final isRiderRated = (order['isRiderRated'] == true) ||
                     (order['isRiderRated']?.toString() == 'true') ||
                     (order['isDriverRated'] == true) ||
                     (order['isDriverRated']?.toString() == 'true') ||
                     (order['riderRated'] == true) ||
                     (order['riderRated']?.toString() == 'true');
-                final isUnassigned = order['broadcastStatus'] == 'unassigned' ||
-                    (order['status'] == 'ready_for_pickup' && order['unassignedAt'] != null) ||
-                    (order['broadcastStatus'] == 'broadcasting' && riderId.isEmpty);
+                final isUnassigned = !isDeliveredOrder &&
+                    !isCancelledOrder &&
+                    (order['broadcastStatus'] == 'unassigned' ||
+                        (order['status'] == 'ready_for_pickup' &&
+                            order['unassignedAt'] != null) ||
+                        (order['broadcastStatus'] == 'broadcasting' &&
+                            riderId.isEmpty));
 
                 return SafeArea(
                   top: false,
@@ -415,109 +453,267 @@ class _TrackDriverScreenState extends State<TrackDriverScreen> {
                                 ),
                               ],
 
-                              // ── Estimated Arrival Time ────────────────────
-                              Text(
-                                'Estimated Arrival Time',
-                                style: TextStyle(
-                                  fontSize: AppTypography.font(16),
-                                  fontWeight: FontWeight.bold,
-                                  color: primaryTextColor,
-                                ),
-                              ),
-                              SizedBox(height: 4.h),
-                              Text(
-                                etaText,
-                                style: TextStyle(
-                                  fontSize: AppTypography.font(13),
-                                  color: mutedTextColor,
-                                ),
-                              ),
-                              SectionDivider(
-                                margin: EdgeInsets.only(left: -20.w, right: -20.w, top: 16.h, bottom: 16.h),
-                              ),
-
-                              // ── Delivery PIN Row ──────────────────────────
-                              Row(
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          'Delivery PIN',
-                                          style: TextStyle(
-                                            fontSize: AppTypography.font(
-                                                AppFontSizes.caption),
-                                            color: mutedTextColor,
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                        ),
-                                        SizedBox(height: 4.h),
-                                        Text(
-                                          'Show this code\nto your rider',
-                                          style: TextStyle(
-                                            fontSize: AppTypography.font(14),
-                                            fontWeight: FontWeight.bold,
-                                            color: primaryTextColor,
-                                            height: 1.25,
-                                          ),
-                                        ),
-                                      ],
+                              if (isDeliveredOrder) ...[
+                                // ── Delivered Order Status Card ───────────────
+                                Container(
+                                  width: double.infinity,
+                                  padding: EdgeInsets.all(16.w),
+                                  decoration: BoxDecoration(
+                                    color: isDark
+                                        ? AppTheme.darkSurface
+                                        : AppTheme.lightInputFill,
+                                    borderRadius: BorderRadius.circular(16.r),
+                                    border: Border.all(
+                                      color: Colors.green.withValues(alpha: 0.35),
+                                      width: 1,
                                     ),
                                   ),
-                                  Row(
-                                    children: pinDigits.map((digit) {
-                                      return Container(
-                                        margin: EdgeInsets.only(left: 8.w),
+                                  child: Row(
+                                    children: [
+                                      Container(
                                         width: 44.w,
                                         height: 44.w,
                                         decoration: BoxDecoration(
-                                          color: isDark
-                                              ? AppTheme.darkSurface
-                                              : Colors.grey[200],
-                                          borderRadius:
-                                              BorderRadius.circular(12.r),
-                                          border: Border.all(
-                                              color: borderColor, width: 1),
+                                          color: Colors.green.withValues(alpha: 0.12),
+                                          shape: BoxShape.circle,
                                         ),
-                                        alignment: Alignment.center,
-                                        child: Stack(
-                                          alignment: Alignment.center,
+                                        child: Icon(
+                                          LucideIcons.circleCheck,
+                                          color: Colors.green,
+                                          size: 22.sp,
+                                        ),
+                                      ),
+                                      SizedBox(width: 14.w),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
                                           children: [
                                             Text(
-                                              digit,
+                                              'Order Delivered',
                                               style: TextStyle(
-                                                fontSize:
-                                                    AppTypography.font(18),
-                                                fontWeight: FontWeight.w900,
-                                                foreground: Paint()
-                                                  ..style = PaintingStyle.stroke
-                                                  ..strokeWidth = 0.5
-                                                  ..color = purpleColor,
+                                                fontSize: AppTypography.font(
+                                                    AppFontSizes.bodyLarge),
+                                                fontWeight: FontWeight.w800,
+                                                color: Colors.green,
                                               ),
                                             ),
+                                            SizedBox(height: 4.h),
                                             Text(
-                                              digit,
+                                              'Delivered on ${_formatTimestamp(order['deliveredAt'] ?? order['updatedAt'] ?? order['createdAt'])}',
                                               style: TextStyle(
-                                                fontSize:
-                                                    AppTypography.font(18),
-                                                fontWeight: FontWeight.w900,
-                                                color: purpleColor,
+                                                fontSize: AppTypography.font(
+                                                    AppFontSizes.bodySmall),
+                                                fontWeight: FontWeight.w500,
+                                                color: mutedTextColor,
                                               ),
                                             ),
                                           ],
                                         ),
-                                      );
-                                    }).toList(),
+                                      ),
+                                    ],
                                   ),
-                                ],
-                              ),
-                              if (riderId.isNotEmpty ||
-                                  riderName.isNotEmpty) ...[
+                                ),
+                              ] else if (isCancelledOrder) ...[
+                                // ── Cancelled Order Status & Reason Card ──────
+                                Container(
+                                  width: double.infinity,
+                                  padding: EdgeInsets.all(16.w),
+                                  decoration: BoxDecoration(
+                                    color: isDark
+                                        ? AppTheme.darkSurface
+                                        : AppTheme.lightInputFill,
+                                    borderRadius: BorderRadius.circular(16.r),
+                                    border: Border.all(
+                                      color: Colors.red.withValues(alpha: 0.35),
+                                      width: 1,
+                                    ),
+                                  ),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          Container(
+                                            width: 44.w,
+                                            height: 44.w,
+                                            decoration: BoxDecoration(
+                                              color: Colors.red
+                                                  .withValues(alpha: 0.12),
+                                              shape: BoxShape.circle,
+                                            ),
+                                            child: Icon(
+                                              LucideIcons.circleX,
+                                              color: Colors.red,
+                                              size: 22.sp,
+                                            ),
+                                          ),
+                                          SizedBox(width: 14.w),
+                                          Expanded(
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Text(
+                                                  'Order Cancelled',
+                                                  style: TextStyle(
+                                                    fontSize: AppTypography.font(
+                                                        AppFontSizes.bodyLarge),
+                                                    fontWeight: FontWeight.w800,
+                                                    color: Colors.red,
+                                                  ),
+                                                ),
+                                                SizedBox(height: 4.h),
+                                                Text(
+                                                  'Cancelled on ${_formatTimestamp(order['cancelledAt'] ?? order['updatedAt'] ?? order['createdAt'])}',
+                                                  style: TextStyle(
+                                                    fontSize: AppTypography.font(
+                                                        AppFontSizes.bodySmall),
+                                                    fontWeight: FontWeight.w500,
+                                                    color: mutedTextColor,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      Padding(
+                                        padding: EdgeInsets.symmetric(
+                                            vertical: 12.h),
+                                        child: Divider(
+                                            color: borderColor, height: 1),
+                                      ),
+                                      Text(
+                                        'Reason for Cancellation',
+                                        style: TextStyle(
+                                          fontSize: AppTypography.font(
+                                              AppFontSizes.caption),
+                                          fontWeight: FontWeight.w700,
+                                          color: mutedTextColor,
+                                        ),
+                                      ),
+                                      SizedBox(height: 6.h),
+                                      Text(
+                                        effectiveCancelReason,
+                                        style: TextStyle(
+                                          fontSize: AppTypography.font(
+                                              AppFontSizes.bodyMedium),
+                                          fontWeight: FontWeight.w600,
+                                          color: primaryTextColor,
+                                          height: 1.4,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ] else ...[
+                                // ── Estimated Arrival Time ────────────────────
+                                Text(
+                                  'Estimated Arrival Time',
+                                  style: TextStyle(
+                                    fontSize: AppTypography.font(16),
+                                    fontWeight: FontWeight.bold,
+                                    color: primaryTextColor,
+                                  ),
+                                ),
+                                SizedBox(height: 4.h),
+                                Text(
+                                  etaText,
+                                  style: TextStyle(
+                                    fontSize: AppTypography.font(13),
+                                    color: mutedTextColor,
+                                  ),
+                                ),
+                                SectionDivider(
+                                  margin: EdgeInsets.only(left: -20.w, right: -20.w, top: 16.h, bottom: 16.h),
+                                ),
+
+                                // ── Delivery PIN Row ──────────────────────────
+                                Row(
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            'Delivery PIN',
+                                            style: TextStyle(
+                                              fontSize: AppTypography.font(
+                                                  AppFontSizes.caption),
+                                              color: mutedTextColor,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
+                                          SizedBox(height: 4.h),
+                                          Text(
+                                            'Show this code\nto your rider',
+                                            style: TextStyle(
+                                              fontSize: AppTypography.font(14),
+                                              fontWeight: FontWeight.bold,
+                                              color: primaryTextColor,
+                                              height: 1.25,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    Row(
+                                      children: pinDigits.map((digit) {
+                                        return Container(
+                                          margin: EdgeInsets.only(left: 8.w),
+                                          width: 44.w,
+                                          height: 44.w,
+                                          decoration: BoxDecoration(
+                                            color: isDark
+                                                ? AppTheme.darkSurface
+                                                : Colors.grey[200],
+                                            borderRadius:
+                                                BorderRadius.circular(12.r),
+                                            border: Border.all(
+                                                color: borderColor, width: 1),
+                                          ),
+                                          alignment: Alignment.center,
+                                          child: Stack(
+                                            alignment: Alignment.center,
+                                            children: [
+                                              Text(
+                                                digit,
+                                                style: TextStyle(
+                                                  fontSize:
+                                                      AppTypography.font(18),
+                                                  fontWeight: FontWeight.w900,
+                                                  foreground: Paint()
+                                                    ..style = PaintingStyle.stroke
+                                                    ..strokeWidth = 0.5
+                                                    ..color = purpleColor,
+                                                ),
+                                              ),
+                                              Text(
+                                                digit,
+                                                style: TextStyle(
+                                                  fontSize:
+                                                      AppTypography.font(18),
+                                                  fontWeight: FontWeight.w900,
+                                                  color: purpleColor,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        );
+                                      }).toList(),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                              if (!isCancelledOrder &&
+                                  (riderId.isNotEmpty ||
+                                      riderName.isNotEmpty)) ...[
                                 SectionDivider(
                                   margin: EdgeInsets.only(left: -20.w, right: -20.w, top: 16.h, bottom: 16.h),
                                 ),
@@ -566,7 +762,9 @@ class _TrackDriverScreenState extends State<TrackDriverScreen> {
                                             ),
                                             SizedBox(height: 2.h),
                                             Text(
-                                              'Your Rider',
+                                              isDeliveredOrder
+                                                  ? 'Delivered your order'
+                                                  : 'Your Rider',
                                               style: TextStyle(
                                                 fontSize:
                                                     AppTypography.font(12),
@@ -576,64 +774,66 @@ class _TrackDriverScreenState extends State<TrackDriverScreen> {
                                           ],
                                         ),
                                       ),
-                                      // Chat Button
-                                      GestureDetector(
-                                        onTap: () {
-                                          if (riderId.isNotEmpty) {
-                                            context.push(
-                                              '/conversation/$riderId',
-                                              extra: {
-                                                'riderName': riderName,
-                                                'riderPhotoUrl': riderPhotoUrl,
-                                              },
-                                            );
-                                          } else {
-                                            _showRiderUnassignedBottomSheet(
-                                                context,
-                                                isCall: false);
-                                          }
-                                        },
-                                        child: Container(
-                                          width: 36.w,
-                                          height: 36.w,
-                                          decoration: BoxDecoration(
-                                            color: purpleColor.withValues(
-                                                alpha: 0.12),
-                                            shape: BoxShape.circle,
-                                          ),
-                                          child: Icon(LucideIcons.mail,
-                                              color: purpleColor, size: 18.sp),
-                                        ),
-                                      ),
-                                      SizedBox(width: 10.w),
-                                      // Call Button
-                                      GestureDetector(
-                                        onTap: () async {
-                                          if (riderPhone.isNotEmpty) {
-                                            final uri = Uri(
-                                                scheme: 'tel',
-                                                path: riderPhone);
-                                            if (await canLaunchUrl(uri)) {
-                                              await launchUrl(uri);
+                                      if (!isDeliveredOrder) ...[
+                                        // Chat Button
+                                        GestureDetector(
+                                          onTap: () {
+                                            if (riderId.isNotEmpty) {
+                                              context.push(
+                                                '/conversation/$riderId',
+                                                extra: {
+                                                  'riderName': riderName,
+                                                  'riderPhotoUrl': riderPhotoUrl,
+                                                },
+                                              );
+                                            } else {
+                                              _showRiderUnassignedBottomSheet(
+                                                  context,
+                                                  isCall: false);
                                             }
-                                          } else {
-                                            _showRiderUnassignedBottomSheet(
-                                                context,
-                                                isCall: true);
-                                          }
-                                        },
-                                        child: Container(
-                                          width: 36.w,
-                                          height: 36.w,
-                                          decoration: BoxDecoration(
-                                            color: purpleColor.withValues(
-                                                alpha: 0.12),
-                                            shape: BoxShape.circle,
+                                          },
+                                          child: Container(
+                                            width: 36.w,
+                                            height: 36.w,
+                                            decoration: BoxDecoration(
+                                              color: purpleColor.withValues(
+                                                  alpha: 0.12),
+                                              shape: BoxShape.circle,
+                                            ),
+                                            child: Icon(LucideIcons.mail,
+                                                color: purpleColor, size: 18.sp),
                                           ),
-                                          child: Icon(LucideIcons.phone,
-                                              color: purpleColor, size: 18.sp),
                                         ),
-                                      ),
+                                        SizedBox(width: 10.w),
+                                        // Call Button
+                                        GestureDetector(
+                                          onTap: () async {
+                                            if (riderPhone.isNotEmpty) {
+                                              final uri = Uri(
+                                                  scheme: 'tel',
+                                                  path: riderPhone);
+                                              if (await canLaunchUrl(uri)) {
+                                                await launchUrl(uri);
+                                              }
+                                            } else {
+                                              _showRiderUnassignedBottomSheet(
+                                                  context,
+                                                  isCall: true);
+                                            }
+                                          },
+                                          child: Container(
+                                            width: 36.w,
+                                            height: 36.w,
+                                            decoration: BoxDecoration(
+                                              color: purpleColor.withValues(
+                                                  alpha: 0.12),
+                                              shape: BoxShape.circle,
+                                            ),
+                                            child: Icon(LucideIcons.phone,
+                                                color: purpleColor, size: 18.sp),
+                                          ),
+                                        ),
+                                      ],
                                     ],
                                   ),
                                 ),
@@ -763,6 +963,8 @@ class _TrackDriverScreenState extends State<TrackDriverScreen> {
                                   primaryTextColor,
                                   mutedTextColor,
                                   purpleColor,
+                                  isCancelled: isCancelledOrder,
+                                  cancellationReason: effectiveCancelReason,
                                 ),
                               ],
                               SectionDivider(
@@ -991,7 +1193,7 @@ class _TrackDriverScreenState extends State<TrackDriverScreen> {
                           ),
                         ),
                       ),
-                      if (status == 'delivered' && !isRiderRated)
+                      if (isDeliveredOrder && (!isReviewed || !isRiderRated))
                         Container(
                           padding: EdgeInsets.fromLTRB(20.w, 14.h, 20.w, 20.h),
                           decoration: BoxDecoration(
@@ -1004,27 +1206,100 @@ class _TrackDriverScreenState extends State<TrackDriverScreen> {
                           ),
                           child: SafeArea(
                             top: false,
-                            child: SizedBox(
-                              width: double.infinity,
-                              child: ElevatedButton(
-                                onPressed: () =>
-                                    context.push('/rate_rider', extra: {
-                                  'orderId': widget.orderId,
-                                  'riderId': order['riderId'] ?? '',
-                                  'riderName': order['riderName'] ?? 'Rider',
-                                  'riderPhotoUrl': order['riderPhotoUrl'] ?? '',
-                                }),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: purpleColor,
-                                  foregroundColor: Colors.white,
-                                  minimumSize: Size(double.infinity, 54.h),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(18.r),
+                            child: Row(
+                              children: [
+                                if (!isReviewed)
+                                  Expanded(
+                                    child: OutlinedButton(
+                                      onPressed: () {
+                                        final firstImg = items.isNotEmpty
+                                            ? (items.first['imageUrl'] ??
+                                                    items.first['photoUrl'] ??
+                                                    '')
+                                                .toString()
+                                            : '';
+                                        context.push(
+                                          '/orders/leave-review',
+                                          extra: {
+                                            'name': vendorName,
+                                            'imageUrl': firstImg,
+                                            'vendorId': order['vendorId'] ??
+                                                order['restaurantId'] ??
+                                                '',
+                                            'orderId': widget.orderId,
+                                            'itemsSummary': items
+                                                .map((i) =>
+                                                    "${i['quantity'] ?? 1}x ${i['title'] ?? i['name'] ?? 'Item'}")
+                                                .join(', '),
+                                          },
+                                        );
+                                      },
+                                      style: OutlinedButton.styleFrom(
+                                        backgroundColor: Colors.transparent,
+                                        foregroundColor:
+                                            isDark ? Colors.white : purpleColor,
+                                        side: BorderSide(
+                                          color: isDark
+                                              ? Colors.white
+                                              : purpleColor,
+                                        ),
+                                        minimumSize:
+                                            Size(double.infinity, 54.h),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(18.r),
+                                        ),
+                                        elevation: 0,
+                                      ),
+                                      child: Text(
+                                        'Leave Review',
+                                        style: TextStyle(
+                                          color: isDark
+                                              ? Colors.white
+                                              : purpleColor,
+                                          fontSize: AppTypography.font(
+                                              AppFontSizes.bodySmall),
+                                          fontWeight: FontWeight.w800,
+                                        ),
+                                      ),
+                                    ),
                                   ),
-                                  elevation: 0,
-                                ),
-                                child: const Text('Rate Rider'),
-                              ),
+                                if (!isReviewed && !isRiderRated)
+                                  SizedBox(width: 12.w),
+                                if (!isRiderRated)
+                                  Expanded(
+                                    child: ElevatedButton(
+                                      onPressed: () =>
+                                          context.push('/rate_rider', extra: {
+                                        'orderId': widget.orderId,
+                                        'riderId': order['riderId'] ?? '',
+                                        'riderName':
+                                            order['riderName'] ?? 'Rider',
+                                        'riderPhotoUrl':
+                                            order['riderPhotoUrl'] ?? '',
+                                      }),
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: purpleColor,
+                                        foregroundColor: Colors.white,
+                                        minimumSize:
+                                            Size(double.infinity, 54.h),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(18.r),
+                                        ),
+                                        elevation: 0,
+                                      ),
+                                      child: Text(
+                                        'Rate Rider',
+                                        style: TextStyle(
+                                          fontSize: AppTypography.font(
+                                              AppFontSizes.bodySmall),
+                                          fontWeight: FontWeight.w800,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                              ],
                             ),
                           ),
                         ),
@@ -1072,8 +1347,102 @@ class _TrackDriverScreenState extends State<TrackDriverScreen> {
     int currentStep,
     Color primaryTextColor,
     Color mutedTextColor,
-    Color purpleColor,
-  ) {
+    Color purpleColor, {
+    bool isCancelled = false,
+    String cancellationReason = '',
+  }) {
+    if (isCancelled) {
+      final cancelledSteps = [
+        {
+          'title': 'Order Received',
+          'subtitle': 'Your order was received by the platform',
+          'isError': false,
+        },
+        {
+          'title': 'Order Cancelled',
+          'subtitle': cancellationReason.isNotEmpty
+              ? 'Reason: $cancellationReason'
+              : 'This order was cancelled by the administrator',
+          'isError': true,
+        },
+      ];
+
+      return Column(
+        children: List.generate(cancelledSteps.length, (index) {
+          final step = cancelledSteps[index];
+          final isError = step['isError'] == true;
+          final isLast = index == cancelledSteps.length - 1;
+          final dotColor = isError ? Colors.red : purpleColor;
+
+          return IntrinsicHeight(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                SizedBox(
+                  width: 30.w,
+                  child: Column(
+                    children: [
+                      Container(
+                        width: 20.w,
+                        height: 20.w,
+                        margin: EdgeInsets.only(top: 2.h),
+                        alignment: Alignment.center,
+                        child: Container(
+                          width: 14.w,
+                          height: 14.w,
+                          decoration: BoxDecoration(
+                            color: dotColor,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                      ),
+                      if (!isLast)
+                        Expanded(
+                          child: Container(
+                            width: 2.w,
+                            margin: EdgeInsets.symmetric(vertical: 2.h),
+                            color: Colors.red.withValues(alpha: 0.5),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+                SizedBox(width: 12.w),
+                Expanded(
+                  child: Padding(
+                    padding: EdgeInsets.only(bottom: isLast ? 0 : 20.h),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          step['title']!.toString(),
+                          style: TextStyle(
+                            fontSize: AppTypography.font(14),
+                            fontWeight: FontWeight.bold,
+                            color: dotColor,
+                          ),
+                        ),
+                        SizedBox(height: 2.h),
+                        Text(
+                          step['subtitle']!.toString(),
+                          style: TextStyle(
+                            fontSize: AppTypography.font(12),
+                            color: isError ? Colors.red : mutedTextColor,
+                            fontWeight:
+                                isError ? FontWeight.w600 : FontWeight.w400,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          );
+        }),
+      );
+    }
+
     return Column(
       children: List.generate(
         _steps.length,

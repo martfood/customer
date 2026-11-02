@@ -104,7 +104,7 @@ class AppUpdateService {
       }
 
       final String title =
-          (data['title'] ?? 'New Update Available! 🚀').toString();
+          (data['title'] ?? 'New Update Available!').toString();
       final String message = (data['message'] ??
               'A new version of MartFood is available with performance improvements and new features.')
           .toString();

@@ -49,7 +49,8 @@ class _OrdersScreenState extends State<OrdersScreen>
     if ((widget.showSuccess || widget.payForMeSuccess) && initialTab == 0) {
       initialTab = 1;
     }
-    _tabController = TabController(length: 3, vsync: this, initialIndex: initialTab);
+    _tabController =
+        TabController(length: 3, vsync: this, initialIndex: initialTab);
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (widget.payForMeSuccess) {
@@ -75,7 +76,8 @@ class _OrdersScreenState extends State<OrdersScreen>
     final mutedTextColor = AppTheme.mutedTextColorFor(isDark);
     final surfaceColor = isDark ? AppTheme.darkSurface : Colors.white;
     final purpleColor = AppTheme.primaryPurpleFor(isDark);
-    final borderColor = isDark ? AppTheme.darkBorder : AppTheme.lightInputBorder;
+    final borderColor =
+        isDark ? AppTheme.darkBorder : AppTheme.lightInputBorder;
 
     final payUrl = token != null && token.isNotEmpty
         ? 'https://martfood-app.web.app/pay/$token'
@@ -140,9 +142,12 @@ class _OrdersScreenState extends State<OrdersScreen>
                 if (payUrl.isNotEmpty) ...[
                   SizedBox(height: 16.h),
                   Container(
-                    padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
                     decoration: BoxDecoration(
-                      color: isDark ? AppTheme.darkSurface : AppTheme.lightInputFill,
+                      color: isDark
+                          ? AppTheme.darkSurface
+                          : AppTheme.lightInputFill,
                       borderRadius: BorderRadius.circular(16.r),
                       border: Border.all(color: borderColor, width: 1),
                     ),
@@ -154,7 +159,8 @@ class _OrdersScreenState extends State<OrdersScreen>
                           child: Text(
                             payUrl,
                             style: TextStyle(
-                              fontSize: AppTypography.font(AppFontSizes.bodySmall),
+                              fontSize:
+                                  AppTypography.font(AppFontSizes.bodySmall),
                               fontWeight: FontWeight.w600,
                               color: primaryTextColor,
                             ),
@@ -167,7 +173,8 @@ class _OrdersScreenState extends State<OrdersScreen>
                           constraints: const BoxConstraints(),
                           icon: AnimatedSwitcher(
                             duration: const Duration(milliseconds: 250),
-                            transitionBuilder: (child, anim) => ScaleTransition(scale: anim, child: child),
+                            transitionBuilder: (child, anim) =>
+                                ScaleTransition(scale: anim, child: child),
                             child: isCopied
                                 ? Icon(
                                     Icons.check_circle_rounded,
@@ -330,13 +337,13 @@ class _OrdersScreenState extends State<OrdersScreen>
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final backgroundColor =
-        isDark ? AppTheme.darkSurface : Colors.white;
+    final backgroundColor = isDark ? AppTheme.darkSurface : Colors.white;
     final surfaceColor =
         isDark ? AppTheme.darkSurface : AppTheme.lightInputFill;
     final primaryTextColor = isDark ? Colors.white : Colors.black87;
     final purpleColor = AppTheme.primaryPurpleFor(isDark);
-    final borderColor = isDark ? AppTheme.darkBorder : AppTheme.lightInputBorder;
+    final borderColor =
+        isDark ? AppTheme.darkBorder : AppTheme.lightInputBorder;
     final user = _auth.currentUser;
 
     if (user == null) {
@@ -360,7 +367,8 @@ class _OrdersScreenState extends State<OrdersScreen>
         body: const GuestPlaceholderView(
           icon: LucideIcons.shoppingBag,
           title: 'Track & View Orders',
-          subtitle: 'Sign in or register an account to view and track your orders in real time.',
+          subtitle:
+              'Sign in or register an account to view and track your orders in real time.',
           primaryButtonText: 'Sign In / Register',
         ),
         bottomNavigationBar: MartFoodBottomNavBar(
@@ -409,7 +417,7 @@ class _OrdersScreenState extends State<OrdersScreen>
           tabs: const [
             Tab(text: 'Cart'),
             Tab(text: 'Active'),
-            Tab(text: 'Completed'),
+            Tab(text: 'History'),
           ],
         ),
       ),
@@ -435,15 +443,24 @@ class _OrdersScreenState extends State<OrdersScreen>
               'pending_verification',
               'preparing',
               'accepted',
+              'order_accepted',
+              'ready',
+              'order_ready',
+              'ready_for_pickup',
+              'broadcasting',
+              'unassigned',
               'rider_assigned',
               'at_restaurant',
               'in_transit',
-              'ready',
               'arrived',
             ],
             OrderType.active,
           ),
-          _buildOrdersList(user.uid, ['delivered'], OrderType.completed),
+          _buildOrdersList(
+            user.uid,
+            ['delivered', 'completed', 'cancelled', 'rejected'],
+            OrderType.completed,
+          ),
         ],
       ),
       bottomNavigationBar: MartFoodBottomNavBar(
@@ -737,8 +754,14 @@ class _OrdersScreenState extends State<OrdersScreen>
             if (hasMultipleItems)
               StreamBuilder<bool>(
                 stream: VendorStatusHelper.streamVendorOpenStatus(
-                  vendorId: cartItems.firstWhere((it) => it['vendorId'] != null, orElse: () => {})['vendorId']?.toString(),
-                  vendorName: cartItems.firstWhere((it) => it['restaurant'] != null, orElse: () => {})['restaurant']?.toString(),
+                  vendorId: cartItems
+                      .firstWhere((it) => it['vendorId'] != null,
+                          orElse: () => {})['vendorId']
+                      ?.toString(),
+                  vendorName: cartItems
+                      .firstWhere((it) => it['restaurant'] != null,
+                          orElse: () => {})['restaurant']
+                      ?.toString(),
                 ),
                 initialData: true,
                 builder: (context, openSnap) {
@@ -747,27 +770,39 @@ class _OrdersScreenState extends State<OrdersScreen>
                     padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 20.h),
                     decoration: BoxDecoration(
                       color: surfaceColor,
-                      border: Border(top: BorderSide(color: borderColor, width: 1)),
+                      border:
+                          Border(top: BorderSide(color: borderColor, width: 1)),
                     ),
                     child: SafeArea(
                       top: false,
                       child: SizedBox(
                         width: double.infinity,
                         child: ElevatedButton(
-                          onPressed: isAllOpen ? () => context.push('/checkout') : null,
+                          onPressed: isAllOpen
+                              ? () => context.push('/checkout')
+                              : null,
                           style: ElevatedButton.styleFrom(
                             backgroundColor: isAllOpen
                                 ? purpleColor
-                                : (isDark ? const Color(0xFF374151) : const Color(0xFFE5E7EB)),
+                                : (isDark
+                                    ? const Color(0xFF374151)
+                                    : const Color(0xFFE5E7EB)),
                             foregroundColor: isAllOpen
                                 ? Colors.white
-                                : (isDark ? const Color(0xFF9CA3AF) : const Color(0xFF6B7280)),
-                            disabledBackgroundColor: isDark ? const Color(0xFF374151) : const Color(0xFFE5E7EB),
-                            disabledForegroundColor: isDark ? const Color(0xFF9CA3AF) : const Color(0xFF6B7280),
+                                : (isDark
+                                    ? const Color(0xFF9CA3AF)
+                                    : const Color(0xFF6B7280)),
+                            disabledBackgroundColor: isDark
+                                ? const Color(0xFF374151)
+                                : const Color(0xFFE5E7EB),
+                            disabledForegroundColor: isDark
+                                ? const Color(0xFF9CA3AF)
+                                : const Color(0xFF6B7280),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(18.r),
                             ),
-                            padding: EdgeInsets.symmetric(vertical: 16.h, horizontal: 20.w),
+                            padding: EdgeInsets.symmetric(
+                                vertical: 16.h, horizontal: 20.w),
                             elevation: 0,
                           ),
                           child: Row(
@@ -778,14 +813,16 @@ class _OrdersScreenState extends State<OrdersScreen>
                                     ? 'Checkout ($totalQuantity item${totalQuantity > 1 ? 's' : ''})'
                                     : 'Checkout (Store Closed)',
                                 style: TextStyle(
-                                  fontSize: AppTypography.font(AppFontSizes.bodyMedium),
+                                  fontSize: AppTypography.font(
+                                      AppFontSizes.bodyMedium),
                                   fontWeight: FontWeight.w800,
                                 ),
                               ),
                               Text(
                                 _formatCurrency(subtotal),
                                 style: TextStyle(
-                                  fontSize: AppTypography.font(AppFontSizes.bodyMedium),
+                                  fontSize: AppTypography.font(
+                                      AppFontSizes.bodyMedium),
                                   fontWeight: FontWeight.w800,
                                 ),
                               ),
@@ -831,298 +868,332 @@ class _OrdersScreenState extends State<OrdersScreen>
       builder: (context, openSnap) {
         final bool isOpen = openSnap.data ?? true;
         return Dismissible(
-      key: Key(docId),
-      direction: DismissDirection.endToStart,
-      onDismissed: (direction) async {
-        await _removeCartItem(docId);
-        if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('$title removed from cart'),
-              duration: const Duration(seconds: 2),
+          key: Key(docId),
+          direction: DismissDirection.endToStart,
+          onDismissed: (direction) async {
+            await _removeCartItem(docId);
+            if (context.mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('$title removed from cart'),
+                  duration: const Duration(seconds: 2),
+                ),
+              );
+            }
+          },
+          background: Container(
+            margin: EdgeInsets.only(bottom: 16.h),
+            decoration: BoxDecoration(
+              color: Colors.red,
+              borderRadius: BorderRadius.circular(24.r),
             ),
-          );
-        }
-      },
-      background: Container(
-        margin: EdgeInsets.only(bottom: 16.h),
-        decoration: BoxDecoration(
-          color: Colors.red,
-          borderRadius: BorderRadius.circular(24.r),
-        ),
-        alignment: Alignment.centerRight,
-        padding: EdgeInsets.only(right: 24.w),
-        child: const Icon(LucideIcons.trash2, color: Colors.white, size: 28),
-      ),
-      child: Container(
-        margin: EdgeInsets.only(bottom: 16.h),
-        decoration: BoxDecoration(
-          color: isDark ? AppTheme.darkSurface : AppTheme.lightInputFill,
-          borderRadius: BorderRadius.circular(24.r),
-          border: Border.all(
-            color: borderColor,
-            width: 1,
+            alignment: Alignment.centerRight,
+            padding: EdgeInsets.only(right: 24.w),
+            child:
+                const Icon(LucideIcons.trash2, color: Colors.white, size: 28),
           ),
-          boxShadow: null,
-        ),
-        child: Column(
-          children: [
-            Padding(
-              padding: EdgeInsets.all(16.w),
-              child: Row(
-                children: [
-                  Stack(
+          child: Container(
+            margin: EdgeInsets.only(bottom: 16.h),
+            decoration: BoxDecoration(
+              color: isDark ? AppTheme.darkSurface : AppTheme.lightInputFill,
+              borderRadius: BorderRadius.circular(24.r),
+              border: Border.all(
+                color: borderColor,
+                width: 1,
+              ),
+              boxShadow: null,
+            ),
+            child: Column(
+              children: [
+                Padding(
+                  padding: EdgeInsets.all(16.w),
+                  child: Row(
                     children: [
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(18.r),
-                        child: imageUrl.isNotEmpty
-                            ? CachedNetworkImage(
-                                imageUrl: imageUrl,
-                                width: 92.w,
-                                height: 92.w,
-                                fit: BoxFit.cover,
-                                errorWidget: (_, __, ___) => Container(
-                                  width: 92.w,
-                                  height: 92.w,
-                                  color: isDark ? Colors.grey[800] : Colors.grey[300],
-                                  child: Icon(Icons.fastfood, color: Colors.grey, size: 24.sp),
-                                ),
-                              )
-                            : Container(
-                                width: 92.w,
-                                height: 92.w,
-                                color: isDark ? Colors.grey[800] : Colors.grey[300],
-                                child: Icon(Icons.fastfood, color: Colors.grey, size: 24.sp),
-                              ),
-                      ),
-                      if (!isOpen)
-                        Positioned.fill(
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color: Colors.black.withValues(alpha: 0.6),
-                              borderRadius: BorderRadius.circular(18.r),
-                            ),
-                            alignment: Alignment.center,
-                            child: Container(
-                              padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
-                              decoration: BoxDecoration(
-                                color: Colors.red.withValues(alpha: 0.95),
-                                borderRadius: BorderRadius.circular(8.r),
-                              ),
-                              child: Text(
-                                'CLOSED',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: AppTypography.font(10),
-                                  letterSpacing: 0.5,
-                                ),
-                              ),
-                            ),
+                      Stack(
+                        children: [
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(18.r),
+                            child: imageUrl.isNotEmpty
+                                ? CachedNetworkImage(
+                                    imageUrl: imageUrl,
+                                    width: 92.w,
+                                    height: 92.w,
+                                    fit: BoxFit.cover,
+                                    errorWidget: (_, __, ___) => Container(
+                                      width: 92.w,
+                                      height: 92.w,
+                                      color: isDark
+                                          ? Colors.grey[800]
+                                          : Colors.grey[300],
+                                      child: Icon(Icons.fastfood,
+                                          color: Colors.grey, size: 24.sp),
+                                    ),
+                                  )
+                                : Container(
+                                    width: 92.w,
+                                    height: 92.w,
+                                    color: isDark
+                                        ? Colors.grey[800]
+                                        : Colors.grey[300],
+                                    child: Icon(Icons.fastfood,
+                                        color: Colors.grey, size: 24.sp),
+                                  ),
                           ),
-                        ),
-                    ],
-                  ),
-                  SizedBox(width: 14.w),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Food Name & Quantity Controls at Top Right
-                        Row(
+                          if (!isOpen)
+                            Positioned.fill(
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: Colors.black.withValues(alpha: 0.6),
+                                  borderRadius: BorderRadius.circular(18.r),
+                                ),
+                                alignment: Alignment.center,
+                                child: Container(
+                                  padding: EdgeInsets.symmetric(
+                                      horizontal: 8.w, vertical: 4.h),
+                                  decoration: BoxDecoration(
+                                    color: Colors.red.withValues(alpha: 0.95),
+                                    borderRadius: BorderRadius.circular(8.r),
+                                  ),
+                                  child: Text(
+                                    'CLOSED',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: AppTypography.font(10),
+                                      letterSpacing: 0.5,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                      SizedBox(width: 14.w),
+                      Expanded(
+                        child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Expanded(
-                              child: Text(
-                                title,
-                                style: TextStyle(
-                                  fontSize: AppTypography.font(AppFontSizes.bodyLarge),
-                                  fontWeight: FontWeight.w800,
-                                  color: primaryTextColor,
+                            // Food Name & Quantity Controls at Top Right
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    title,
+                                    style: TextStyle(
+                                      fontSize: AppTypography.font(
+                                          AppFontSizes.bodyLarge),
+                                      fontWeight: FontWeight.w800,
+                                      color: primaryTextColor,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
                                 ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
+                                SizedBox(width: 8.w),
+                                Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    _buildCartQuantityButton(LucideIcons.minus,
+                                        () {
+                                      if (quantity > 1) {
+                                        _updateCartQuantity(
+                                            docId, quantity - 1);
+                                      }
+                                    }, isDark, purpleColor, borderColor),
+                                    SizedBox(width: 6.w),
+                                    Text(
+                                      '$quantity',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: AppTypography.font(
+                                            AppFontSizes.bodyMedium),
+                                        color: primaryTextColor,
+                                      ),
+                                    ),
+                                    SizedBox(width: 6.w),
+                                    _buildCartQuantityButton(LucideIcons.plus,
+                                        () {
+                                      _updateCartQuantity(docId, quantity + 1);
+                                    }, isDark, purpleColor, borderColor,
+                                        isPrimary: true),
+                                  ],
+                                ),
+                              ],
+                            ),
+                            SizedBox(height: 4.h),
+                            // Price
+                            Text(
+                              _formatCurrency(price),
+                              style: TextStyle(
+                                fontSize:
+                                    AppTypography.font(AppFontSizes.bodyLarge),
+                                fontWeight: FontWeight.w800,
+                                color: purpleColor,
                               ),
                             ),
-                            SizedBox(width: 8.w),
+                            SizedBox(height: 6.h),
+                            // Restaurant Name & Verification Badge
                             Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                _buildCartQuantityButton(LucideIcons.minus, () {
-                                  if (quantity > 1) {
-                                    _updateCartQuantity(docId, quantity - 1);
-                                  }
-                                }, isDark, purpleColor, borderColor),
-                                SizedBox(width: 6.w),
-                                Text(
-                                  '$quantity',
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: AppTypography.font(AppFontSizes.bodyMedium),
-                                    color: primaryTextColor,
+                                Flexible(
+                                  child: Text(
+                                    restaurant,
+                                    style: TextStyle(
+                                      fontSize: AppTypography.font(
+                                          AppFontSizes.bodySmall),
+                                      fontWeight: FontWeight.w600,
+                                      color: AppTheme.mutedTextColorFor(isDark),
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
                                   ),
                                 ),
-                                SizedBox(width: 6.w),
-                                _buildCartQuantityButton(LucideIcons.plus, () {
-                                  _updateCartQuantity(docId, quantity + 1);
-                                }, isDark, purpleColor, borderColor, isPrimary: true),
+                                SizedBox(width: 4.w),
+                                VendorVerificationBadge(
+                                  vendorId: (item['vendorId'] ??
+                                          item['restaurantId'] ??
+                                          '')
+                                      .toString(),
+                                  fallbackData: item,
+                                  size: 14.sp,
+                                ),
                               ],
                             ),
-                          ],
-                        ),
-                        SizedBox(height: 4.h),
-                        // Price
-                        Text(
-                          _formatCurrency(price),
-                          style: TextStyle(
-                            fontSize: AppTypography.font(AppFontSizes.bodyLarge),
-                            fontWeight: FontWeight.w800,
-                            color: purpleColor,
-                          ),
-                        ),
-                        SizedBox(height: 6.h),
-                        // Restaurant Name & Verification Badge
-                        Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Flexible(
-                              child: Text(
-                                restaurant,
+                            if (selectedChoices.isNotEmpty) ...[
+                              SizedBox(height: 4.h),
+                              Text(
+                                selectedChoices
+                                    .map((choice) => choice['label'] ?? '')
+                                    .where(
+                                        (label) => label.toString().isNotEmpty)
+                                    .join(' • '),
                                 style: TextStyle(
-                                  fontSize: AppTypography.font(AppFontSizes.bodySmall),
-                                  fontWeight: FontWeight.w600,
                                   color: AppTheme.mutedTextColorFor(isDark),
+                                  fontSize:
+                                      AppTypography.font(AppFontSizes.caption),
+                                  fontWeight: FontWeight.w500,
                                 ),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                               ),
-                            ),
-                            SizedBox(width: 4.w),
-                            VendorVerificationBadge(
-                              vendorId: (item['vendorId'] ?? item['restaurantId'] ?? '').toString(),
-                              fallbackData: item,
-                              size: 14.sp,
-                            ),
+                            ],
+                            if (selectedAddOns.isNotEmpty) ...[
+                              SizedBox(height: 2.h),
+                              Text(
+                                'Add-ons: ${selectedAddOns.map((addon) => (((addon['quantity'] as num?)?.toInt() ?? 1) > 1) ? '${addon['name'] ?? addon['title']} (x${addon['quantity']})' : '${addon['name'] ?? addon['title']}').where((name) => name.isNotEmpty).join(', ')}',
+                                style: TextStyle(
+                                  color: AppTheme.mutedTextColorFor(isDark),
+                                  fontSize:
+                                      AppTypography.font(AppFontSizes.caption),
+                                  fontWeight: FontWeight.w500,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ],
                           ],
                         ),
-                        if (selectedChoices.isNotEmpty) ...[
-                          SizedBox(height: 4.h),
-                          Text(
-                            selectedChoices
-                                .map((choice) => choice['label'] ?? '')
-                                .where((label) => label.toString().isNotEmpty)
-                                .join(' • '),
-                            style: TextStyle(
-                              color: AppTheme.mutedTextColorFor(isDark),
-                              fontSize: AppTypography.font(AppFontSizes.caption),
-                              fontWeight: FontWeight.w500,
+                      ),
+                    ],
+                  ),
+                ),
+                Divider(
+                  height: 1,
+                  color: borderColor,
+                ),
+                Padding(
+                  padding: EdgeInsets.all(16.w),
+                  child: Column(
+                    children: [
+                      if (showCheckoutButton) ...[
+                        // Checkout Button (Full Width)
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton(
+                            onPressed: isOpen
+                                ? () {
+                                    context.push('/checkout');
+                                  }
+                                : null,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: isOpen
+                                  ? purpleColor
+                                  : (isDark
+                                      ? const Color(0xFF374151)
+                                      : const Color(0xFFE5E7EB)),
+                              foregroundColor: isOpen
+                                  ? Colors.white
+                                  : (isDark
+                                      ? const Color(0xFF9CA3AF)
+                                      : const Color(0xFF6B7280)),
+                              disabledBackgroundColor: isDark
+                                  ? const Color(0xFF374151)
+                                  : const Color(0xFFE5E7EB),
+                              disabledForegroundColor: isDark
+                                  ? const Color(0xFF9CA3AF)
+                                  : const Color(0xFF6B7280),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(18.r),
+                              ),
+                              padding: EdgeInsets.symmetric(vertical: 14.h),
+                              elevation: 0,
                             ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ],
-                        if (selectedAddOns.isNotEmpty) ...[
-                          SizedBox(height: 2.h),
-                          Text(
-                            'Add-ons: ${selectedAddOns.map((addon) => (((addon['quantity'] as num?)?.toInt() ?? 1) > 1) ? '${addon['name'] ?? addon['title']} (x${addon['quantity']})' : '${addon['name'] ?? addon['title']}').where((name) => name.isNotEmpty).join(', ')}',
-                            style: TextStyle(
-                              color: AppTheme.mutedTextColorFor(isDark),
-                              fontSize: AppTypography.font(AppFontSizes.caption),
-                              fontWeight: FontWeight.w500,
+                            child: Text(
+                              isOpen ? 'Checkout' : 'Checkout (Store Closed)',
+                              style: TextStyle(
+                                fontSize:
+                                    AppTypography.font(AppFontSizes.bodyMedium),
+                                fontWeight: FontWeight.w800,
+                              ),
                             ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
                           ),
-                        ],
+                        ),
+                        SizedBox(height: 10.h),
                       ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Divider(
-              height: 1,
-              color: borderColor,
-            ),
-            Padding(
-              padding: EdgeInsets.all(16.w),
-              child: Column(
-                children: [
-                  if (showCheckoutButton) ...[
-                    // Checkout Button (Full Width)
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: isOpen
-                            ? () {
-                                context.push('/checkout');
-                              }
-                            : null,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: isOpen
-                              ? purpleColor
-                              : (isDark ? const Color(0xFF374151) : const Color(0xFFE5E7EB)),
-                          foregroundColor: isOpen
-                              ? Colors.white
-                              : (isDark ? const Color(0xFF9CA3AF) : const Color(0xFF6B7280)),
-                          disabledBackgroundColor: isDark ? const Color(0xFF374151) : const Color(0xFFE5E7EB),
-                          disabledForegroundColor: isDark ? const Color(0xFF9CA3AF) : const Color(0xFF6B7280),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(18.r),
+                      // Delete Button
+                      SizedBox(
+                        width: double.infinity,
+                        child: OutlinedButton(
+                          onPressed: () {
+                            _showDeleteOrderConfirmationSheet(
+                                context, docId, title);
+                          },
+                          style: OutlinedButton.styleFrom(
+                            backgroundColor: Colors.transparent,
+                            foregroundColor:
+                                isDark ? Colors.white : purpleColor,
+                            side: BorderSide(
+                              color: borderColor,
+                              width: 1,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(18.r),
+                            ),
+                            padding: EdgeInsets.symmetric(vertical: 14.h),
+                            elevation: 0,
                           ),
-                          padding: EdgeInsets.symmetric(vertical: 14.h),
-                          elevation: 0,
-                        ),
-                        child: Text(
-                          isOpen ? 'Checkout' : 'Checkout (Store Closed)',
-                          style: TextStyle(
-                            fontSize: AppTypography.font(AppFontSizes.bodyMedium),
-                            fontWeight: FontWeight.w800,
+                          child: Text(
+                            'Delete',
+                            style: TextStyle(
+                              color: isDark ? Colors.white : purpleColor,
+                              fontSize:
+                                  AppTypography.font(AppFontSizes.bodyMedium),
+                              fontWeight: FontWeight.w800,
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                    SizedBox(height: 10.h),
-                  ],
-                  // Delete Button
-                  SizedBox(
-                    width: double.infinity,
-                    child: OutlinedButton(
-                      onPressed: () {
-                        _showDeleteOrderConfirmationSheet(context, docId, title);
-                      },
-                      style: OutlinedButton.styleFrom(
-                        backgroundColor: Colors.transparent,
-                        foregroundColor: isDark ? Colors.white : purpleColor,
-                        side: BorderSide(
-                          color: borderColor,
-                          width: 1,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(18.r),
-                        ),
-                        padding: EdgeInsets.symmetric(vertical: 14.h),
-                        elevation: 0,
-                      ),
-                      child: Text(
-                        'Delete',
-                        style: TextStyle(
-                          color: isDark ? Colors.white : purpleColor,
-                          fontSize: AppTypography.font(AppFontSizes.bodyMedium),
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                    ),
+                    ],
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
-  },
-);
   }
 
   Widget _buildCartQuantityButton(
@@ -1158,7 +1229,8 @@ class _OrdersScreenState extends State<OrdersScreen>
     );
   }
 
-  Widget _buildOrdersList(String userId, List<String> statuses, OrderType type) {
+  Widget _buildOrdersList(
+      String userId, List<String> statuses, OrderType type) {
     return StreamBuilder<QuerySnapshot>(
       stream: _firestore
           .collection('orders')
@@ -1184,12 +1256,23 @@ class _OrdersScreenState extends State<OrdersScreen>
           );
         }
 
-        final allDocs = List<QueryDocumentSnapshot>.from(snapshot.data?.docs ?? []);
+        final allDocs =
+            List<QueryDocumentSnapshot>.from(snapshot.data?.docs ?? []);
+        const historyStatuses = {
+          'delivered',
+          'completed',
+          'cancelled',
+          'rejected'
+        };
 
         final docs = allDocs.where((doc) {
           final data = doc.data() as Map<String, dynamic>? ?? {};
-          final status = (data['status'] ?? '').toString();
-          return statuses.contains(status);
+          final status = (data['status'] ?? '').toString().toLowerCase().trim();
+          if (type == OrderType.active) {
+            return statuses.contains(status) ||
+                (status.isNotEmpty && !historyStatuses.contains(status));
+          }
+          return statuses.contains(status) || historyStatuses.contains(status);
         }).toList();
 
         docs.sort((a, b) {
@@ -1214,44 +1297,44 @@ class _OrdersScreenState extends State<OrdersScreen>
         return ListView(
           padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 24.h),
           children: List.generate(docs.length, (index) {
-              final orderData = docs[index].data() as Map<String, dynamic>;
-              final orderId = docs[index].id;
-              final items = orderData['items'] as List<dynamic>? ?? [];
-              final itemCount = items.fold<int>(
-                0,
-                (acc, item) => acc + ((item['quantity'] ?? 1) as int),
-              );
-              final title =
-                  (orderData['restaurantName'] ?? 'MartFood Order').toString();
-              final totalValue = orderData['total'];
-              final price = totalValue is num
-                  ? totalValue.toDouble()
-                  : double.tryParse(totalValue?.toString() ?? '') ?? 0.0;
-              final status = (orderData['status'] ?? 'pending').toString();
+            final orderData = docs[index].data() as Map<String, dynamic>;
+            final orderId = docs[index].id;
+            final items = orderData['items'] as List<dynamic>? ?? [];
+            final itemCount = items.fold<int>(
+              0,
+              (acc, item) => acc + ((item['quantity'] ?? 1) as int),
+            );
+            final title =
+                (orderData['restaurantName'] ?? 'MartFood Order').toString();
+            final totalValue = orderData['total'];
+            final price = totalValue is num
+                ? totalValue.toDouble()
+                : double.tryParse(totalValue?.toString() ?? '') ?? 0.0;
+            final status = (orderData['status'] ?? 'pending').toString();
 
-              String imageUrl = '';
-              if (items.isNotEmpty) {
-                imageUrl = (items.first['imageUrl'] ?? '').toString();
-              }
+            String imageUrl = '';
+            if (items.isNotEmpty) {
+              imageUrl = (items.first['imageUrl'] ?? '').toString();
+            }
 
-              return Padding(
-                padding: EdgeInsets.only(
-                  bottom: index == docs.length - 1 ? 0 : 16.h,
-                ),
-                child: _buildOrderCard(
-                  orderId: orderId,
-                  title: title,
-                  itemsCount: itemCount,
-                  distanceKm: 2.0,
-                  price: price,
-                  status: _formatStatus(status),
-                  imageUrl: imageUrl,
-                  type: type,
-                  orderData: orderData,
-                  items: items,
-                ),
-              );
-            }),
+            return Padding(
+              padding: EdgeInsets.only(
+                bottom: index == docs.length - 1 ? 0 : 16.h,
+              ),
+              child: _buildOrderCard(
+                orderId: orderId,
+                title: title,
+                itemsCount: itemCount,
+                distanceKm: 2.0,
+                price: price,
+                status: _formatStatus(status),
+                imageUrl: imageUrl,
+                type: type,
+                orderData: orderData,
+                items: items,
+              ),
+            );
+          }),
         );
       },
     );
@@ -1259,20 +1342,45 @@ class _OrdersScreenState extends State<OrdersScreen>
 
   String _formatStatus(String status) {
     switch (status) {
-      case 'awaiting_payment': return 'Awaiting Payment';
-      case 'payment_processing': return 'Processing';
-      case 'draft': return 'Draft';
-      case 'pending': return 'Pending';
-      case 'pending_verification': return 'Verifying';
-      case 'preparing': return 'Preparing';
-      case 'accepted': return 'Accepted';
-      case 'rider_assigned': return 'Rider Assigned';
-      case 'at_restaurant': return 'At Restaurant';
-      case 'in_transit': return 'In Transit';
-      case 'ready': return 'Ready';
-      case 'delivered': return 'Delivered';
-      case 'cancelled': return 'Cancelled';
-      default: return status.toUpperCase();
+      case 'awaiting_payment':
+        return 'Awaiting Payment';
+      case 'payment_processing':
+        return 'Processing';
+      case 'draft':
+        return 'Draft';
+      case 'pending':
+        return 'Pending';
+      case 'pending_verification':
+        return 'Verifying';
+      case 'preparing':
+        return 'Preparing';
+      case 'accepted':
+      case 'order_accepted':
+        return 'Accepted';
+      case 'ready':
+      case 'order_ready':
+      case 'ready_for_pickup':
+        return 'Ready for Pickup';
+      case 'broadcasting':
+        return 'Finding Rider';
+      case 'unassigned':
+        return 'Awaiting Rider';
+      case 'rider_assigned':
+        return 'Rider Assigned';
+      case 'at_restaurant':
+        return 'At Restaurant';
+      case 'in_transit':
+        return 'In Transit';
+      case 'arrived':
+        return 'Rider Arrived';
+      case 'delivered':
+      case 'completed':
+        return 'Delivered';
+      case 'cancelled':
+      case 'rejected':
+        return 'Cancelled';
+      default:
+        return status.replaceAll('_', ' ').toUpperCase();
     }
   }
 
@@ -1292,15 +1400,29 @@ class _OrdersScreenState extends State<OrdersScreen>
     final primaryTextColor = isDark ? Colors.white : Colors.black87;
     final mutedTextColor = AppTheme.mutedTextColorFor(isDark);
     final purpleColor = AppTheme.primaryPurpleFor(isDark);
-    final borderColor = isDark ? AppTheme.darkBorder : AppTheme.lightInputBorder;
-    final statusColor =
-        type == OrderType.completed ? Colors.green : purpleColor;
+    final borderColor =
+        isDark ? AppTheme.darkBorder : AppTheme.lightInputBorder;
+    final rawStatus =
+        (orderData['status'] ?? '').toString().toLowerCase().trim();
+    final isCancelledOrder =
+        rawStatus == 'cancelled' || rawStatus == 'rejected';
+    final statusColor = isCancelledOrder
+        ? Colors.red
+        : (type == OrderType.completed ? Colors.green : purpleColor);
+    final cancellationReason = (orderData['cancellationReason'] ??
+            orderData['cancelReason'] ??
+            orderData['cancelledReason'] ??
+            orderData['rejectedReason'] ??
+            '')
+        .toString()
+        .trim();
 
     final foodName = items.isNotEmpty
         ? (items.first['title'] ?? items.first['name'] ?? title).toString()
         : title;
     final restaurantName =
-        (orderData['restaurantName'] ?? orderData['vendorName'] ?? title).toString();
+        (orderData['restaurantName'] ?? orderData['vendorName'] ?? title)
+            .toString();
     final isReviewed = (orderData['isReviewed'] == true) ||
         (orderData['hasBeenReviewed'] == true) ||
         (orderData['reviewed'] == true) ||
@@ -1309,303 +1431,353 @@ class _OrdersScreenState extends State<OrdersScreen>
         (orderData['riderRated'] == true) ||
         (orderData['hasRiderBeenRated'] == true);
 
-    return Container(
-      decoration: BoxDecoration(
-        color: isDark ? AppTheme.darkSurface : AppTheme.lightInputFill,
-        borderRadius: BorderRadius.circular(24.r),
-        border: Border.all(
-          color: borderColor,
-          width: 1,
-        ),
-        boxShadow: null,
-      ),
-      child: Column(
-        children: [
-          Padding(
-            padding: EdgeInsets.all(16.w),
-            child: Row(
-              children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(18.r),
-                  child: imageUrl.isNotEmpty
-                      ? CachedNetworkImage(
-                          imageUrl: imageUrl,
-                          width: 92.w,
-                          height: 92.w,
-                          fit: BoxFit.cover,
-                          errorWidget: (_, __, ___) => _buildImageFallback(),
-                        )
-                      : _buildImageFallback(),
-                ),
-                SizedBox(width: 14.w),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Food Name & Status Tag
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Expanded(
-                            child: Text(
-                              foodName,
-                              style: TextStyle(
-                                fontSize: AppTypography.font(AppFontSizes.bodyLarge),
-                                fontWeight: FontWeight.w800,
-                                color: primaryTextColor,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                          SizedBox(width: 8.w),
-                          Container(
-                            padding: EdgeInsets.symmetric(
-                              horizontal: 10.w,
-                              vertical: 5.h,
-                            ),
-                            decoration: BoxDecoration(
-                              color: statusColor.withValues(alpha: 0.10),
-                              borderRadius: BorderRadius.circular(999.r),
-                            ),
-                            child: Text(
-                              status,
-                              style: TextStyle(
-                                color: statusColor,
-                                fontSize: AppTypography.font(AppFontSizes.caption),
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      SizedBox(height: 4.h),
-                      // Price
-                      Text(
-                        _formatCurrency(price),
-                        style: TextStyle(
-                          fontSize: AppTypography.font(AppFontSizes.bodyLarge),
-                          fontWeight: FontWeight.w800,
-                          color: purpleColor,
-                        ),
-                      ),
-                      SizedBox(height: 6.h),
-                      // Restaurant Name & Verification Badge
-                      Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Flexible(
-                            child: Text(
-                              restaurantName,
-                              style: TextStyle(
-                                fontSize: AppTypography.font(AppFontSizes.bodySmall),
-                                fontWeight: FontWeight.w600,
-                                color: mutedTextColor,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                          SizedBox(width: 4.w),
-                          VendorVerificationBadge(
-                            vendorId: (orderData['vendorId'] ?? orderData['restaurantId'] ?? '').toString(),
-                            fallbackData: orderData,
-                            size: 14.sp,
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () {
+        if (rawStatus != 'awaiting_payment') {
+          context.push(
+            '/track_driver',
+            extra: {'orderId': orderId},
+          );
+        }
+      },
+      child: Container(
+        decoration: BoxDecoration(
+          color: isDark ? AppTheme.darkSurface : AppTheme.lightInputFill,
+          borderRadius: BorderRadius.circular(24.r),
+          border: Border.all(
+            color: borderColor,
+            width: 1,
           ),
-          if (type == OrderType.active) ...[
-            Divider(
-              height: 1,
-              color: borderColor,
-            ),
-            Padding(
-              padding: EdgeInsets.all(16.w),
-              child: orderData['status'] == 'awaiting_payment'
-                  ? Row(
-                      children: [
-                        Expanded(
-                          child: OutlinedButton(
-                            onPressed: () => _cancelAwaitingOrder(
-                              orderId,
-                              orderData['paymentToken']?.toString(),
-                            ),
-                            style: OutlinedButton.styleFrom(
-                              side: const BorderSide(color: Colors.red),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(18.r),
-                              ),
-                              padding: EdgeInsets.symmetric(vertical: 14.h),
-                            ),
-                            child: Text(
-                              'Cancel Request',
-                              style: TextStyle(
-                                color: Colors.red,
-                                fontSize: AppTypography.font(AppFontSizes.bodySmall),
-                                fontWeight: FontWeight.w800,
-                              ),
-                            ),
-                          ),
-                        ),
-                        SizedBox(width: 12.w),
-                        Expanded(
-                          child: ElevatedButton(
-                            onPressed: () {
-                              final pMethod = orderData['paymentMethod'];
-                              final pType = (pMethod is Map) ? pMethod['type']?.toString() : null;
-                              if (pType == 'bank' || orderData['paymentReference'] != null) {
-                                _showBankTransferVerificationBottomSheet(
-                                  orderId: orderId,
-                                  orderData: orderData,
-                                );
-                              } else {
-                                _showPayNowModal(
-                                  orderId,
-                                  orderData,
-                                );
-                              }
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: purpleColor,
-                              foregroundColor: Colors.white,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(18.r),
-                              ),
-                              padding: EdgeInsets.symmetric(vertical: 14.h),
-                              elevation: 0,
-                            ),
-                            child: Builder(
-                              builder: (context) {
-                                final pMethod = orderData['paymentMethod'];
-                                final pType = (pMethod is Map) ? pMethod['type']?.toString() : null;
-                                final isBank = pType == 'bank' || orderData['paymentReference'] != null;
-                                return Text(
-                                  isBank ? 'Verify Transfer' : 'Pay Now',
-                                  style: TextStyle(
-                                    fontSize: AppTypography.font(AppFontSizes.bodySmall),
-                                    fontWeight: FontWeight.w800,
-                                  ),
-                                );
-                              },
-                            ),
-                          ),
-                        ),
-                      ],
-                    )
-                  : SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: () => context.push(
-                          '/track_driver',
-                          extra: {'orderId': orderId},
-                        ),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: purpleColor,
-                          foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(18.r),
-                          ),
-                          padding: EdgeInsets.symmetric(vertical: 14.h),
-                          elevation: 0,
-                        ),
-                        child: Text(
-                          'Track Order',
-                          style: TextStyle(
-                            fontSize: AppTypography.font(AppFontSizes.bodyMedium),
-                            fontWeight: FontWeight.w800,
-                          ),
-                        ),
-                      ),
-                    ),
-            ),
-          ],
-          if (type == OrderType.completed && (!isReviewed || !isRiderRated)) ...[
-            Divider(
-              height: 1,
-              color: borderColor,
-            ),
+          boxShadow: null,
+        ),
+        child: Column(
+          children: [
             Padding(
               padding: EdgeInsets.all(16.w),
               child: Row(
                 children: [
-                  if (!isReviewed)
-                    Expanded(
-                      child: OutlinedButton(
-                        onPressed: () => context.push(
-                          '/orders/leave-review',
-                          extra: {
-                            'name': title,
-                            'imageUrl': imageUrl,
-                            'vendorId': orderData['vendorId'] ?? orderData['restaurantId'] ?? '',
-                            'orderId': orderId,
-                            'itemsSummary': items
-                                .map((i) => "${i['quantity'] ?? 1}x ${i['title'] ?? i['name'] ?? 'Item'}")
-                                .join(', '),
-                          },
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(18.r),
+                    child: imageUrl.isNotEmpty
+                        ? CachedNetworkImage(
+                            imageUrl: imageUrl,
+                            width: 92.w,
+                            height: 92.w,
+                            fit: BoxFit.cover,
+                            errorWidget: (_, __, ___) => _buildImageFallback(),
+                          )
+                        : _buildImageFallback(),
+                  ),
+                  SizedBox(width: 14.w),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Food Name & Status Tag
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Expanded(
+                              child: Text(
+                                foodName,
+                                style: TextStyle(
+                                  fontSize: AppTypography.font(
+                                      AppFontSizes.bodyLarge),
+                                  fontWeight: FontWeight.w800,
+                                  color: primaryTextColor,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            SizedBox(width: 8.w),
+                            Container(
+                              padding: EdgeInsets.symmetric(
+                                horizontal: 10.w,
+                                vertical: 5.h,
+                              ),
+                              decoration: BoxDecoration(
+                                color: statusColor.withValues(alpha: 0.10),
+                                borderRadius: BorderRadius.circular(999.r),
+                              ),
+                              child: Text(
+                                status,
+                                style: TextStyle(
+                                  color: statusColor,
+                                  fontSize:
+                                      AppTypography.font(AppFontSizes.caption),
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
-                        style: OutlinedButton.styleFrom(
-                          backgroundColor: Colors.transparent,
-                          foregroundColor: isDark ? Colors.white : purpleColor,
-                          side: BorderSide(color: isDark ? Colors.white : purpleColor),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(18.r),
-                          ),
-                          padding: EdgeInsets.symmetric(vertical: 14.h),
-                          elevation: 0,
-                        ),
-                        child: Text(
-                          'Leave Review',
+                        SizedBox(height: 4.h),
+                        // Price
+                        Text(
+                          _formatCurrency(price),
                           style: TextStyle(
-                            color: isDark ? Colors.white : purpleColor,
-                            fontSize: AppTypography.font(AppFontSizes.bodySmall),
+                            fontSize:
+                                AppTypography.font(AppFontSizes.bodyLarge),
                             fontWeight: FontWeight.w800,
+                            color: purpleColor,
                           ),
                         ),
-                      ),
+                        SizedBox(height: 6.h),
+                        // Restaurant Name & Verification Badge
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Flexible(
+                              child: Text(
+                                restaurantName,
+                                style: TextStyle(
+                                  fontSize: AppTypography.font(
+                                      AppFontSizes.bodySmall),
+                                  fontWeight: FontWeight.w600,
+                                  color: mutedTextColor,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            SizedBox(width: 4.w),
+                            VendorVerificationBadge(
+                              vendorId: (orderData['vendorId'] ??
+                                      orderData['restaurantId'] ??
+                                      '')
+                                  .toString(),
+                              fallbackData: orderData,
+                              size: 14.sp,
+                            ),
+                          ],
+                        ),
+                        if (isCancelledOrder &&
+                            cancellationReason.isNotEmpty) ...[
+                          SizedBox(height: 6.h),
+                          Text(
+                            'Reason: $cancellationReason',
+                            style: TextStyle(
+                              fontSize:
+                                  AppTypography.font(AppFontSizes.caption),
+                              fontWeight: FontWeight.w600,
+                              color: Colors.red,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ],
                     ),
-                  if (!isReviewed && !isRiderRated)
-                    SizedBox(width: 12.w),
-                  if (!isRiderRated)
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: () => context.push(
-                          '/rate_rider',
-                          extra: {
-                            'orderId': orderId,
-                            'riderId': orderData['riderId'] ?? '',
-                            'riderName': orderData['riderName'] ?? 'Rider',
-                            'riderPhotoUrl': orderData['riderPhotoUrl'] ?? '',
-                          },
-                        ),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: purpleColor,
-                          foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(18.r),
-                          ),
-                          padding: EdgeInsets.symmetric(vertical: 14.h),
-                          elevation: 0,
-                        ),
-                        child: Text(
-                          'Rate Rider',
-                          style: TextStyle(
-                            fontSize: AppTypography.font(AppFontSizes.bodySmall),
-                            fontWeight: FontWeight.w800,
-                          ),
-                        ),
-                      ),
-                    ),
+                  ),
                 ],
               ),
             ),
+            if (type == OrderType.active) ...[
+              Divider(
+                height: 1,
+                color: borderColor,
+              ),
+              Padding(
+                padding: EdgeInsets.all(16.w),
+                child: orderData['status'] == 'awaiting_payment'
+                    ? Row(
+                        children: [
+                          Expanded(
+                            child: OutlinedButton(
+                              onPressed: () => _cancelAwaitingOrder(
+                                orderId,
+                                orderData['paymentToken']?.toString(),
+                              ),
+                              style: OutlinedButton.styleFrom(
+                                side: const BorderSide(color: Colors.red),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(18.r),
+                                ),
+                                padding: EdgeInsets.symmetric(vertical: 14.h),
+                              ),
+                              child: Text(
+                                'Cancel Request',
+                                style: TextStyle(
+                                  color: Colors.red,
+                                  fontSize: AppTypography.font(
+                                      AppFontSizes.bodySmall),
+                                  fontWeight: FontWeight.w800,
+                                ),
+                              ),
+                            ),
+                          ),
+                          SizedBox(width: 12.w),
+                          Expanded(
+                            child: ElevatedButton(
+                              onPressed: () {
+                                final pMethod = orderData['paymentMethod'];
+                                final pType = (pMethod is Map)
+                                    ? pMethod['type']?.toString()
+                                    : null;
+                                if (pType == 'bank' ||
+                                    orderData['paymentReference'] != null) {
+                                  _showBankTransferVerificationBottomSheet(
+                                    orderId: orderId,
+                                    orderData: orderData,
+                                  );
+                                } else {
+                                  _showPayNowModal(
+                                    orderId,
+                                    orderData,
+                                  );
+                                }
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: purpleColor,
+                                foregroundColor: Colors.white,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(18.r),
+                                ),
+                                padding: EdgeInsets.symmetric(vertical: 14.h),
+                                elevation: 0,
+                              ),
+                              child: Builder(
+                                builder: (context) {
+                                  final pMethod = orderData['paymentMethod'];
+                                  final pType = (pMethod is Map)
+                                      ? pMethod['type']?.toString()
+                                      : null;
+                                  final isBank = pType == 'bank' ||
+                                      orderData['paymentReference'] != null;
+                                  return Text(
+                                    isBank ? 'Verify Transfer' : 'Pay Now',
+                                    style: TextStyle(
+                                      fontSize: AppTypography.font(
+                                          AppFontSizes.bodySmall),
+                                      fontWeight: FontWeight.w800,
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+                          ),
+                        ],
+                      )
+                    : SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: () => context.push(
+                            '/track_driver',
+                            extra: {'orderId': orderId},
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: purpleColor,
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(18.r),
+                            ),
+                            padding: EdgeInsets.symmetric(vertical: 14.h),
+                            elevation: 0,
+                          ),
+                          child: Text(
+                            'Track Order',
+                            style: TextStyle(
+                              fontSize:
+                                  AppTypography.font(AppFontSizes.bodyMedium),
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                        ),
+                      ),
+              ),
+            ],
+            if (type == OrderType.completed &&
+                !isCancelledOrder &&
+                (!isReviewed || !isRiderRated)) ...[
+              Divider(
+                height: 1,
+                color: borderColor,
+              ),
+              Padding(
+                padding: EdgeInsets.all(16.w),
+                child: Row(
+                  children: [
+                    if (!isReviewed)
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: () => context.push(
+                            '/orders/leave-review',
+                            extra: {
+                              'name': title,
+                              'imageUrl': imageUrl,
+                              'vendorId': orderData['vendorId'] ??
+                                  orderData['restaurantId'] ??
+                                  '',
+                              'orderId': orderId,
+                              'itemsSummary': items
+                                  .map((i) =>
+                                      "${i['quantity'] ?? 1}x ${i['title'] ?? i['name'] ?? 'Item'}")
+                                  .join(', '),
+                            },
+                          ),
+                          style: OutlinedButton.styleFrom(
+                            backgroundColor: Colors.transparent,
+                            foregroundColor:
+                                isDark ? Colors.white : purpleColor,
+                            side: BorderSide(
+                                color: isDark ? Colors.white : purpleColor),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(18.r),
+                            ),
+                            padding: EdgeInsets.symmetric(vertical: 14.h),
+                            elevation: 0,
+                          ),
+                          child: Text(
+                            'Leave Review',
+                            style: TextStyle(
+                              color: isDark ? Colors.white : purpleColor,
+                              fontSize:
+                                  AppTypography.font(AppFontSizes.bodySmall),
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                        ),
+                      ),
+                    if (!isReviewed && !isRiderRated) SizedBox(width: 12.w),
+                    if (!isRiderRated)
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: () => context.push(
+                            '/rate_rider',
+                            extra: {
+                              'orderId': orderId,
+                              'riderId': orderData['riderId'] ?? '',
+                              'riderName': orderData['riderName'] ?? 'Rider',
+                              'riderPhotoUrl': orderData['riderPhotoUrl'] ?? '',
+                            },
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: purpleColor,
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(18.r),
+                            ),
+                            padding: EdgeInsets.symmetric(vertical: 14.h),
+                            elevation: 0,
+                          ),
+                          child: Text(
+                            'Rate Rider',
+                            style: TextStyle(
+                              fontSize:
+                                  AppTypography.font(AppFontSizes.bodySmall),
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ],
           ],
-        ],
+        ),
       ),
     );
   }
@@ -1683,7 +1855,8 @@ class _OrdersScreenState extends State<OrdersScreen>
                 style: ElevatedButton.styleFrom(
                   backgroundColor: purpleColor,
                   foregroundColor: Colors.white,
-                  padding: EdgeInsets.symmetric(horizontal: 28.w, vertical: 14.h),
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 28.w, vertical: 14.h),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(18.r),
                   ),
@@ -1704,7 +1877,8 @@ class _OrdersScreenState extends State<OrdersScreen>
     );
   }
 
-  Future<void> _cancelAwaitingOrder(String orderId, String? paymentToken) async {
+  Future<void> _cancelAwaitingOrder(
+      String orderId, String? paymentToken) async {
     final confirm = await showModalBottomSheet<bool>(
       context: context,
       backgroundColor: Theme.of(context).brightness == Brightness.dark
@@ -1739,7 +1913,8 @@ class _OrdersScreenState extends State<OrdersScreen>
             Text(
               'Are you sure you want to cancel this order and invalidate its payment link?',
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: AppTypography.font(14), color: Colors.grey[600]),
+              style: TextStyle(
+                  fontSize: AppTypography.font(14), color: Colors.grey[600]),
             ),
             SizedBox(height: 24.h),
             Row(
@@ -1786,7 +1961,10 @@ class _OrdersScreenState extends State<OrdersScreen>
           'updatedAt': FieldValue.serverTimestamp(),
         });
         if (paymentToken != null && paymentToken.isNotEmpty) {
-          await _firestore.collection('payment_sessions').doc(paymentToken).update({
+          await _firestore
+              .collection('payment_sessions')
+              .doc(paymentToken)
+              .update({
             'status': 'cancelled',
           });
         }
@@ -1810,12 +1988,22 @@ class _OrdersScreenState extends State<OrdersScreen>
     final mutedTextColor = AppTheme.mutedTextColorFor(isDark);
     final surfaceColor = isDark ? AppTheme.darkSurface : Colors.white;
     final purpleColor = AppTheme.primaryPurpleFor(isDark);
-    final cardBgColor = isDark ? const Color(0xFF1E1E2E) : const Color(0xFFF3F4F6);
+    final cardBgColor =
+        isDark ? const Color(0xFF1E1E2E) : const Color(0xFFF3F4F6);
 
-    final bankDetails = (orderData['bankDetails'] as Map<String, dynamic>?) ?? {};
-    final String bankName = (bankDetails['bankName'] ?? bankDetails['bank_name'] ?? 'Paystack Virtual Bank').toString();
-    final String accountName = (bankDetails['accountName'] ?? bankDetails['account_name'] ?? 'MartFood Delivery').toString();
-    final String accountNumber = (bankDetails['accountNumber'] ?? bankDetails['account_number'] ?? 'N/A').toString();
+    final bankDetails =
+        (orderData['bankDetails'] as Map<String, dynamic>?) ?? {};
+    final String bankName = (bankDetails['bankName'] ??
+            bankDetails['bank_name'] ??
+            'Paystack Virtual Bank')
+        .toString();
+    final String accountName = (bankDetails['accountName'] ??
+            bankDetails['account_name'] ??
+            'MartFood Delivery')
+        .toString();
+    final String accountNumber =
+        (bankDetails['accountNumber'] ?? bankDetails['account_number'] ?? 'N/A')
+            .toString();
     final String reference = (orderData['paymentReference'] ?? '').toString();
     final double amount = ((orderData['total'] ?? 0.0) as num).toDouble();
 
@@ -1874,7 +2062,9 @@ class _OrdersScreenState extends State<OrdersScreen>
                     color: cardBgColor,
                     borderRadius: BorderRadius.circular(16.r),
                     border: Border.all(
-                      color: isDark ? AppTheme.darkBorder : AppTheme.lightInputBorder,
+                      color: isDark
+                          ? AppTheme.darkBorder
+                          : AppTheme.lightInputBorder,
                       width: 1,
                     ),
                   ),
@@ -1932,7 +2122,8 @@ class _OrdersScreenState extends State<OrdersScreen>
                           Text(
                             accountNumber,
                             style: TextStyle(
-                              fontSize: AppTypography.font(AppFontSizes.bodyLarge),
+                              fontSize:
+                                  AppTypography.font(AppFontSizes.bodyLarge),
                               fontWeight: FontWeight.w800,
                               color: primaryTextColor,
                             ),
@@ -1987,7 +2178,8 @@ class _OrdersScreenState extends State<OrdersScreen>
                         SelectableText(
                           reference,
                           style: TextStyle(
-                            fontSize: AppTypography.font(AppFontSizes.bodySmall),
+                            fontSize:
+                                AppTypography.font(AppFontSizes.bodySmall),
                             fontWeight: FontWeight.w600,
                             color: primaryTextColor,
                           ),
@@ -2001,7 +2193,8 @@ class _OrdersScreenState extends State<OrdersScreen>
                 if (verificationError != null) ...[
                   Container(
                     width: double.infinity,
-                    padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
                     decoration: BoxDecoration(
                       color: isDark
                           ? const Color(0xFF3B1515)
@@ -2027,7 +2220,8 @@ class _OrdersScreenState extends State<OrdersScreen>
                           child: Text(
                             verificationError!,
                             style: TextStyle(
-                              fontSize: AppTypography.font(AppFontSizes.caption),
+                              fontSize:
+                                  AppTypography.font(AppFontSizes.caption),
                               fontWeight: FontWeight.w600,
                               color: isDark
                                   ? const Color(0xFFFCA5A5)
@@ -2069,7 +2263,8 @@ class _OrdersScreenState extends State<OrdersScreen>
                             try {
                               if (reference.isNotEmpty) {
                                 final verifyRes =
-                                    await PaystackService.verifyTransaction(reference);
+                                    await PaystackService.verifyTransaction(
+                                        reference);
                                 if (verifyRes != null &&
                                     (verifyRes['status'] == 'success' ||
                                         verifyRes['status'] == true)) {
@@ -2089,7 +2284,8 @@ class _OrdersScreenState extends State<OrdersScreen>
                               if (mounted) {
                                 messenger.showSnackBar(
                                   const SnackBar(
-                                    content: Text('Payment verified! Order confirmed.'),
+                                    content: Text(
+                                        'Payment verified! Order confirmed.'),
                                   ),
                                 );
                               }
@@ -2126,8 +2322,8 @@ class _OrdersScreenState extends State<OrdersScreen>
                               Text(
                                 'Verifying Transfer...',
                                 style: TextStyle(
-                                  fontSize:
-                                      AppTypography.font(AppFontSizes.bodyMedium),
+                                  fontSize: AppTypography.font(
+                                      AppFontSizes.bodyMedium),
                                   fontWeight: FontWeight.w700,
                                 ),
                               ),
@@ -2177,7 +2373,8 @@ class _OrdersScreenState extends State<OrdersScreen>
     final primaryTextColor = isDark ? Colors.white : Colors.black87;
     final mutedTextColor = AppTheme.mutedTextColorFor(isDark);
     final purpleColor = AppTheme.primaryPurpleFor(isDark);
-    final borderColor = isDark ? AppTheme.darkBorder : AppTheme.lightInputBorder;
+    final borderColor =
+        isDark ? AppTheme.darkBorder : AppTheme.lightInputBorder;
 
     bool hideOrderDetails = orderData['hideOrderDetails'] == true;
 
@@ -2263,7 +2460,8 @@ class _OrdersScreenState extends State<OrdersScreen>
                 margin: EdgeInsets.only(top: 4.h, bottom: 8.h),
                 padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 8.h),
                 decoration: BoxDecoration(
-                  color: isDark ? AppTheme.darkSurface : AppTheme.lightInputFill,
+                  color:
+                      isDark ? AppTheme.darkSurface : AppTheme.lightInputFill,
                   borderRadius: BorderRadius.circular(16.r),
                   border: Border.all(color: borderColor, width: 1),
                 ),
@@ -2290,7 +2488,8 @@ class _OrdersScreenState extends State<OrdersScreen>
                             'Hide order details',
                             style: TextStyle(
                               color: primaryTextColor,
-                              fontSize: AppTypography.font(AppFontSizes.bodySmall),
+                              fontSize:
+                                  AppTypography.font(AppFontSizes.bodySmall),
                               fontWeight: FontWeight.w700,
                             ),
                           ),
@@ -2299,7 +2498,8 @@ class _OrdersScreenState extends State<OrdersScreen>
                             'Conceal food items and choices from the payment link',
                             style: TextStyle(
                               color: mutedTextColor,
-                              fontSize: AppTypography.font(AppFontSizes.caption),
+                              fontSize:
+                                  AppTypography.font(AppFontSizes.caption),
                               fontWeight: FontWeight.w500,
                             ),
                           ),
@@ -2376,11 +2576,15 @@ class _OrdersScreenState extends State<OrdersScreen>
       final oldToken = orderData['paymentToken']?.toString();
       if (oldToken != null && oldToken.isNotEmpty) {
         try {
-          await _firestore.collection('payment_sessions').doc(oldToken).update({'status': 'cancelled'});
+          await _firestore
+              .collection('payment_sessions')
+              .doc(oldToken)
+              .update({'status': 'cancelled'});
         } catch (_) {}
       }
 
-      final bool effectiveHide = hideOrderDetails ?? (orderData['hideOrderDetails'] == true);
+      final bool effectiveHide =
+          hideOrderDetails ?? (orderData['hideOrderDetails'] == true);
       final newToken = 'ps_${const Uuid().v4().replaceAll('-', '')}';
       final expiresAt = DateTime.now().add(const Duration(hours: 24));
 
@@ -2433,9 +2637,9 @@ class _OrdersScreenState extends State<OrdersScreen>
 
   String _formatCurrency(double amount) {
     final whole = amount.toInt().toString().replaceAllMapped(
-      RegExp(r'(\d)(?=(\d{3})+(?!\d))'),
-      (m) => '${m[1]},',
-    );
+          RegExp(r'(\d)(?=(\d{3})+(?!\d))'),
+          (m) => '${m[1]},',
+        );
     return '₦$whole';
   }
 }
@@ -2461,16 +2665,24 @@ class VendorVerificationBadge extends StatelessWidget {
     }
 
     return StreamBuilder<DocumentSnapshot>(
-      stream: FirebaseFirestore.instance.collection('vendors').doc(vendorId).snapshots(),
+      stream: FirebaseFirestore.instance
+          .collection('vendors')
+          .doc(vendorId)
+          .snapshots(),
       builder: (context, snapshot) {
-        if (snapshot.hasData && snapshot.data != null && snapshot.data!.exists) {
-          final vendorData = snapshot.data!.data() as Map<String, dynamic>? ?? {};
-          final bpComplete = vendorData['businessProfileComplete']?.toString() == 'true';
+        if (snapshot.hasData &&
+            snapshot.data != null &&
+            snapshot.data!.exists) {
+          final vendorData =
+              snapshot.data!.data() as Map<String, dynamic>? ?? {};
+          final bpComplete =
+              vendorData['businessProfileComplete']?.toString() == 'true';
           final physicalVerification = vendorData['physicalVerification'];
           final physicalVerified = (physicalVerification is Map)
               ? physicalVerification['status']?.toString() == 'verified'
               : false;
-          final docComplete = vendorData['verificationDocumentsComplete']?.toString() == 'true';
+          final docComplete =
+              vendorData['verificationDocumentsComplete']?.toString() == 'true';
 
           if (physicalVerified || docComplete || bpComplete) {
             return VerificationBadge(vendorData: vendorData, size: size);
@@ -2480,7 +2692,8 @@ class VendorVerificationBadge extends StatelessWidget {
               vendorData['isVerified']?.toString() == 'true' ||
               vendorData['isVendorVerified'] == true;
           if (isVerified) {
-            return Icon(Icons.verified_rounded, color: const Color(0xFF34C759), size: size);
+            return Icon(Icons.verified_rounded,
+                color: const Color(0xFF34C759), size: size);
           }
         }
         return _buildFallback();
@@ -2492,17 +2705,20 @@ class VendorVerificationBadge extends StatelessWidget {
     final vendorMap = fallbackData['vendorData'] is Map
         ? Map<String, dynamic>.from(fallbackData['vendorData'])
         : fallbackData;
-    final bpComplete = vendorMap['businessProfileComplete']?.toString() == 'true';
+    final bpComplete =
+        vendorMap['businessProfileComplete']?.toString() == 'true';
     final physicalVerification = vendorMap['physicalVerification'];
     final physicalVerified = (physicalVerification is Map)
         ? physicalVerification['status']?.toString() == 'verified'
         : false;
-    final docComplete = vendorMap['verificationDocumentsComplete']?.toString() == 'true';
+    final docComplete =
+        vendorMap['verificationDocumentsComplete']?.toString() == 'true';
 
     if (physicalVerified || docComplete || bpComplete) {
       return VerificationBadge(vendorData: vendorMap, size: size);
     }
 
-    return Icon(Icons.verified_rounded, color: const Color(0xFF34C759), size: size);
+    return Icon(Icons.verified_rounded,
+        color: const Color(0xFF34C759), size: size);
   }
 }

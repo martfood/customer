@@ -86,7 +86,7 @@ class _RateRiderScreenState extends State<RateRiderScreen> {
 
         NotificationService.sendPushToRider(
           riderId: widget.riderId,
-          title: 'New Rating & Review! ⭐',
+          title: 'New Rating & Review!',
           body: '$customerName rated you $_rating stars: "$reviewComment"',
           data: {
             'type': 'rider_review',
@@ -154,7 +154,7 @@ class _RateRiderScreenState extends State<RateRiderScreen> {
             ),
             SizedBox(height: 20.h),
             Text(
-              'Thank You! 🎉',
+              'Thank You!',
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: AppTypography.font(AppFontSizes.headlineLarge),

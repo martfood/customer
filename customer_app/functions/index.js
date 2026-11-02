@@ -119,7 +119,7 @@ exports.sendWelcomeEmailOnSignUp = onDocumentCreated("customers/{uid}", async (e
     <body>
       <div class="container">
         <div class="header">
-          <h1>Welcome to MartFood! 🍔</h1>
+          <h1>Welcome to MartFood!</h1>
         </div>
         <div class="content">
           <h2 class="welcome-title">Hi ${fullName},</h2>
@@ -153,7 +153,7 @@ exports.sendWelcomeEmailOnSignUp = onDocumentCreated("customers/{uid}", async (e
       body: JSON.stringify({
         from: `MartFood Verification <${SENDER_EMAIL}>`,
         to: [email],
-        subject: `Welcome to MartFood, ${fullName}! 🍔`,
+        subject: `Welcome to MartFood, ${fullName}!`,
         html: htmlContent,
       }),
     });
@@ -268,7 +268,7 @@ exports.sendPasswordResetEmailTrigger = onDocumentCreated("password_resets/{id}"
       <body>
         <div class="container">
           <div class="header">
-            <h1>Reset your Password 🔑</h1>
+            <h1>Reset your Password</h1>
           </div>
           <div class="content">
             <h2 class="welcome-title">Hello,</h2>
@@ -297,7 +297,7 @@ exports.sendPasswordResetEmailTrigger = onDocumentCreated("password_resets/{id}"
       body: JSON.stringify({
         from: `MartFood Support <${SENDER_EMAIL}>`,
         to: [email],
-        subject: "Reset your MartFood Password 🔑",
+        subject: "Reset your MartFood Password",
         html: htmlContent,
       }),
     });
@@ -569,7 +569,7 @@ exports.paystackWebhook = onRequest(async (req, res) => {
       if (vendorId) {
         try {
           const shortId = orderId.length >= 6 ? orderId.substring(0, 6).toUpperCase() : orderId;
-          const pushTitle = "New Order Received! 🛍️";
+          const pushTitle = "New Order Received!";
           const pushBody = `Order #${shortId} (${items.length} items - ₦${orderTotal.toFixed(0)}) placed by ${customerName}`;
 
           await db.collection("vendors").doc(vendorId).collection("notifications").add({
@@ -603,7 +603,7 @@ exports.paystackWebhook = onRequest(async (req, res) => {
             <body style="font-family: sans-serif; background-color: #f8fafc; padding: 20px; color: #334155;">
               <div style="max-width: 600px; margin: 0 auto; background: white; border-radius: 12px; border: 1px solid #e2e8f0; overflow: hidden;">
                 <div style="background-color: #7C3AED; padding: 24px; text-align: center;">
-                  <h2 style="color: #ffffff; margin: 0;">Order Confirmed! 🍔</h2>
+                  <h2 style="color: #ffffff; margin: 0;">Order Confirmed!</h2>
                 </div>
                 <div style="padding: 24px;">
                   <p>Hi ${customerName},</p>

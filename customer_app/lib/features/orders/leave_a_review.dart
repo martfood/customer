@@ -107,7 +107,7 @@ class _LeaveAReviewScreenState extends State<LeaveAReviewScreen> {
 
       NotificationService.sendPushToVendor(
         vendorId: widget.vendorId,
-        title: 'New Review Received! ⭐',
+        title: 'New Review Received!',
         body: '$customerName left a $_rating-star review: "$reviewComment"',
         data: {
           'type': 'vendor_review',
@@ -169,7 +169,7 @@ class _LeaveAReviewScreenState extends State<LeaveAReviewScreen> {
             ),
             SizedBox(height: 20.h),
             Text(
-              'Thank You! 🎉',
+              'Thank You!',
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: AppTypography.font(AppFontSizes.headlineLarge),

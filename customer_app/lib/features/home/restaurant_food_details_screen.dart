@@ -1463,13 +1463,13 @@ class _RestaurantFoodDetailsScreenState
     if (_spicyLevel != null && _spicyLevel! > 0) {
       switch (_spicyLevel) {
         case 1:
-          spicyLabel = '🌶️ Mild';
+          spicyLabel = 'Mild';
           break;
         case 2:
-          spicyLabel = '🌶️🌶️ Medium';
+          spicyLabel = 'Medium';
           break;
         case 3:
-          spicyLabel = '🔥 Extra Hot';
+          spicyLabel = 'Extra Hot';
           break;
         default:
           spicyLabel = '';
@@ -1829,14 +1829,6 @@ class _RestaurantFoodDetailsScreenState
                             setState(() {
                               _addedToCart = true;
                             });
-
-                            if (context.mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                    content:
-                                        Text('${widget.title} added to cart!')),
-                              );
-                            }
                           }
                         } else {
                           // Navigate to checkout with just this single order item

@@ -92,7 +92,7 @@ class OrderCompletionService {
         final orderNum = orderId.length >= 6 ? orderId.substring(0, 6).toUpperCase() : orderId;
         NotificationService.sendPushToVendor(
           vendorId: effectiveVendorId,
-          title: 'New Order Received! 🛍️',
+          title: 'New Order Received!',
           body: 'Order #$orderNum (${items.length} items - ₦${orderTotal.toStringAsFixed(0)}) placed by $customerName',
           data: {
             'orderId': orderId,
@@ -158,7 +158,7 @@ class OrderCompletionService {
 <body style="font-family: sans-serif; background-color: #f8fafc; padding: 20px; color: #334155; line-height: 1.6;">
   <div style="max-width: 600px; margin: 0 auto; background: white; border-radius: 12px; padding: 0; border: 1px solid #e2e8f0; overflow: hidden;">
     <div style="background-color: #7C3AED; padding: 24px; text-align: center;">
-      <h2 style="color: #ffffff; margin: 0; font-size: 22px;">Order Confirmed! 🍔</h2>
+      <h2 style="color: #ffffff; margin: 0; font-size: 22px;">Order Confirmed!</h2>
     </div>
     <div style="padding: 24px;">
       <p>Hi $customerName,</p>

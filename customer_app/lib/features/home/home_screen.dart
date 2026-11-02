@@ -578,7 +578,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 SizedBox(height: 16.h),
                 Text(
-                  'Order Delivered! 🎉',
+                  'Order Delivered!',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: AppTypography.font(AppFontSizes.headlineSmall),

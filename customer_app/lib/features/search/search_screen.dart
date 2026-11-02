@@ -92,7 +92,7 @@ class _SearchScreenState extends State<SearchScreen> {
     final time = DateTime.now();
     final label =
         '[${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}:${time.second.toString().padLeft(2, '0')}] $msg';
-    debugPrint('🔍 SEARCH_DEBUG: $label');
+    debugPrint('SEARCH_DEBUG: $label');
     // Schedule the UI update for after the current frame — safe even when
     // called from initState / listeners, but also harmless from build().
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -108,7 +108,7 @@ class _SearchScreenState extends State<SearchScreen> {
   /// Print-only version — use inside builder/where callbacks to avoid
   /// triggering a setState() during the build phase.
   void _dprint(String msg) {
-    debugPrint('🔍 SEARCH_DEBUG: $msg');
+    debugPrint('SEARCH_DEBUG: $msg');
   }
 
   @override

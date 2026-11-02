@@ -224,7 +224,7 @@ class EmailService {
       <body>
         <div class="container">
           <div class="header">
-            <h1>Welcome to MartFood! 🍔</h1>
+            <h1>Welcome to MartFood!</h1>
           </div>
           <div class="content">
             <h2 class="welcome-title">Hi $fullName,</h2>
@@ -250,7 +250,7 @@ class EmailService {
 
     return await _sendResendEmail(
       to: email,
-      subject: "Welcome to MartFood, $fullName! 🍔",
+      subject: "Welcome to MartFood, $fullName!",
       htmlContent: htmlContent,
     );
   }

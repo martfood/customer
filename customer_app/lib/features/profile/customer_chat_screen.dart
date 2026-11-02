@@ -170,7 +170,7 @@ class _CustomerChatScreenState extends State<CustomerChatScreen> {
           .doc(widget.chatId);
       await docRef.update({
         'status': 'active',
-        'lastMessage': '📷 Image',
+        'lastMessage': 'Image',
         'lastMessageAt': nowStr,
         'messages': FieldValue.arrayUnion([messageObj]),
       });

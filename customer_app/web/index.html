@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -17,6 +18,9 @@
       --text-muted: #64748B;
       --border-color: #E2E8F0;
       --success-green: #16A34A;
+      --danger-red: #DC2626;
+      --danger-bg: rgba(220, 38, 38, 0.08);
+      --danger-border: rgba(220, 38, 38, 0.25);
     }
 
     @media (prefers-color-scheme: dark) {
@@ -28,6 +32,9 @@
         --text-main: #F8FAFC;
         --text-muted: #94A3B8;
         --border-color: #27272A;
+        --danger-red: #F87171;
+        --danger-bg: rgba(248, 113, 113, 0.1);
+        --danger-border: rgba(248, 113, 113, 0.3);
       }
     }
 
@@ -56,7 +63,8 @@
       border: 1px solid var(--border-color);
       border-radius: 24px;
       padding: 28px;
-      box-shadow: none; /* Invariant: Zero drop shadows */
+      box-shadow: none;
+      /* Invariant: Zero drop shadows */
     }
 
     .brand-header {
@@ -76,12 +84,15 @@
     }
 
     .secure-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
       font-size: 11px;
       font-weight: 700;
       color: var(--text-muted);
       background: var(--input-fill);
       border: 1px solid var(--border-color);
-      padding: 4px 10px;
+      padding: 5px 10px;
       border-radius: 12px;
     }
 
@@ -96,6 +107,31 @@
       text-align: center;
       margin-bottom: 20px;
       line-height: 1.4;
+    }
+
+    .store-closed-notice {
+      background: var(--danger-bg);
+      border: 1px solid var(--danger-border);
+      border-radius: 16px;
+      padding: 16px 18px;
+      margin-bottom: 20px;
+    }
+
+    .store-closed-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      font-weight: 800;
+      color: var(--danger-red);
+      margin-bottom: 6px;
+    }
+
+    .store-closed-desc {
+      font-size: 13px;
+      color: var(--text-main);
+      line-height: 1.5;
+      font-weight: 500;
     }
 
     .restaurant-title {
@@ -176,7 +212,7 @@
       height: 54px;
       background-color: var(--primary-purple);
       color: #ffffff;
-      border: none;
+      border: 1px solid transparent;
       border-radius: 27px;
       font-size: 16px;
       font-weight: 700;
@@ -185,8 +221,17 @@
       transition: opacity 0.2s ease;
     }
 
-    .pay-button:hover {
+    .pay-button:hover:not(:disabled) {
       opacity: 0.9;
+    }
+
+    .pay-button:disabled,
+    .pay-button.disabled {
+      background-color: var(--input-fill);
+      color: var(--text-muted);
+      border: 1px solid var(--border-color);
+      cursor: not-allowed;
+      opacity: 1;
     }
 
     .status-card {
@@ -194,9 +239,17 @@
       padding: 40px 20px;
     }
 
-    .status-icon {
-      font-size: 48px;
-      margin-bottom: 16px;
+    .status-icon-box {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: var(--input-fill);
+      border: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 16px;
+      color: var(--primary-purple);
     }
 
     .status-title {
@@ -219,11 +272,19 @@
     }
   </style>
 </head>
+
 <body>
   <div class="card">
     <div class="brand-header">
-      <div class="brand-name">MartFood 🍔</div>
-      <div class="secure-badge">🔒 Secure Payment</div>
+      <div class="brand-name">MartFood</div>
+      <div class="secure-badge">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+          stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+          <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+        </svg>
+        <span>Secure Payment</span>
+      </div>
     </div>
 
     <!-- Loading State -->
@@ -238,8 +299,25 @@
         Customer requested that you pay for this order.
       </div>
 
+      <!-- Store Closed Warning Banner -->
+      <div class="store-closed-notice" id="store-closed-notice" style="display: none;">
+        <div class="store-closed-header">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
+          <span>Store Currently Closed</span>
+        </div>
+        <div class="store-closed-desc">
+          Payment for this order cannot be completed because the vendor store is currently closed. Please inform the
+          requester to generate and share a new payment link once the store reopens.
+        </div>
+      </div>
+
       <div class="restaurant-title" id="restaurant-name">MartFood Order</div>
-      
+
       <div class="items-container" id="items-list"></div>
 
       <div class="summary-box">
@@ -268,21 +346,39 @@
 
     <!-- Paid State -->
     <div class="status-card" id="paid-state" style="display: none;">
-      <div class="status-icon">✅</div>
+      <div class="status-icon-box" style="color: var(--success-green);">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"
+          stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="20 6 9 17 4 12"></polyline>
+        </svg>
+      </div>
       <div class="status-title">Already Paid</div>
       <div class="status-desc">This order has already been paid for. Thank you for your support!</div>
     </div>
 
     <!-- Expired State -->
     <div class="status-card" id="expired-state" style="display: none;">
-      <div class="status-icon">⌛</div>
+      <div class="status-icon-box">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+          stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <polyline points="12 6 12 12 16 14"></polyline>
+        </svg>
+      </div>
       <div class="status-title">Link Expired or Invalid</div>
-      <div class="status-desc">This payment request has expired or is no longer active. Please ask the customer to generate a new payment link.</div>
+      <div class="status-desc">This payment request has expired or is no longer active. Please ask the customer to
+        generate a new payment link.</div>
     </div>
 
     <!-- Cancelled State -->
     <div class="status-card" id="cancelled-state" style="display: none;">
-      <div class="status-icon">❌</div>
+      <div class="status-icon-box" style="color: var(--danger-red);">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+          stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </div>
       <div class="status-title">Order Cancelled</div>
       <div class="status-desc">This payment request was cancelled by the customer.</div>
     </div>
@@ -294,7 +390,11 @@
 
   <script>
     const PAYSTACK_PUBLIC_KEY = 'pk_live_9a3133bdb8c6539b8ba228059dde0a4f10df3e1a';
+    const FIRESTORE_BASE = 'https://firestore.googleapis.com/v1/projects/martfood-app/databases/(default)/documents';
     let sessionData = null;
+    let currentVendorId = '';
+    let currentRestaurantName = '';
+    let isStoreClosed = false;
 
     function formatCurrency(amount) {
       return '₦' + Number(amount || 0).toLocaleString('en-NG', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -331,6 +431,115 @@
       return null;
     }
 
+    function evaluateVendorStoreOpen(vendor) {
+      if (!vendor || Object.keys(vendor).length === 0) return true;
+
+      if (vendor.status && String(vendor.status).toLowerCase() === 'suspended') {
+        return false;
+      }
+      if (vendor.isOpen !== undefined && (vendor.isOpen === false || vendor.isOpen === 'false')) {
+        return false;
+      }
+      if (vendor.isStoreOpen !== undefined && (vendor.isStoreOpen === false || vendor.isStoreOpen === 'false')) {
+        return false;
+      }
+      if (vendor.storeStatus !== undefined && String(vendor.storeStatus).toLowerCase() === 'closed') {
+        return false;
+      }
+
+      const operatingHours = vendor.operatingHours || (vendor.businessProfile && vendor.businessProfile.operatingHours);
+      if (operatingHours && typeof operatingHours === 'object') {
+        const weekdayKeys = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+        const now = new Date();
+        const dayKey = weekdayKeys[now.getDay()];
+        const dayConfig = operatingHours[dayKey];
+        if (dayConfig && typeof dayConfig === 'object') {
+          if (dayConfig.closed === true || dayConfig.closed === 'true') {
+            return false;
+          }
+          const openStr = dayConfig.open;
+          const closeStr = dayConfig.close;
+          if (typeof openStr === 'string' && openStr.includes(':') && typeof closeStr === 'string' && closeStr.includes(':')) {
+            const openParts = openStr.split(':').map(Number);
+            const closeParts = closeStr.split(':').map(Number);
+            if (!isNaN(openParts[0]) && !isNaN(openParts[1]) && !isNaN(closeParts[0]) && !isNaN(closeParts[1])) {
+              const openMin = openParts[0] * 60 + openParts[1];
+              const closeMin = closeParts[0] * 60 + closeParts[1];
+              const nowMin = now.getHours() * 60 + now.getMinutes();
+              if (closeMin >= openMin) {
+                if (nowMin < openMin || nowMin > closeMin) return false;
+              } else {
+                if (nowMin < openMin && nowMin > closeMin) return false;
+              }
+            }
+          }
+        }
+      }
+
+      return true;
+    }
+
+    async function checkVendorStoreStatus(vendorId, restaurantName) {
+      try {
+        if (vendorId) {
+          const vendorRes = await fetch(`${FIRESTORE_BASE}/vendors/${encodeURIComponent(vendorId)}`);
+          if (vendorRes.ok) {
+            const vendorJson = await vendorRes.json();
+            const vendor = parseFirestoreDoc(vendorJson);
+            return evaluateVendorStoreOpen(vendor);
+          }
+        }
+
+        if (restaurantName) {
+          const queryRes = await fetch(`${FIRESTORE_BASE}:runQuery`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              structuredQuery: {
+                from: [{ collectionId: 'vendors' }],
+                where: {
+                  fieldFilter: {
+                    field: { fieldPath: 'businessName' },
+                    op: 'EQUAL',
+                    value: { stringValue: restaurantName }
+                  }
+                },
+                limit: 1
+              }
+            })
+          });
+          if (queryRes.ok) {
+            const rows = await queryRes.json();
+            if (Array.isArray(rows) && rows.length > 0 && rows[0].document) {
+              const vendor = parseFirestoreDoc(rows[0].document);
+              return evaluateVendorStoreOpen(vendor);
+            }
+          }
+        }
+      } catch (err) {
+        console.error('Error checking vendor store status:', err);
+      }
+      return true;
+    }
+
+    function applyStoreClosedUI(closed, totalAmount) {
+      isStoreClosed = Boolean(closed);
+      const noticeEl = document.getElementById('store-closed-notice');
+      const payBtn = document.getElementById('pay-button');
+
+      if (isStoreClosed) {
+        noticeEl.style.display = 'block';
+        payBtn.disabled = true;
+        payBtn.classList.add('disabled');
+        payBtn.innerText = 'Store Closed — Payment Unavailable';
+      } else {
+        noticeEl.style.display = 'none';
+        payBtn.disabled = false;
+        payBtn.classList.remove('disabled');
+        payBtn.innerText = `Pay ${formatCurrency(totalAmount)} with Paystack`;
+      }
+    }
+
     async function initPage() {
       const urlParams = new URLSearchParams(window.location.search);
       let token = urlParams.get('token');
@@ -345,15 +554,13 @@
         }
       }
 
-      console.log("Token:", token);
-
       if (!token || token.indexOf('ps_') !== 0) {
         showState('expired-state');
         return;
       }
 
       try {
-        const sessionRes = await fetch(`https://firestore.googleapis.com/v1/projects/martfood-app/databases/(default)/documents/payment_sessions/${token}`);
+        const sessionRes = await fetch(`${FIRESTORE_BASE}/payment_sessions/${token}`);
         if (!sessionRes.ok) {
           showState('expired-state');
           return;
@@ -361,7 +568,6 @@
 
         const sessionJson = await sessionRes.json();
         const session = parseFirestoreDoc(sessionJson);
-        console.log("Parsed Session:", session);
 
         if (session.status === 'paid') {
           showState('paid-state');
@@ -377,25 +583,42 @@
         }
 
         sessionData = session;
+        let orderData = null;
 
         // Fetch Order Details
         if (session.orderId) {
           try {
-            const orderRes = await fetch(`https://firestore.googleapis.com/v1/projects/martfood-app/databases/(default)/documents/orders/${session.orderId}`);
+            const orderRes = await fetch(`${FIRESTORE_BASE}/orders/${session.orderId}`);
             if (orderRes.ok) {
               const orderJson = await orderRes.json();
-              const order = parseFirestoreDoc(orderJson);
-              console.log("Parsed Order:", order);
-              renderOrderDetails(session, order);
-            } else {
-              renderBasicDetails(session);
+              orderData = parseFirestoreDoc(orderJson);
             }
-          } catch (_) {
-            renderBasicDetails(session);
+          } catch (_) { }
+        }
+
+        if (orderData) {
+          if (orderData.paymentStatus === 'paid' || orderData.status === 'paid') {
+            showState('paid-state');
+            return;
           }
+          if (orderData.status === 'cancelled' || orderData.status === 'rejected') {
+            showState('cancelled-state');
+            return;
+          }
+          renderOrderDetails(session, orderData);
         } else {
           renderBasicDetails(session);
         }
+
+        currentVendorId = (orderData && (orderData.vendorId || orderData.merchantId || orderData.restaurantId)) ||
+          session.vendorId ||
+          (orderData && Array.isArray(orderData.items) && orderData.items[0] && (orderData.items[0].vendorId || orderData.items[0].merchantId || orderData.items[0].restaurantId)) ||
+          '';
+        currentRestaurantName = (orderData && orderData.restaurantName) || session.restaurantName || '';
+
+        const totalAmount = (orderData && orderData.total) || session.amount || 0;
+        const storeOpen = await checkVendorStoreStatus(currentVendorId, currentRestaurantName);
+        applyStoreClosedUI(!storeOpen, totalAmount);
 
         showState('content-state');
       } catch (e) {
@@ -404,9 +627,26 @@
       }
     }
 
+    function getHiddenOrderMarkup() {
+      return `
+        <div style="display: flex; align-items: center; gap: 12px; padding: 10px 4px;">
+          <div style="width: 36px; height: 36px; border-radius: 50%; background: rgba(124, 58, 237, 0.1); color: var(--primary-purple); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+            </svg>
+          </div>
+          <div>
+            <div style="font-size: 14px; font-weight: 700; color: var(--text-main);">Order Details Hidden</div>
+            <div style="font-size: 12px; color: var(--text-muted); margin-top: 2px; line-height: 1.3;">The customer chose to keep the items and meal choices in this order private.</div>
+          </div>
+        </div>
+      `;
+    }
+
     function renderOrderDetails(session, order) {
       document.getElementById('personal-banner').innerText = `${session.customerName || 'Customer'} requested that you pay for this order.`;
-      
+
       if (order.restaurantName) {
         document.getElementById('restaurant-name').innerText = order.restaurantName;
       }
@@ -417,15 +657,7 @@
       const isHidden = (session.hideOrderDetails === true || order.hideOrderDetails === true);
 
       if (isHidden) {
-        itemsList.innerHTML = `
-          <div style="display: flex; align-items: center; gap: 12px; padding: 10px 4px;">
-            <div style="width: 36px; height: 36px; border-radius: 50%; background: rgba(124, 58, 237, 0.1); display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0;">🔒</div>
-            <div>
-              <div style="font-size: 14px; font-weight: 700; color: var(--text-main);">Order Details Hidden</div>
-              <div style="font-size: 12px; color: var(--text-muted); margin-top: 2px; line-height: 1.3;">The customer chose to keep the items and meal choices in this order private.</div>
-            </div>
-          </div>
-        `;
+        itemsList.innerHTML = getHiddenOrderMarkup();
       } else {
         const items = order.items || [];
         if (items.length > 0) {
@@ -434,7 +666,7 @@
             row.className = 'item-row';
 
             const left = document.createElement('div');
-            
+
             const nameLine = document.createElement('div');
             nameLine.innerHTML = `<span class="item-qty">${item.quantity || 1}x</span><span class="item-name">${item.title || 'Food Item'}</span>`;
             left.appendChild(nameLine);
@@ -475,15 +707,7 @@
     function renderBasicDetails(session) {
       document.getElementById('personal-banner').innerText = `${session.customerName || 'Customer'} requested that you pay for this order.`;
       if (session.hideOrderDetails === true) {
-        document.getElementById('items-list').innerHTML = `
-          <div style="display: flex; align-items: center; gap: 12px; padding: 10px 4px;">
-            <div style="width: 36px; height: 36px; border-radius: 50%; background: rgba(124, 58, 237, 0.1); display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0;">🔒</div>
-            <div>
-              <div style="font-size: 14px; font-weight: 700; color: var(--text-main);">Order Details Hidden</div>
-              <div style="font-size: 12px; color: var(--text-muted); margin-top: 2px; line-height: 1.3;">The customer chose to keep the items and meal choices in this order private.</div>
-            </div>
-          </div>
-        `;
+        document.getElementById('items-list').innerHTML = getHiddenOrderMarkup();
       } else {
         document.getElementById('items-list').innerHTML = `<div style="font-size:14px; color: var(--text-muted); text-align:center; padding: 10px 0;">1x MartFood Order</div>`;
       }
@@ -504,18 +728,27 @@
       document.getElementById(stateId).style.display = 'block';
     }
 
-    function triggerPaystack() {
-      if (!sessionData) return;
-      
+    async function triggerPaystack() {
+      if (!sessionData || isStoreClosed) return;
+
+      // Re-verify store status right before opening Paystack
+      if (currentVendorId || currentRestaurantName) {
+        const storeOpen = await checkVendorStoreStatus(currentVendorId, currentRestaurantName);
+        if (!storeOpen) {
+          applyStoreClosedUI(true, sessionData.amount || 0);
+          return;
+        }
+      }
+
       const handler = PaystackPop.setup({
         key: PAYSTACK_PUBLIC_KEY,
         email: sessionData.payerEmail || 'payer@martfood.com',
         amount: Math.round((sessionData.amount || 0) * 100),
         ref: sessionData.token,
-        onClose: function() {
+        onClose: function () {
           console.log('Payment window closed.');
         },
-        callback: function(response) {
+        callback: function (response) {
           console.log('Payment success:', response);
           updateOrderStatusToPaid(sessionData);
           showState('paid-state');
@@ -526,14 +759,14 @@
 
     async function updateOrderStatusToPaid(session) {
       try {
-        fetch(`https://firestore.googleapis.com/v1/projects/martfood-app/databases/(default)/documents/payment_sessions/${session.token}?updateMask.fieldPaths=status`, {
+        fetch(`${FIRESTORE_BASE}/payment_sessions/${session.token}?updateMask.fieldPaths=status`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ fields: { status: { stringValue: 'paid' } } })
         });
 
         if (session.orderId) {
-          fetch(`https://firestore.googleapis.com/v1/projects/martfood-app/databases/(default)/documents/orders/${session.orderId}?updateMask.fieldPaths=status&updateMask.fieldPaths=paymentStatus`, {
+          fetch(`${FIRESTORE_BASE}/orders/${session.orderId}?updateMask.fieldPaths=status&updateMask.fieldPaths=paymentStatus`, {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -550,7 +783,7 @@
             fields: {
               userId: { stringValue: session.customerId },
               customerId: { stringValue: session.customerId },
-              title: { stringValue: 'Payment Received! 🎉' },
+              title: { stringValue: 'Payment Received!' },
               body: { stringValue: `Your 'Pay for Me' order of ${formatCurrency(session.amount)} has been paid for!` },
               description: { stringValue: `Your 'Pay for Me' order of ${formatCurrency(session.amount)} has been paid for and is now pending preparation.` },
               type: { stringValue: 'order_paid' },
@@ -560,13 +793,13 @@
             }
           });
 
-          fetch(`https://firestore.googleapis.com/v1/projects/martfood-app/databases/(default)/documents/notifications`, {
+          fetch(`${FIRESTORE_BASE}/notifications`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: notifyData
           });
 
-          fetch(`https://firestore.googleapis.com/v1/projects/martfood-app/databases/(default)/documents/customers/${session.customerId}/notifications`, {
+          fetch(`${FIRESTORE_BASE}/customers/${session.customerId}/notifications`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: notifyData
@@ -580,4 +813,5 @@
     window.onload = initPage;
   </script>
 </body>
+
 </html>
