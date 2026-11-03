@@ -219,7 +219,7 @@ class _LeaveAReviewScreenState extends State<LeaveAReviewScreen> {
   }
 
   String _formatPrice(double? price) {
-    if (price == null || price == 0.0) return '₦2500';
+    if (price == null || price <= 0.0) return 'Total unavailable';
     return '₦${price.toInt().toString().replaceAllMapped(RegExp(r'(\d)(?=(\d{3})+(?!\d))'), (m) => '${m[1]},')}';
   }
 

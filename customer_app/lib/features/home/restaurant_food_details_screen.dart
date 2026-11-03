@@ -1944,7 +1944,7 @@ class _RestaurantFoodDetailsScreenState
                   !_isAvailable
                       ? 'Out of Stock'
                       : (_addedToCart
-                          ? 'Checkout'
+                          ? 'Checkout ${_fmt(currentTotal)}'
                           : 'Add ${_fmt(currentTotal)}'),
                   style: TextStyle(
                     fontSize: AppTypography.font(15),

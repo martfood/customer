@@ -80,7 +80,7 @@ class _OrdersScreenState extends State<OrdersScreen>
         isDark ? AppTheme.darkBorder : AppTheme.lightInputBorder;
 
     final payUrl = token != null && token.isNotEmpty
-        ? 'https://martfood-app.web.app/pay/$token'
+        ? 'https://www.martfooddelivery.com/pay/$token'
         : '';
 
     bool isCopied = false;
@@ -1716,6 +1716,7 @@ class _OrdersScreenState extends State<OrdersScreen>
                                   .map((i) =>
                                       "${i['quantity'] ?? 1}x ${i['title'] ?? i['name'] ?? 'Item'}")
                                   .join(', '),
+                              'price': (orderData['total'] as num?)?.toDouble(),
                             },
                           ),
                           style: OutlinedButton.styleFrom(
@@ -2629,7 +2630,7 @@ class _OrdersScreenState extends State<OrdersScreen>
       orderData['paymentToken'] = newToken;
       orderData['hideOrderDetails'] = effectiveHide;
 
-      final newUrl = 'https://martfood-app.web.app/pay/$newToken';
+      final newUrl = 'https://www.martfooddelivery.com/pay/$newToken';
       await Clipboard.setData(ClipboardData(text: newUrl));
 
       if (mounted) {

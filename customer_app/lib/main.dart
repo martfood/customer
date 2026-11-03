@@ -562,6 +562,7 @@ final appRouter = GoRouter(
           vendorId: extras?['vendorId'] ?? '',
           orderId: extras?['orderId'] ?? '',
           itemsSummary: extras?['itemsSummary'] ?? '',
+          price: (extras?['price'] as num?)?.toDouble(),
         );
       },
     ),

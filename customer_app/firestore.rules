@@ -15,5 +15,41 @@ service cloud.firestore {
     match /{document=**} {
       allow read, write: if request.time < timestamp.date(2096, 6, 27);
     }
+
+    function isAdmin() {
+      return request.auth != null
+        && exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+        && get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.get('role', '') is string
+        && get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.get('role', '') != '';
+    }
+
+    // Written only by Cloud Functions (Admin SDK bypasses rules).
+    match /login_security/{id} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+    match /ip_rate_limits/{id} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+    match /lockout_history/{id} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+    match /support_requests/{id} {
+      allow read: if isAdmin();
+      allow write: if false;
+      match /messages/{mid} {
+        allow read: if isAdmin();
+        allow write: if false;
+      }
+    }
+    match /{path=**}/messages/{mid} {
+      allow read: if isAdmin();
+    }
+    match /settings/security_config {
+      allow read, write: if isAdmin();
+    }
+
   }
 }

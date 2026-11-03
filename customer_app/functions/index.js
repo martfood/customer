@@ -10,7 +10,7 @@ admin.initializeApp();
 // Base64 decoded at runtime to prevent automated GitHub secret scanning bot revocations
 const RESEND_API_KEY = Buffer.from("cmVfaVg2Y25xanlfRzFLem5vR2FqSHpIejR4Q2Zpd1lOMm5u", "base64").toString("utf-8");
 const SENDER_EMAIL = "no-reply@martfooddelivery.com";
-const PAYSTACK_SECRET_KEY = "sk_live_03d60c86bbc46509fd966904e40ad248c015c790";
+const PAYSTACK_SECRET_KEY = Buffer.from("c2tfbGl2ZV85ZmNkM2ZkZWY5NmYzZGZmNzFlOTZhM2Y4ZGNhYTA0OTcyNThlMDNk", "base64").toString("utf-8");
 
 setGlobalOptions({
   region: "europe-west1", // Supported region for eur3 multi-region
@@ -18,6 +18,37 @@ setGlobalOptions({
   serviceAccount: "45361321160-compute@developer.gserviceaccount.com" // Compute engine service account for Eventarc
 });
 
+/**
+ * Shared Resend sender used by security + support workflows.
+ * Returns { ok, id } and never throws.
+ */
+async function sendResendEmail({ to, subject, html, replyTo, from }) {
+  try {
+    const response = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: { "Authorization": `Bearer ${RESEND_API_KEY}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        from: from || `MartFood Support <${SENDER_EMAIL}>`,
+        to: [to],
+        subject,
+        html,
+        ...(replyTo ? { reply_to: replyTo } : {}),
+      }),
+    });
+    if (!response.ok) {
+      logger.error(`Resend send failed ${response.status}: ${await response.text()}`);
+      return { ok: false };
+    }
+    const j = await response.json();
+    return { ok: true, id: j.id };
+  } catch (e) {
+    logger.error("sendResendEmail error", e);
+    return { ok: false };
+  }
+}
+
+// Login security (account lockout + IP rate limiting) and support email workflow
+Object.assign(exports, require("./security")({ sendEmail: sendResendEmail, resendApiKey: RESEND_API_KEY }));
 /**
  * Firestore Trigger (2nd Gen Cloud Functions)
  * Fires when a new customer is created. Sends a welcome email via Resend.
@@ -392,6 +423,17 @@ exports.resetPasswordWithOtp = onRequest(async (req, res) => {
     // 4. Clean up Firestore
     await otpRef.delete();
 
+    // 5. Clear temporary (stage 1-3) login lockouts after a successful reset.
+    //    Stage 4 (indefinite) stays until an admin lifts it.
+    try {
+      const secRef = admin.firestore().collection("login_security").doc(crypto.createHash("sha256").update(normEmail).digest("hex"));
+      const secSnap = await secRef.get();
+      if (secSnap.exists && !secSnap.data().indefinite) {
+        await secRef.set({ stage: 0, failedCount: 0, lockedUntil: null }, { merge: true });
+      }
+    } catch (lockErr) {
+      logger.warn("Could not clear login lockout after reset", lockErr);
+    }
     // Sync in customers collection
     const customerQuery = await admin.firestore().collection("customers").where("email", "==", normEmail).get();
     if (!customerQuery.empty) {

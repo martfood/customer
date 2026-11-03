@@ -39,6 +39,8 @@ class AppTheme {
   static const Color lightInputFill = Color(0xFFF3F3F5);
   static const Color lightInputBorder = Color(0xFFE5E5EA);
   static const Color lightPurpleBorder = Color(0xFFE9D5FF);
+  /// Brand black (#121212) used for bold light-mode outlines.
+  static const Color brandBlack = Color(0xFF121212);
   static const Color onboardingBackground = Color(0xFFE4E1DA);
 
   // High contrast text tokens (Eliminates faint/dull 20% opacity look in light mode)

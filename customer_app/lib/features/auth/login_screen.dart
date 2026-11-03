@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:shared_widgets/core/theme/app_theme.dart';
+import 'package:shared_widgets/services/secure_login_service.dart';
+import 'package:shared_widgets/widgets/login_lockout_sheet.dart';
 import 'package:go_router/go_router.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'dart:math';
@@ -67,12 +69,12 @@ class _LoginScreenState extends State<LoginScreen> {
     });
 
     try {
-      final userCredential = await FirebaseAuth.instance
-          .signInWithEmailAndPassword(
-            email: email,
-            password: password,
-          )
-          .timeout(const Duration(seconds: 5));
+      // Server-side lockout + IP rate limiting (secureLogin Cloud Function)
+      final userCredential = await SecureLoginService.signIn(
+        email: email,
+        password: password,
+        app: 'customer',
+      );
 
       final user = userCredential.user;
       if (user != null) {
@@ -105,6 +107,16 @@ class _LoginScreenState extends State<LoginScreen> {
 
       if (mounted) {
         context.go('/home');
+      }
+    } on LoginLockedException catch (lock) {
+      if (mounted) {
+        LoginLockoutSheet.show(
+          context,
+          lock: lock,
+          email: email,
+          accountType: 'Customer',
+          onResetPassword: _showForgotPasswordBottomSheet,
+        );
       }
     } catch (e) {
       if (mounted) {

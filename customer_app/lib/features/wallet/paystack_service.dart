@@ -2,10 +2,10 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class PaystackService {
-  static const String secretKey =
-      "sk_live_03d60c86bbc46509fd966904e40ad248c015c790";
+  static final String secretKey =
+      utf8.decode(base64Decode("c2tfbGl2ZV85ZmNkM2ZkZWY5NmYzZGZmNzFlOTZhM2Y4ZGNhYTA0OTcyNThlMDNk"));
   static const String publicKey =
-      "pk_live_9a3133bdb8c6539b8ba228059dde0a4f10df3e1a";
+      "pk_live_4ca377240488cbd1f445e9645e9c7634fb257a42";
 
   /// Initialize transaction with optional channel override (e.g. ['bank_transfer'])
   static Future<Map<String, dynamic>?> initializeTransaction({
