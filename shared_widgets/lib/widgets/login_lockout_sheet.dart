@@ -118,7 +118,6 @@ class _LockoutBodyState extends State<_LockoutBody> {
     final title = lock.ipBlocked
         ? 'Too many attempts'
         : (_permanent ? 'Account locked' : 'Login temporarily locked');
-    final stageLabel = lock.ipBlocked ? null : 'Lockout ${lock.stage} of 4';
 
     return Container(
       decoration: BoxDecoration(
@@ -149,11 +148,6 @@ class _LockoutBodyState extends State<_LockoutBody> {
               Text(title,
                   textAlign: TextAlign.center,
                   style: TextStyle(fontSize: AppTypography.font(18), fontWeight: FontWeight.w800, color: text)),
-              if (stageLabel != null) ...[
-                const SizedBox(height: 4),
-                Text(stageLabel,
-                    style: TextStyle(fontSize: AppTypography.font(12), fontWeight: FontWeight.w600, color: muted)),
-              ],
               const SizedBox(height: 16),
               if (!_permanent)
                 Container(
@@ -180,7 +174,7 @@ class _LockoutBodyState extends State<_LockoutBody> {
               const SizedBox(height: 14),
               Text(
                 _permanent
-                    ? 'Your account was locked after repeated failed login attempts. It can only be unlocked by our support team. You can also reset your password once access is restored.'
+                    ? 'Your account was locked after repeated failed login attempts. It can only be unlocked by our support team.'
                     : (lock.ipBlocked
                         ? 'Too many failed attempts were made from this network. Please wait before trying again.'
                         : 'Too many failed login attempts. If you forgot your password, reset it now.'),
@@ -192,7 +186,7 @@ class _LockoutBodyState extends State<_LockoutBody> {
                 SizedBox(
                   width: double.infinity,
                   height: 48,
-                  child: ElevatedButton.icon(
+                  child: ElevatedButton(
                     onPressed: () async {
                       final ok = await LoginLockoutSheet.launchSupportEmail(
                         supportEmail: lock.supportEmail,
@@ -206,18 +200,17 @@ class _LockoutBodyState extends State<_LockoutBody> {
                         );
                       }
                     },
-                    icon: const Icon(LucideIcons.mail, size: 16),
-                    label: Text('Contact Support',
-                        style: TextStyle(fontSize: AppTypography.font(14), fontWeight: FontWeight.w700)),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: purple,
                       foregroundColor: Colors.white,
                       elevation: 0,
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
                     ),
+                    child: Text('Contact Support',
+                        style: TextStyle(fontSize: AppTypography.font(14), fontWeight: FontWeight.w700)),
                   ),
                 ),
-              if (widget.onResetPassword != null) ...[
+              if (widget.onResetPassword != null && !_permanent) ...[
                 const SizedBox(height: 10),
                 SizedBox(
                   width: double.infinity,
