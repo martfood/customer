@@ -396,8 +396,8 @@ module.exports = function buildSecurity({ sendEmail, resendApiKey }) {
       const type = event.type;
       const data = event.data || {};
 
-      if (type === "email.received") {
-        const emailId = data.email_id;
+      if (type === "email.received" || type === "inbox.email.received") {
+        const emailId = data.email_id || data.id;
         if (!emailId) return res.status(200).send("no email_id");
         const dup = await db().collection("support_requests").where("resendEmailId", "==", emailId).limit(1).get();
         if (!dup.empty) return res.status(200).send("duplicate");
@@ -423,13 +423,15 @@ module.exports = function buildSecurity({ sendEmail, resendApiKey }) {
         const sec = await db().collection("login_security").doc(sha(fromEmail)).get();
         if (sec.exists) account = { stage: sec.data().stage || 0, app: sec.data().app || "", locked: !!sec.data().indefinite || (sec.data().lockedUntil || 0) > now(), emailHash: sha(fromEmail) };
 
+        const plainText = text || (html ? html.replace(/<[^>]*>?/gm, " ").replace(/\s+/g, " ").trim() : "");
+
         const ref = await db().collection("support_requests").add({
           resendEmailId: emailId,
           from: data.from || "",
           fromEmail,
           to: data.to || [],
           subject: data.subject || "(no subject)",
-          preview: (text || "").slice(0, 200),
+          preview: (plainText || "(No content)").slice(0, 200),
           status: "open",
           direction: "inbound",
           account,
@@ -455,8 +457,9 @@ module.exports = function buildSecurity({ sendEmail, resendApiKey }) {
         "email.delivery_delayed": "delayed",
         "email.complained": "complained",
       };
-      if (statusMap[type] && data.email_id) {
-        const q = await db().collectionGroup("messages").where("resendId", "==", data.email_id).limit(1).get();
+      const deliveryEmailId = data.email_id || data.id;
+      if (statusMap[type] && deliveryEmailId) {
+        const q = await db().collectionGroup("messages").where("resendId", "==", deliveryEmailId).limit(1).get();
         if (!q.empty) await q.docs[0].ref.set({ deliveryStatus: statusMap[type], deliveryUpdatedAt: FieldValue().serverTimestamp() }, { merge: true });
       }
       return res.status(200).send("ok");
