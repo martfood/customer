@@ -12,6 +12,7 @@ import 'package:go_router/go_router.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:uuid/uuid.dart';
 import 'package:shared_widgets/core/theme/app_theme.dart';
+import 'package:shared_widgets/widgets/notice_bottom_sheet.dart';
 import 'package:shared_widgets/widgets/section_divider.dart';
 
 import 'dart:convert';
@@ -3700,13 +3701,30 @@ class _CheckoutOrdersSummaryScreenState
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      'Delivery Fee',
-                      style: TextStyle(
-                        color: primaryTextColor,
-                        fontSize: AppTypography.font(AppFontSizes.bodyMedium),
-                        fontWeight: FontWeight.w800,
-                      ),
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          'Delivery Fee',
+                          style: TextStyle(
+                            color: primaryTextColor,
+                            fontSize: AppTypography.font(AppFontSizes.bodyMedium),
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                        SizedBox(width: 5.w),
+                        GestureDetector(
+                          onTap: () => NoticeBottomSheet.show(
+                            context,
+                            noticeKey: 'customerDeliveryFee',
+                          ),
+                          child: Icon(
+                            LucideIcons.info,
+                            size: 14.sp,
+                            color: mutedTextColor,
+                          ),
+                        ),
+                      ],
                     ),
                     Text(
                       _isAddressOutOfCoverage
@@ -3726,13 +3744,30 @@ class _CheckoutOrdersSummaryScreenState
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      'Platform Fee',
-                      style: TextStyle(
-                        color: primaryTextColor,
-                        fontSize: AppTypography.font(AppFontSizes.bodyMedium),
-                        fontWeight: FontWeight.w800,
-                      ),
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          'Service Fee',
+                          style: TextStyle(
+                            color: primaryTextColor,
+                            fontSize: AppTypography.font(AppFontSizes.bodyMedium),
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                        SizedBox(width: 5.w),
+                        GestureDetector(
+                          onTap: () => NoticeBottomSheet.show(
+                            context,
+                            noticeKey: 'customerServiceFee',
+                          ),
+                          child: Icon(
+                            LucideIcons.info,
+                            size: 14.sp,
+                            color: mutedTextColor,
+                          ),
+                        ),
+                      ],
                     ),
                     Text(
                       _formatCurrency(_platformFee),

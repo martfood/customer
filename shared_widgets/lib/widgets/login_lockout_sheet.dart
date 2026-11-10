@@ -135,19 +135,26 @@ class _LockoutBodyState extends State<_LockoutBody> {
               Container(
                 width: 40,
                 height: 4,
-                decoration: BoxDecoration(color: border, borderRadius: BorderRadius.circular(2)),
+                decoration: BoxDecoration(
+                    color: border, borderRadius: BorderRadius.circular(2)),
               ),
               const SizedBox(height: 22),
               Container(
                 width: 56,
                 height: 56,
-                decoration: BoxDecoration(color: error.withValues(alpha: 0.12), shape: BoxShape.circle),
-                child: Icon(_permanent ? LucideIcons.lock : LucideIcons.timer, color: error, size: 26),
+                decoration: BoxDecoration(
+                    color: error.withValues(alpha: 0.12),
+                    shape: BoxShape.circle),
+                child: Icon(_permanent ? LucideIcons.lock : LucideIcons.timer,
+                    color: error, size: 26),
               ),
               const SizedBox(height: 16),
               Text(title,
                   textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: AppTypography.font(18), fontWeight: FontWeight.w800, color: text)),
+                  style: TextStyle(
+                      fontSize: AppTypography.font(18),
+                      fontWeight: FontWeight.w800,
+                      color: text)),
               const SizedBox(height: 16),
               if (!_permanent)
                 Container(
@@ -162,12 +169,15 @@ class _LockoutBodyState extends State<_LockoutBody> {
                     children: [
                       Text(_remaining > 0 ? _clock : 'You can try again now',
                           style: TextStyle(
-                              fontSize: AppTypography.font(_remaining > 0 ? 28 : 15),
+                              fontSize:
+                                  AppTypography.font(_remaining > 0 ? 28 : 15),
                               fontWeight: FontWeight.w800,
                               color: _remaining > 0 ? text : purple)),
                       if (_remaining > 0)
                         Text('remaining',
-                            style: TextStyle(fontSize: AppTypography.font(12), color: muted)),
+                            style: TextStyle(
+                                fontSize: AppTypography.font(12),
+                                color: muted)),
                     ],
                   ),
                 ),
@@ -179,7 +189,10 @@ class _LockoutBodyState extends State<_LockoutBody> {
                         ? 'Too many failed attempts were made from this network. Please wait before trying again.'
                         : 'Too many failed login attempts. If you forgot your password, reset it now.'),
                 textAlign: TextAlign.center,
-                style: TextStyle(fontSize: AppTypography.font(13), height: 1.45, color: muted),
+                style: TextStyle(
+                    fontSize: AppTypography.font(13),
+                    height: 1.45,
+                    color: muted),
               ),
               const SizedBox(height: 20),
               if (_permanent)
@@ -196,7 +209,9 @@ class _LockoutBodyState extends State<_LockoutBody> {
                       );
                       if (!ok && context.mounted) {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('No email app found. Please write to ${lock.supportEmail}.')),
+                          SnackBar(
+                              content: Text(
+                                  'No email app found. Please write to ${lock.supportEmail}.')),
                         );
                       }
                     },
@@ -204,10 +219,13 @@ class _LockoutBodyState extends State<_LockoutBody> {
                       backgroundColor: purple,
                       foregroundColor: Colors.white,
                       elevation: 0,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(24)),
                     ),
                     child: Text('Contact Support',
-                        style: TextStyle(fontSize: AppTypography.font(14), fontWeight: FontWeight.w700)),
+                        style: TextStyle(
+                            fontSize: AppTypography.font(14),
+                            fontWeight: FontWeight.w700)),
                   ),
                 ),
               if (widget.onResetPassword != null && !_permanent) ...[
@@ -223,17 +241,22 @@ class _LockoutBodyState extends State<_LockoutBody> {
                     style: OutlinedButton.styleFrom(
                       foregroundColor: purple,
                       side: BorderSide(color: border, width: 1),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(24)),
                     ),
                     child: Text('Reset Password',
-                        style: TextStyle(fontSize: AppTypography.font(14), fontWeight: FontWeight.w700)),
+                        style: TextStyle(
+                            fontSize: AppTypography.font(14),
+                            fontWeight: FontWeight.w700)),
                   ),
                 ),
               ],
               const SizedBox(height: 6),
               TextButton(
                 onPressed: () => Navigator.of(context).pop(),
-                child: Text('Close', style: TextStyle(color: muted, fontSize: AppTypography.font(13))),
+                child: Text('Close',
+                    style: TextStyle(
+                        color: muted, fontSize: AppTypography.font(13))),
               ),
             ],
           ),
@@ -242,4 +265,3 @@ class _LockoutBodyState extends State<_LockoutBody> {
     );
   }
 }
-
