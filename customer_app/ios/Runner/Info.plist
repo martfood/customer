@@ -42,6 +42,8 @@
 	</dict>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
 
 	<!-- Location Permissions -->
 	<key>NSLocationWhenInUseUsageDescription</key>
