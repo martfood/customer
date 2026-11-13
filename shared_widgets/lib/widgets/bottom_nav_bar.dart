@@ -92,7 +92,8 @@ class MartFoodBottomNavBar extends StatelessWidget {
               final counts = data['unreadCount'] as Map<String, dynamic>?;
               if (counts != null) {
                 final customerId = data['customerId']?.toString();
-                if ((customerId == null || customerId == currentUser.uid) && counts.containsKey('customer_unread')) {
+                if ((customerId == null || customerId == currentUser.uid) &&
+                    counts.containsKey('customer_unread')) {
                   final roleUnread = counts['customer_unread'];
                   if (roleUnread is num) {
                     totalUnread += roleUnread.toInt();
@@ -115,7 +116,8 @@ class MartFoodBottomNavBar extends StatelessWidget {
   Widget _buildNavBar(BuildContext context, int unreadCount) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final surfaceColor = isDark ? AppTheme.darkSurface : Colors.white;
-    final borderColor = isDark ? AppTheme.darkBorder : AppTheme.lightInputBorder;
+    final borderColor =
+        isDark ? AppTheme.darkBorder : AppTheme.lightInputBorder;
     final selectedColor = AppTheme.primaryPurpleFor(isDark);
     final unselectedColor =
         isDark ? Colors.grey[500]! : const Color(0xFF6E7191);
@@ -156,7 +158,7 @@ class MartFoodBottomNavBar extends StatelessWidget {
           BottomNavigationBarItem(
             icon: _buildSvgIcon('search.svg', unselectedColor),
             activeIcon: _buildSvgIcon('search_filled.svg', selectedColor),
-            label: 'Search',
+            label: 'Discover',
           ),
           BottomNavigationBarItem(
             icon: _buildSvgIcon('order.svg', unselectedColor),

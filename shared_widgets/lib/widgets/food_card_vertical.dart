@@ -93,7 +93,9 @@ class FoodCardVertical extends StatelessWidget {
             borderRadius: BorderRadius.circular(16.r),
             border: Border.all(color: borderColor, width: 1),
           ),
-          child: Column(
+          child: SingleChildScrollView(
+            physics: const NeverScrollableScrollPhysics(),
+            child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -290,7 +292,12 @@ class FoodCardVertical extends StatelessWidget {
                   ),
                 ],
               ),
+              if (badge != null) ...[
+                SizedBox(height: 6.h),
+                badge!,
+              ],
             ],
+          ),
           ),
         ),
       ),

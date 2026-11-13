@@ -56,7 +56,10 @@ class _RestaurantCategoryScreenState extends State<RestaurantCategoryScreen> {
 
     final String? openStr = dayConfig['open'] as String?;
     final String? closeStr = dayConfig['close'] as String?;
-    if (openStr == null || openStr.isEmpty || closeStr == null || closeStr.isEmpty) return true;
+    if (openStr == null ||
+        openStr.isEmpty ||
+        closeStr == null ||
+        closeStr.isEmpty) return true;
 
     try {
       final openParts = openStr.split(':');
@@ -222,7 +225,8 @@ class _RestaurantCategoryScreenState extends State<RestaurantCategoryScreen> {
     final primaryTextColor = isDark ? Colors.white : const Color(0xFF15161A);
     final mutedTextColor = AppTheme.mutedTextColorFor(isDark);
     final purpleColor = AppTheme.primaryPurpleFor(isDark);
-    final borderColor = isDark ? AppTheme.darkBorder : AppTheme.lightInputBorder;
+    final borderColor =
+        isDark ? AppTheme.darkBorder : AppTheme.lightInputBorder;
 
     final double headerHeight = 94.h;
     final double searchBarHeight = 60.h;
@@ -270,20 +274,20 @@ class _RestaurantCategoryScreenState extends State<RestaurantCategoryScreen> {
                                     if (result != null &&
                                         result is Map<String, dynamic>) {
                                       final newAddr = result['address'] ?? '';
-                                      final double? lat = result['latitude'] !=
-                                              null
-                                          ? (result['latitude'] as num)
-                                              .toDouble()
-                                          : null;
-                                      final double? lng = result['longitude'] !=
-                                              null
-                                          ? (result['longitude'] as num)
-                                              .toDouble()
-                                          : null;
+                                      final double? lat =
+                                          result['latitude'] != null
+                                              ? (result['latitude'] as num)
+                                                  .toDouble()
+                                              : null;
+                                      final double? lng =
+                                          result['longitude'] != null
+                                              ? (result['longitude'] as num)
+                                                  .toDouble()
+                                              : null;
 
                                       setState(() {
-                                        _currentAddress = result['title'] ??
-                                            _currentAddress;
+                                        _currentAddress =
+                                            result['title'] ?? _currentAddress;
                                         _fullAddress = newAddr;
                                       });
                                       PriceHelper.currentAddress =
@@ -401,11 +405,10 @@ class _RestaurantCategoryScreenState extends State<RestaurantCategoryScreen> {
                   height: searchBarHeight,
                   backgroundColor: backgroundColor,
                   child: Padding(
-                    padding:
-                        EdgeInsets.fromLTRB(20.w, 4.h, 20.w, 8.h),
+                    padding: EdgeInsets.fromLTRB(20.w, 4.h, 20.w, 8.h),
                     child: Container(
-                      padding: EdgeInsets.symmetric(
-                          horizontal: 16.w, vertical: 4.h),
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),
                       decoration: BoxDecoration(
                         color: isDark
                             ? AppTheme.darkSurface
@@ -462,179 +465,182 @@ class _RestaurantCategoryScreenState extends State<RestaurantCategoryScreen> {
 
           // ─── 4. Restaurant Card List ────────────────────────────────────
           body: StreamBuilder<QuerySnapshot>(
-                stream: FirebaseFirestore.instance
-                    .collection('vendors')
-                    .where('businessProfile.status', isEqualTo: 'verified')
-                    .snapshots(),
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return ListView.builder(
-                      padding: EdgeInsets.fromLTRB(20.w, 8.h, 20.w, 100.h),
-                      itemCount: 3,
-                      itemBuilder: (context, index) => Padding(
-                        padding: EdgeInsets.only(bottom: 16.h),
-                        child: SkeletonLoader.restaurantCard(context: context),
-                      ),
-                    );
+            stream: FirebaseFirestore.instance
+                .collection('vendors')
+                .where('businessProfile.status', isEqualTo: 'verified')
+                .snapshots(),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return ListView.builder(
+                  padding: EdgeInsets.fromLTRB(20.w, 8.h, 20.w, 100.h),
+                  itemCount: 3,
+                  itemBuilder: (context, index) => Padding(
+                    padding: EdgeInsets.only(bottom: 16.h),
+                    child: SkeletonLoader.restaurantCard(context: context),
+                  ),
+                );
+              }
+              final docs = snapshot.data?.docs ?? [];
+              // Filter in-memory: category = Restaurant AND within range AND search filter
+              final filteredDocs = docs.where((doc) {
+                final data = doc.data() as Map<String, dynamic>;
+                final profile =
+                    data['businessProfile'] as Map<String, dynamic>?;
+
+                if (profile?['category'] != 'Restaurant') return false;
+
+                // Search filter
+                if (_searchText.isNotEmpty) {
+                  final name =
+                      (profile?['businessName'] ?? '').toString().toLowerCase();
+                  final tagline =
+                      (profile?['tagline'] ?? '').toString().toLowerCase();
+                  final searchLower = _searchText.toLowerCase();
+                  if (!name.contains(searchLower) &&
+                      !tagline.contains(searchLower)) {
+                    return false;
                   }
-                  final docs = snapshot.data?.docs ?? [];
-                  // Filter in-memory: category = Restaurant AND within range AND search filter
-                  final filteredDocs = docs.where((doc) {
-                    final data = doc.data() as Map<String, dynamic>;
-                    final profile =
-                        data['businessProfile'] as Map<String, dynamic>?;
+                }
 
-                    if (profile?['category'] != 'Restaurant') return false;
+                if (_currentPosition == null) return true;
 
-                    // Search filter
-                    if (_searchText.isNotEmpty) {
-                      final name = (profile?['businessName'] ?? '').toString().toLowerCase();
-                      final tagline = (profile?['tagline'] ?? '').toString().toLowerCase();
-                      final searchLower = _searchText.toLowerCase();
-                      if (!name.contains(searchLower) && !tagline.contains(searchLower)) {
-                        return false;
-                      }
-                    }
+                final vendorLocation =
+                    (profile?['currentvendorLocation'] as GeoPoint?) ??
+                        (data['currentvendorLocation'] as GeoPoint?);
+                if (vendorLocation == null) return true;
 
-                    if (_currentPosition == null) return true;
+                final distanceKm = Geolocator.distanceBetween(
+                      _currentPosition!.latitude,
+                      _currentPosition!.longitude,
+                      vendorLocation.latitude,
+                      vendorLocation.longitude,
+                    ) /
+                    1000.0;
+                return distanceKm <= PriceHelper.maxDeliveryDistance;
+              }).toList();
 
-                    final vendorLocation =
-                        (profile?['currentvendorLocation'] as GeoPoint?) ??
-                            (data['currentvendorLocation'] as GeoPoint?);
-                    if (vendorLocation == null) return true;
-
-                    final distanceKm = Geolocator.distanceBetween(
-                          _currentPosition!.latitude,
-                          _currentPosition!.longitude,
-                          vendorLocation.latitude,
-                          vendorLocation.longitude,
-                        ) /
-                        1000.0;
-                    return distanceKm <= PriceHelper.maxDeliveryDistance;
-                  }).toList();
-
-                  // Sort by proximity (closest first)
-                  filteredDocs.sort((a, b) {
-                    final dataA = a.data() as Map<String, dynamic>;
-                    final profileA =
-                        dataA['businessProfile'] as Map<String, dynamic>?;
-                    final locA = (profileA?['currentvendorLocation']
-                            as GeoPoint?) ??
+              // Sort by proximity (closest first)
+              filteredDocs.sort((a, b) {
+                final dataA = a.data() as Map<String, dynamic>;
+                final profileA =
+                    dataA['businessProfile'] as Map<String, dynamic>?;
+                final locA =
+                    (profileA?['currentvendorLocation'] as GeoPoint?) ??
                         (dataA['currentvendorLocation'] as GeoPoint?);
-                    final dataB = b.data() as Map<String, dynamic>;
-                    final profileB =
-                        dataB['businessProfile'] as Map<String, dynamic>?;
-                    final locB = (profileB?['currentvendorLocation']
-                            as GeoPoint?) ??
+                final dataB = b.data() as Map<String, dynamic>;
+                final profileB =
+                    dataB['businessProfile'] as Map<String, dynamic>?;
+                final locB =
+                    (profileB?['currentvendorLocation'] as GeoPoint?) ??
                         (dataB['currentvendorLocation'] as GeoPoint?);
-                    if (_currentPosition == null) return 0;
-                    final distA = locA != null
-                        ? Geolocator.distanceBetween(
-                            _currentPosition!.latitude,
-                            _currentPosition!.longitude,
-                            locA.latitude,
-                            locA.longitude)
-                        : 999999.0;
-                    final distB = locB != null
-                        ? Geolocator.distanceBetween(
-                            _currentPosition!.latitude,
-                            _currentPosition!.longitude,
-                            locB.latitude,
-                            locB.longitude)
-                        : 999999.0;
-                    return distA.compareTo(distB);
-                  });
+                if (_currentPosition == null) return 0;
+                final distA = locA != null
+                    ? Geolocator.distanceBetween(
+                        _currentPosition!.latitude,
+                        _currentPosition!.longitude,
+                        locA.latitude,
+                        locA.longitude)
+                    : 999999.0;
+                final distB = locB != null
+                    ? Geolocator.distanceBetween(
+                        _currentPosition!.latitude,
+                        _currentPosition!.longitude,
+                        locB.latitude,
+                        locB.longitude)
+                    : 999999.0;
+                return distA.compareTo(distB);
+              });
 
-                  if (filteredDocs.isEmpty) {
-                    return Center(
-                      child: SingleChildScrollView(
-                        physics: const AlwaysScrollableScrollPhysics(),
-                        child: Padding(
-                          padding: EdgeInsets.symmetric(
-                              horizontal: 24.w, vertical: 40.h),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Image.asset(
-                                'assets/emoji/sad.png',
-                                width: 140.w,
-                                height: 140.w,
-                                fit: BoxFit.contain,
-                              ),
-                              SizedBox(height: 24.h),
-                              Text(
-                                _searchText.isNotEmpty
-                                    ? 'No matching restaurants'
-                                    : 'No Restaurants Available',
-                                style: TextStyle(
-                                  color: primaryTextColor,
-                                  fontSize: AppTypography.font(
-                                      AppFontSizes.bodyLarge + 2),
-                                  fontWeight: FontWeight.w800,
-                                ),
-                              ),
-                              SizedBox(height: 10.h),
-                              Text(
-                                _searchText.isNotEmpty
-                                    ? 'No verified restaurants matched your search query. Try searching for a different keyword.'
-                                    : 'There are no verified restaurants available in your location right now. We are expanding quickly, check back soon!',
-                                style: TextStyle(
-                                  color: mutedTextColor,
-                                  fontSize: AppTypography.font(
-                                      AppFontSizes.bodySmall),
-                                  fontWeight: FontWeight.w500,
-                                  height: 1.4,
-                                ),
-                                textAlign: TextAlign.center,
-                              ),
-                            ],
+              if (filteredDocs.isEmpty) {
+                return Center(
+                  child: SingleChildScrollView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(
+                          horizontal: 24.w, vertical: 40.h),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Image.asset(
+                            'assets/emoji/sad.png',
+                            width: 140.w,
+                            height: 140.w,
+                            fit: BoxFit.contain,
                           ),
-                        ),
+                          SizedBox(height: 24.h),
+                          Text(
+                            _searchText.isNotEmpty
+                                ? 'No matching restaurants'
+                                : 'No Restaurants Available',
+                            style: TextStyle(
+                              color: primaryTextColor,
+                              fontSize: AppTypography.font(
+                                  AppFontSizes.bodyLarge + 2),
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                          SizedBox(height: 10.h),
+                          Text(
+                            _searchText.isNotEmpty
+                                ? 'No verified restaurants matched your search query. Try searching for a different keyword.'
+                                : 'There are no verified restaurants available in your location right now. We are expanding quickly, check back soon!',
+                            style: TextStyle(
+                              color: mutedTextColor,
+                              fontSize:
+                                  AppTypography.font(AppFontSizes.bodySmall),
+                              fontWeight: FontWeight.w500,
+                              height: 1.4,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
                       ),
-                    );
-                  }
+                    ),
+                  ),
+                );
+              }
 
-                  return ListView.builder(
-                    padding: EdgeInsets.fromLTRB(20.w, 8.h, 20.w, 100.h),
-                    itemCount: filteredDocs.length,
-                    itemBuilder: (context, index) {
-                      final vendorDoc = filteredDocs[index];
-                      final data = vendorDoc.data() as Map<String, dynamic>;
-                      final vendorId = vendorDoc.id;
-                      final profile =
-                          data['businessProfile'] as Map<String, dynamic>?;
-                      final name = profile?['businessName'] ?? 'Restaurant';
-                      final tagline = profile?['tagline'] ?? '';
-                      final logoUrl = profile?['logoUrl'] ?? '';
-                      final coverImageUrl = profile?['coverImageUrl'] ?? '';
-                      final deliveryFeeVal = data['deliveryFee'] ?? 0;
-                      final prepTime = data['prepTimeMinutes'] ?? 15;
-                      final vendorLocation =
-                          (profile?['currentvendorLocation'] as GeoPoint?) ??
-                              (data['currentvendorLocation'] as GeoPoint?);
+              return ListView.builder(
+                padding: EdgeInsets.fromLTRB(20.w, 8.h, 20.w, 100.h),
+                itemCount: filteredDocs.length,
+                itemBuilder: (context, index) {
+                  final vendorDoc = filteredDocs[index];
+                  final data = vendorDoc.data() as Map<String, dynamic>;
+                  final vendorId = vendorDoc.id;
+                  final profile =
+                      data['businessProfile'] as Map<String, dynamic>?;
+                  final name = profile?['businessName'] ?? 'Restaurant';
+                  final tagline = profile?['tagline'] ?? '';
+                  final logoUrl = profile?['logoUrl'] ?? '';
+                  final coverImageUrl = profile?['coverImageUrl'] ?? '';
+                  final deliveryFeeVal = data['deliveryFee'] ?? 0;
+                  final prepTime = data['prepTimeMinutes'] ?? 15;
+                  final vendorLocation =
+                      (profile?['currentvendorLocation'] as GeoPoint?) ??
+                          (data['currentvendorLocation'] as GeoPoint?);
 
-                      return _buildRestaurantCard(
-                        context,
-                        vendorId: vendorId,
-                        name: name,
-                        tagline: tagline,
-                        logoUrl: logoUrl,
-                        coverImageUrl: coverImageUrl,
-                        deliveryFee: deliveryFeeVal,
-                        prepTime: prepTime,
-                        vendorLocation: vendorLocation,
-                        isDark: isDark,
-                        surfaceColor: surfaceColor,
-                        primaryTextColor: primaryTextColor,
-                        mutedTextColor: mutedTextColor,
-                        purpleColor: purpleColor,
-                        borderColor: borderColor,
-                        vendorData: data,
-                      );
-                    },
+                  return _buildRestaurantCard(
+                    context,
+                    vendorId: vendorId,
+                    name: name,
+                    tagline: tagline,
+                    logoUrl: logoUrl,
+                    coverImageUrl: coverImageUrl,
+                    deliveryFee: deliveryFeeVal,
+                    prepTime: prepTime,
+                    vendorLocation: vendorLocation,
+                    isDark: isDark,
+                    surfaceColor: surfaceColor,
+                    primaryTextColor: primaryTextColor,
+                    mutedTextColor: mutedTextColor,
+                    purpleColor: purpleColor,
+                    borderColor: borderColor,
+                    vendorData: data,
                   );
                 },
-              ),
+              );
+            },
+          ),
         ),
       ),
     );
@@ -658,7 +664,8 @@ class _RestaurantCategoryScreenState extends State<RestaurantCategoryScreen> {
     required Color borderColor,
     required Map<String, dynamic> vendorData,
   }) {
-    final isOpen = _isVendorOpen(vendorData['operatingHours'] as Map<String, dynamic>?);
+    final isOpen =
+        _isVendorOpen(vendorData['operatingHours'] as Map<String, dynamic>?);
     final user = FirebaseAuth.instance.currentUser;
 
     return GestureDetector(
@@ -709,7 +716,8 @@ class _RestaurantCategoryScreenState extends State<RestaurantCategoryScreen> {
                             imageUrl: logoUrl,
                             fit: BoxFit.cover,
                             placeholder: (_, __) => Container(
-                              color: isDark ? Colors.grey[900] : Colors.grey[200],
+                              color:
+                                  isDark ? Colors.grey[900] : Colors.grey[200],
                             ),
                             errorWidget: (_, __, ___) => Image.asset(
                               'assets/logo/martfood_logo.png',
@@ -735,7 +743,8 @@ class _RestaurantCategoryScreenState extends State<RestaurantCategoryScreen> {
                                     child: Text(
                                       name,
                                       style: TextStyle(
-                                        fontSize: AppTypography.font(AppFontSizes.bodyLarge),
+                                        fontSize: AppTypography.font(
+                                            AppFontSizes.bodyLarge),
                                         fontWeight: FontWeight.w800,
                                         color: primaryTextColor,
                                       ),
@@ -750,10 +759,6 @@ class _RestaurantCategoryScreenState extends State<RestaurantCategoryScreen> {
                                 ],
                               ),
                               SizedBox(height: 6.h),
-                              VendorPromoBadge(
-                                vendorId: vendorId,
-                                margin: EdgeInsets.only(bottom: 6.h),
-                              ),
                               // Rating & Reviews right below businessName
                               StreamBuilder<QuerySnapshot>(
                                 stream: FirebaseFirestore.instance
@@ -767,18 +772,24 @@ class _RestaurantCategoryScreenState extends State<RestaurantCategoryScreen> {
                                       ? 0.0
                                       : reviews
                                               .map((r) =>
-                                                  (r.data() as Map<String, dynamic>)['rating'] as num? ??
+                                                  (r.data() as Map<String,
+                                                          dynamic>)['rating']
+                                                      as num? ??
                                                   5.0)
                                               .reduce((a, b) => a + b) /
                                           reviews.length;
                                   return Row(
                                     children: [
-                                      Icon(Icons.star_rounded, color: Colors.amber, size: 16.sp),
+                                      Icon(Icons.star_rounded,
+                                          color: Colors.amber, size: 16.sp),
                                       SizedBox(width: 4.w),
                                       Text(
-                                        reviews.isEmpty ? '0.0' : rating.toStringAsFixed(1),
+                                        reviews.isEmpty
+                                            ? '0.0'
+                                            : rating.toStringAsFixed(1),
                                         style: TextStyle(
-                                          fontSize: AppTypography.font(AppFontSizes.bodySmall),
+                                          fontSize: AppTypography.font(
+                                              AppFontSizes.bodySmall),
                                           fontWeight: FontWeight.w700,
                                           color: primaryTextColor,
                                         ),
@@ -787,7 +798,8 @@ class _RestaurantCategoryScreenState extends State<RestaurantCategoryScreen> {
                                       Text(
                                         '(${reviews.length})',
                                         style: TextStyle(
-                                          fontSize: AppTypography.font(AppFontSizes.caption),
+                                          fontSize: AppTypography.font(
+                                              AppFontSizes.caption),
                                           color: mutedTextColor,
                                           fontWeight: FontWeight.w500,
                                         ),
@@ -795,6 +807,10 @@ class _RestaurantCategoryScreenState extends State<RestaurantCategoryScreen> {
                                     ],
                                   );
                                 },
+                              ),
+                              VendorPromoBadge(
+                                vendorId: vendorId,
+                                margin: EdgeInsets.only(top: 6.h),
                               ),
                             ],
                           ),
@@ -809,7 +825,8 @@ class _RestaurantCategoryScreenState extends State<RestaurantCategoryScreen> {
                               children: [
                                 if (!isOpen) ...[
                                   Container(
-                                    padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
+                                    padding: EdgeInsets.symmetric(
+                                        horizontal: 6.w, vertical: 2.h),
                                     decoration: BoxDecoration(
                                       color: Colors.red.withValues(alpha: 0.12),
                                       borderRadius: BorderRadius.circular(6.r),
@@ -833,23 +850,30 @@ class _RestaurantCategoryScreenState extends State<RestaurantCategoryScreen> {
                                           .snapshots()
                                       : null,
                                   builder: (context, favSnap) {
-                                    final favData = favSnap.data?.data() as Map<String, dynamic>?;
-                                    final favList = List<String>.from(favData?['favoriteRestaurants'] ?? []);
+                                    final favData = favSnap.data?.data()
+                                        as Map<String, dynamic>?;
+                                    final favList = List<String>.from(
+                                        favData?['favoriteRestaurants'] ?? []);
                                     final isFav = favList.contains(vendorId);
 
                                     return GestureDetector(
                                       onTap: () async {
                                         if (user == null) return;
-                                        final docRef = FirebaseFirestore.instance
+                                        final docRef = FirebaseFirestore
+                                            .instance
                                             .collection('customers')
                                             .doc(user.uid);
                                         if (isFav) {
                                           await docRef.update({
-                                            'favoriteRestaurants': FieldValue.arrayRemove([vendorId])
+                                            'favoriteRestaurants':
+                                                FieldValue.arrayRemove(
+                                                    [vendorId])
                                           });
                                         } else {
                                           await docRef.set({
-                                            'favoriteRestaurants': FieldValue.arrayUnion([vendorId])
+                                            'favoriteRestaurants':
+                                                FieldValue.arrayUnion(
+                                                    [vendorId])
                                           }, SetOptions(merge: true));
                                         }
                                       },
@@ -857,13 +881,18 @@ class _RestaurantCategoryScreenState extends State<RestaurantCategoryScreen> {
                                         padding: EdgeInsets.all(6.w),
                                         decoration: BoxDecoration(
                                           color: isFav
-                                              ? Colors.red.withValues(alpha: 0.12)
-                                              : (isDark ? Colors.grey[800] : Colors.grey[200]),
+                                              ? Colors.red
+                                                  .withValues(alpha: 0.12)
+                                              : (isDark
+                                                  ? Colors.grey[800]
+                                                  : Colors.grey[200]),
                                           shape: BoxShape.circle,
                                         ),
                                         child: Icon(
                                           LucideIcons.heart,
-                                          color: isFav ? Colors.red : AppTheme.hintColorFor(isDark),
+                                          color: isFav
+                                              ? Colors.red
+                                              : AppTheme.hintColorFor(isDark),
                                           size: 16.sp,
                                         ),
                                       ),
@@ -876,7 +905,8 @@ class _RestaurantCategoryScreenState extends State<RestaurantCategoryScreen> {
                             Text(
                               '$prepTime–${prepTime + 10} mins',
                               style: TextStyle(
-                                fontSize: AppTypography.font(AppFontSizes.caption),
+                                fontSize:
+                                    AppTypography.font(AppFontSizes.caption),
                                 color: mutedTextColor,
                                 fontWeight: FontWeight.w600,
                               ),

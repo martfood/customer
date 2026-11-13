@@ -312,8 +312,7 @@ class _RestaurantFoodDetailsScreenState
       for (var v in rawVariants) {
         if (v is Map) {
           final label = (v['label'] ?? v['name'] ?? '').toString().trim();
-          final rawPrice =
-              (v['priceDelta'] ?? v['price'] ?? 0).toDouble();
+          final rawPrice = (v['priceDelta'] ?? v['price'] ?? 0).toDouble();
           final extraPrice = PriceHelper.applyMarkup(rawPrice, sourceColl);
           if (label.isNotEmpty) {
             variantOptions
@@ -341,10 +340,9 @@ class _RestaurantFoodDetailsScreenState
         if (item is Map) {
           final map = Map<String, dynamic>.from(item);
           final id = (map['id'] ?? '').toString();
-          final name =
-              (map['name'] ?? map['title'] ?? map['label'] ?? '')
-                  .toString()
-                  .trim();
+          final name = (map['name'] ?? map['title'] ?? map['label'] ?? '')
+              .toString()
+              .trim();
           if (name.isNotEmpty) {
             final rawPrice =
                 (map['price'] ?? map['priceDelta'] ?? 0).toDouble();
@@ -363,13 +361,15 @@ class _RestaurantFoodDetailsScreenState
     final inStock = docData['inStock'] ?? true;
     final stockQtyNum = docData['quantity'] as num?;
     final int? stockQty = stockQtyNum?.toInt();
-    final bool isOutOfStock = inStock == false || (stockQty != null && stockQty <= 0);
+    final bool isOutOfStock =
+        inStock == false || (stockQty != null && stockQty <= 0);
     bool isAvail = inStock && !isOutOfStock;
     if (isAvail) {
       final orderType = docData['orderType'] ?? 'single';
       if (orderType == 'bulk' || docData['isBulkMeal'] == true) {
         final startTimeStr =
-            (docData['orderStartTime'] ?? docData['orderStarttime'])?.toString();
+            (docData['orderStartTime'] ?? docData['orderStarttime'])
+                ?.toString();
         final closeTimeStr = (docData['orderEndTime'] ??
                 docData['orderClosetime'] ??
                 docData['orderTimeClose'])
@@ -384,9 +384,11 @@ class _RestaurantFoodDetailsScreenState
               start != null ? (start.hour * 60 + start.minute) : null;
           if (startMinutes != null) {
             if (closeMinutes >= startMinutes) {
-              isAvail = nowMinutes >= startMinutes && nowMinutes <= closeMinutes;
+              isAvail =
+                  nowMinutes >= startMinutes && nowMinutes <= closeMinutes;
             } else {
-              isAvail = nowMinutes >= startMinutes || nowMinutes <= closeMinutes;
+              isAvail =
+                  nowMinutes >= startMinutes || nowMinutes <= closeMinutes;
             }
           } else {
             isAvail = nowMinutes <= closeMinutes;
@@ -451,7 +453,6 @@ class _RestaurantFoodDetailsScreenState
     return (_basePrice + extra) * _quantity;
   }
 
-
   String _fmt(double price) {
     final formatted = price.toInt().toString().replaceAllMapped(
           RegExp(r'(\d)(?=(\d{3})+(?!\d))'),
@@ -466,8 +467,7 @@ class _RestaurantFoodDetailsScreenState
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final purpleColor = AppTheme.primaryPurpleFor(isDark);
-    final backgroundColor =
-        isDark ? AppTheme.darkSurface : Colors.white;
+    final backgroundColor = isDark ? AppTheme.darkSurface : Colors.white;
     final surfaceColor = isDark ? AppTheme.darkSurface : Colors.white;
     final primaryTextColor = isDark ? Colors.white : const Color(0xFF15161A);
     final mutedTextColor = AppTheme.mutedTextColorFor(isDark);
@@ -608,7 +608,8 @@ class _RestaurantFoodDetailsScreenState
                                 'PROMO',
                                 style: TextStyle(
                                   color: Colors.white,
-                                  fontSize: AppTypography.font(AppFontSizes.caption),
+                                  fontSize:
+                                      AppTypography.font(AppFontSizes.caption),
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
@@ -630,7 +631,8 @@ class _RestaurantFoodDetailsScreenState
                               child: Text(
                                 'Out of Stock',
                                 style: TextStyle(
-                                  fontSize: AppTypography.font(AppFontSizes.caption),
+                                  fontSize:
+                                      AppTypography.font(AppFontSizes.caption),
                                   fontWeight: FontWeight.bold,
                                   color: Colors.red,
                                 ),
@@ -680,8 +682,9 @@ class _RestaurantFoodDetailsScreenState
 
                           if (!isBulkMeal) return const SizedBox.shrink();
 
-                          final rawOrderStart = _rawDocData!['orderStartTime'] ??
-                              _rawDocData!['orderStarttime'];
+                          final rawOrderStart =
+                              _rawDocData!['orderStartTime'] ??
+                                  _rawDocData!['orderStarttime'];
                           final rawOrderClose = _rawDocData!['orderEndTime'] ??
                               _rawDocData!['orderClosetime'] ??
                               _rawDocData!['orderTimeClose'];
@@ -777,8 +780,7 @@ class _RestaurantFoodDetailsScreenState
                                         Text(
                                           orderWindow,
                                           style: TextStyle(
-                                            fontSize:
-                                                AppTypography.font(13.5),
+                                            fontSize: AppTypography.font(13.5),
                                             fontWeight: FontWeight.w500,
                                             color: isDark
                                                 ? Colors.grey[300]
@@ -824,8 +826,7 @@ class _RestaurantFoodDetailsScreenState
                                         Text(
                                           deliveryWindow,
                                           style: TextStyle(
-                                            fontSize:
-                                                AppTypography.font(13.5),
+                                            fontSize: AppTypography.font(13.5),
                                             fontWeight: FontWeight.w500,
                                             color: isDark
                                                 ? Colors.grey[300]
@@ -844,7 +845,8 @@ class _RestaurantFoodDetailsScreenState
                                           EdgeInsets.symmetric(vertical: 8.h),
                                       decoration: BoxDecoration(
                                         color: isDark
-                                            ? purpleColor.withValues(alpha: 0.18)
+                                            ? purpleColor.withValues(
+                                                alpha: 0.18)
                                             : const Color(0xFFF3E8FF),
                                         borderRadius:
                                             BorderRadius.circular(10.r),
@@ -856,7 +858,8 @@ class _RestaurantFoodDetailsScreenState
                                           Icon(
                                               orderClosesText
                                                       .toLowerCase()
-                                                      .contains('delivery ongoing')
+                                                      .contains(
+                                                          'delivery ongoing')
                                                   ? Icons.delivery_dining
                                                   : LucideIcons.clock,
                                               size: 15.sp,
@@ -889,7 +892,8 @@ class _RestaurantFoodDetailsScreenState
               // Menu groups
               if (_menuGroups.isNotEmpty)
                 SliverPadding(
-                  padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 18.h),
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 20.w, vertical: 18.h),
                   sliver: SliverList(
                     delegate: SliverChildBuilderDelegate(
                       (context, index) => _buildMenuGroup(
@@ -1021,17 +1025,13 @@ class _RestaurantFoodDetailsScreenState
                     height: 280.h,
                     fit: BoxFit.cover,
                     placeholder: (_, __) => Container(
-                      color: isDark
-                          ? AppTheme.darkSurface
-                          : Colors.white,
+                      color: isDark ? AppTheme.darkSurface : Colors.white,
                       child: Center(
                           child: CircularProgressIndicator(
                               color: purpleColor, strokeWidth: 2)),
                     ),
                     errorWidget: (_, __, ___) => Container(
-                      color: isDark
-                          ? AppTheme.darkSurface
-                          : Colors.white,
+                      color: isDark ? AppTheme.darkSurface : Colors.white,
                       alignment: Alignment.center,
                       child: Icon(LucideIcons.image,
                           color: Colors.grey[500], size: 40.sp),
@@ -1209,9 +1209,7 @@ class _RestaurantFoodDetailsScreenState
                             fontSize:
                                 AppTypography.font(AppFontSizes.bodyMedium),
                             fontWeight: FontWeight.w600,
-                            color: isSelected
-                                ? purpleColor
-                                : mutedTextColor,
+                            color: isSelected ? purpleColor : mutedTextColor,
                           ),
                         ),
                       SizedBox(width: 12.w),
@@ -1405,9 +1403,8 @@ class _RestaurantFoodDetailsScreenState
                                 fontSize: AppTypography.font(13),
                                 fontWeight:
                                     qty > 0 ? FontWeight.bold : FontWeight.w600,
-                                color: qty > 0
-                                    ? primaryTextColor
-                                    : mutedTextColor,
+                                color:
+                                    qty > 0 ? primaryTextColor : mutedTextColor,
                               ),
                             ),
                           ),
@@ -1514,9 +1511,8 @@ class _RestaurantFoodDetailsScreenState
                 return Container(
                   padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
                   decoration: BoxDecoration(
-                    color: isDark
-                        ? AppTheme.darkSurface
-                        : const Color(0xFFF1F5F9),
+                    color:
+                        isDark ? AppTheme.darkSurface : const Color(0xFFF1F5F9),
                     borderRadius: BorderRadius.circular(8.r),
                     border: Border.all(color: borderColor, width: 1),
                   ),
@@ -1525,7 +1521,8 @@ class _RestaurantFoodDetailsScreenState
                     style: TextStyle(
                       fontSize: AppTypography.font(AppFontSizes.caption),
                       fontWeight: FontWeight.w700,
-                      color: isDark ? Colors.grey[300] : const Color(0xFF475569),
+                      color:
+                          isDark ? Colors.grey[300] : const Color(0xFF475569),
                     ),
                   ),
                 );
@@ -1563,7 +1560,9 @@ class _RestaurantFoodDetailsScreenState
                       style: TextStyle(
                         fontSize: AppTypography.font(AppFontSizes.caption),
                         fontWeight: FontWeight.w600,
-                        color: isDark ? Colors.amber[300] : const Color(0xFF92400E),
+                        color: isDark
+                            ? Colors.amber[300]
+                            : const Color(0xFF92400E),
                       ),
                     ),
                   ),
@@ -1601,76 +1600,78 @@ class _RestaurantFoodDetailsScreenState
           children: [
             // Cart Icon Button (on the left side)
             if (_addedToCart) ...[
-              Container(
-                width: 48.w,
-                height: 48.h,
-                margin: EdgeInsets.only(right: 10.w),
-                child: ElevatedButton(
-                  onPressed: () => context.push('/cart'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor:
-                        isDark ? AppTheme.darkSurface : Colors.white,
-                    foregroundColor: purpleColor,
-                    padding: EdgeInsets.zero,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16.r),
-                      side: BorderSide(color: borderColor, width: 1),
+              // Cart button (hidden when editing a cart item)
+              if (!widget.isEditingCartItem)
+                Container(
+                  width: 48.w,
+                  height: 48.h,
+                  margin: EdgeInsets.only(right: 10.w),
+                  child: ElevatedButton(
+                    onPressed: () => context.push('/cart'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor:
+                          isDark ? AppTheme.darkSurface : Colors.white,
+                      foregroundColor: purpleColor,
+                      padding: EdgeInsets.zero,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16.r),
+                        side: BorderSide(color: borderColor, width: 1),
+                      ),
+                      elevation: 0,
                     ),
-                    elevation: 0,
-                  ),
-                  child: StreamBuilder<QuerySnapshot>(
-                    stream: FirebaseAuth.instance.currentUser != null
-                        ? FirebaseFirestore.instance
-                            .collection('customers')
-                            .doc(FirebaseAuth.instance.currentUser!.uid)
-                            .collection('cart')
-                            .snapshots()
-                        : const Stream.empty(),
-                    builder: (context, snapshot) {
-                      if (widget.isEditingCartItem) {
-                        return const SizedBox.shrink();
-                      }
-                      final cartCount = snapshot.data?.docs.length ?? 0;
+                    child: StreamBuilder<QuerySnapshot>(
+                      stream: FirebaseAuth.instance.currentUser != null
+                          ? FirebaseFirestore.instance
+                              .collection('customers')
+                              .doc(FirebaseAuth.instance.currentUser!.uid)
+                              .collection('cart')
+                              .snapshots()
+                          : const Stream.empty(),
+                      builder: (context, snapshot) {
+                        if (widget.isEditingCartItem) {
+                          return const SizedBox.shrink();
+                        }
+                        final cartCount = snapshot.data?.docs.length ?? 0;
 
-                      return Stack(
-                        clipBehavior: Clip.none,
-                        alignment: Alignment.center,
-                        children: [
-                          Icon(Icons.shopping_cart_outlined,
-                              size: 22.sp, color: purpleColor),
-                          if (cartCount > 0)
-                            Positioned(
-                              right: -4.w,
-                              top: -4.h,
-                              child: Container(
-                                padding: EdgeInsets.all(4.w),
-                                decoration: const BoxDecoration(
-                                  color: Colors.redAccent,
-                                  shape: BoxShape.circle,
-                                ),
-                                constraints: BoxConstraints(
-                                  minWidth: 16.w,
-                                  minHeight: 16.w,
-                                ),
-                                child: Center(
-                                  child: Text(
-                                    '$cartCount',
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: AppTypography.font(9),
-                                      fontWeight: FontWeight.bold,
+                        return Stack(
+                          clipBehavior: Clip.none,
+                          alignment: Alignment.center,
+                          children: [
+                            Icon(Icons.shopping_cart_outlined,
+                                size: 22.sp, color: purpleColor),
+                            if (cartCount > 0)
+                              Positioned(
+                                right: -4.w,
+                                top: -4.h,
+                                child: Container(
+                                  padding: EdgeInsets.all(4.w),
+                                  decoration: const BoxDecoration(
+                                    color: Colors.redAccent,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  constraints: BoxConstraints(
+                                    minWidth: 16.w,
+                                    minHeight: 16.w,
+                                  ),
+                                  child: Center(
+                                    child: Text(
+                                      '$cartCount',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: AppTypography.font(9),
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                      textAlign: TextAlign.center,
                                     ),
-                                    textAlign: TextAlign.center,
                                   ),
                                 ),
                               ),
-                            ),
-                        ],
-                      );
-                    },
+                          ],
+                        );
+                      },
+                    ),
                   ),
                 ),
-              ),
             ],
 
             // Quantity UI
@@ -1685,7 +1686,8 @@ class _RestaurantFoodDetailsScreenState
                   ScaffoldMessenger.of(context).hideCurrentSnackBar();
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text('Only $_stockQuantity item(s) available in stock'),
+                      content: Text(
+                          'Only $_stockQuantity item(s) available in stock'),
                       duration: const Duration(seconds: 2),
                     ),
                   );
@@ -1702,7 +1704,8 @@ class _RestaurantFoodDetailsScreenState
                 onPressed: !_isAvailable
                     ? null
                     : () async {
-                        if (widget.isEditingCartItem && widget.cartDocId != null) {
+                        if (widget.isEditingCartItem &&
+                            widget.cartDocId != null) {
                           for (int g = 0; g < _menuGroups.length; g++) {
                             if (_menuGroups[g].required &&
                                 _selectedIndex[g] < 0) {
@@ -1718,6 +1721,37 @@ class _RestaurantFoodDetailsScreenState
                           }
                           final user = FirebaseAuth.instance.currentUser;
                           if (user != null) {
+                            final List<Map<String, dynamic>> selectedChoices =
+                                [];
+                            for (int g = 0; g < _menuGroups.length; g++) {
+                              final sel = _selectedIndex[g];
+                              if (sel >= 0 &&
+                                  sel < _menuGroups[g].options.length) {
+                                selectedChoices.add({
+                                  'group': _menuGroups[g].title,
+                                  'label': _menuGroups[g].options[sel].label,
+                                  'extraPrice':
+                                      _menuGroups[g].options[sel].extraPrice,
+                                });
+                              }
+                            }
+
+                            final List<Map<String, dynamic>> selectedAddOns =
+                                [];
+                            for (final addon in _addOns) {
+                              final qty =
+                                  _selectedAddOnQuantities[addon.id] ?? 0;
+                              if (qty > 0) {
+                                selectedAddOns.add({
+                                  'id': addon.id,
+                                  'name': addon.name,
+                                  'price': addon.price,
+                                  'rawPrice': addon.rawPrice,
+                                  'quantity': qty,
+                                });
+                              }
+                            }
+
                             await FirebaseFirestore.instance
                                 .collection('customers')
                                 .doc(user.uid)
@@ -1725,8 +1759,11 @@ class _RestaurantFoodDetailsScreenState
                                 .doc(widget.cartDocId)
                                 .update({
                               'quantity': _quantity,
-                              'price': currentTotal / (_quantity > 0 ? _quantity : 1),
+                              'price': currentTotal /
+                                  (_quantity > 0 ? _quantity : 1),
                               'totalPrice': currentTotal,
+                              'selectedChoices': selectedChoices,
+                              'selectedAddOns': selectedAddOns,
                               'updatedAt': FieldValue.serverTimestamp(),
                             });
                           }
@@ -1899,8 +1936,7 @@ class _RestaurantFoodDetailsScreenState
 
                           final List<Map<String, dynamic>> selectedAddOns = [];
                           for (final addon in _addOns) {
-                            final qty =
-                                _selectedAddOnQuantities[addon.id] ?? 0;
+                            final qty = _selectedAddOnQuantities[addon.id] ?? 0;
                             if (qty > 0) {
                               selectedAddOns.add({
                                 'id': addon.id,

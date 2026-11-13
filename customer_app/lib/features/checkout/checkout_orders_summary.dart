@@ -203,10 +203,8 @@ class _CheckoutOrdersSummaryScreenState
           .doc(userId)
           .collection('addresses');
 
-      final defaultSnap = await addressRef
-          .where('isDefault', isEqualTo: true)
-          .limit(1)
-          .get();
+      final defaultSnap =
+          await addressRef.where('isDefault', isEqualTo: true).limit(1).get();
 
       if (defaultSnap.docs.isNotEmpty) {
         final data = defaultSnap.docs.first.data();
@@ -235,11 +233,13 @@ class _CheckoutOrdersSummaryScreenState
   Future<void> _addNewCard() async {
     final user = _auth.currentUser;
     if (user == null) return;
-    final emailToUse = _customerEmail.isNotEmpty ? _customerEmail : (user.email ?? '');
+    final emailToUse =
+        _customerEmail.isNotEmpty ? _customerEmail : (user.email ?? '');
 
     if (emailToUse.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Customer email is required for card setup.')),
+        const SnackBar(
+            content: Text('Customer email is required for card setup.')),
       );
       return;
     }
@@ -281,19 +281,22 @@ class _CheckoutOrdersSummaryScreenState
         setState(() {
           _selectedPayment = {
             'type': 'card',
-            'name': "${latestCard['brand'] ?? 'Card'} (•••• ${latestCard['last4'] ?? '••••'})",
+            'name':
+                "${latestCard['brand'] ?? 'Card'} (•••• ${latestCard['last4'] ?? '••••'})",
             'card': latestCard,
           };
         });
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('New card added and selected successfully!')),
+          const SnackBar(
+              content: Text('New card added and selected successfully!')),
         );
       }
     } else {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-              content: Text('Card charged but no auth data returned. Try again.')),
+              content:
+                  Text('Card charged but no auth data returned. Try again.')),
         );
       }
     }
@@ -301,8 +304,10 @@ class _CheckoutOrdersSummaryScreenState
 
   Future<void> _loadPlatformFee() async {
     try {
-      final settingsDoc =
-          await _firestore.collection('settings').doc('customer_settings').get();
+      final settingsDoc = await _firestore
+          .collection('settings')
+          .doc('customer_settings')
+          .get();
       if (settingsDoc.exists) {
         _platformFee = _toDouble(settingsDoc.data()?['platformFee']);
       }
@@ -368,7 +373,9 @@ class _CheckoutOrdersSummaryScreenState
               profile?['location'] ??
               '')
           .toString();
-      _restaurantType = (data['restaurantType'] ?? data['vendorType'] ?? 'resturantPosts').toString();
+      _restaurantType =
+          (data['restaurantType'] ?? data['vendorType'] ?? 'resturantPosts')
+              .toString();
 
       _vendorAvatarUrl = (data['profilePic'] ??
               data['logoUrl'] ??
@@ -460,9 +467,13 @@ class _CheckoutOrdersSummaryScreenState
     final addrCity = (address['city'] ?? '').toString();
     final addrState = (address['state'] ?? '').toString();
 
-    final fullAddrStr = [addrAddress, addrStreet, addrCity, addrState, addrTitle]
-        .where((s) => s.trim().isNotEmpty && s != 'null')
-        .join(', ');
+    final fullAddrStr = [
+      addrAddress,
+      addrStreet,
+      addrCity,
+      addrState,
+      addrTitle
+    ].where((s) => s.trim().isNotEmpty && s != 'null').join(', ');
     final addrLower = fullAddrStr.toLowerCase();
 
     // 1. Fetch enabled coverage regions from settings (states, LGAs, towns)
@@ -484,10 +495,8 @@ class _CheckoutOrdersSummaryScreenState
     } catch (_) {}
 
     try {
-      final sysSnap = await _firestore
-          .collection('settings')
-          .doc('system_settings')
-          .get();
+      final sysSnap =
+          await _firestore.collection('settings').doc('system_settings').get();
       if (sysSnap.exists) {
         final data = sysSnap.data() ?? {};
         enabledStates.addAll(List<String>.from(data['enabledStates'] ?? []));
@@ -495,12 +504,26 @@ class _CheckoutOrdersSummaryScreenState
       }
     } catch (_) {}
 
-    enabledStates = enabledStates.map((s) => s.trim()).where((s) => s.isNotEmpty).toSet().toList();
-    enabledLgas = enabledLgas.map((s) => s.trim()).where((s) => s.isNotEmpty).toSet().toList();
-    enabledTowns = enabledTowns.map((s) => s.trim()).where((s) => s.isNotEmpty).toSet().toList();
+    enabledStates = enabledStates
+        .map((s) => s.trim())
+        .where((s) => s.isNotEmpty)
+        .toSet()
+        .toList();
+    enabledLgas = enabledLgas
+        .map((s) => s.trim())
+        .where((s) => s.isNotEmpty)
+        .toSet()
+        .toList();
+    enabledTowns = enabledTowns
+        .map((s) => s.trim())
+        .where((s) => s.isNotEmpty)
+        .toSet()
+        .toList();
 
     // If regions are configured, verify that address is in a covered region
-    if (enabledStates.isNotEmpty || enabledLgas.isNotEmpty || enabledTowns.isNotEmpty) {
+    if (enabledStates.isNotEmpty ||
+        enabledLgas.isNotEmpty ||
+        enabledTowns.isNotEmpty) {
       bool regionalMatch = false;
 
       for (final town in enabledTowns) {
@@ -558,7 +581,11 @@ class _CheckoutOrdersSummaryScreenState
 
     // 3. Distance & Vendor Coverage Radius
     double distanceKm = 0.0;
-    if (_vendorLocation != null && lat != null && lng != null && lat != 0.0 && lng != 0.0) {
+    if (_vendorLocation != null &&
+        lat != null &&
+        lng != null &&
+        lat != 0.0 &&
+        lng != 0.0) {
       final meters = Geolocator.distanceBetween(
         _vendorLocation!.latitude,
         _vendorLocation!.longitude,
@@ -568,7 +595,9 @@ class _CheckoutOrdersSummaryScreenState
       distanceKm = meters / 1000.0;
 
       await PriceHelper.initialize();
-      final maxDist = PriceHelper.maxDeliveryDistance > 0 ? PriceHelper.maxDeliveryDistance : 15.0;
+      final maxDist = PriceHelper.maxDeliveryDistance > 0
+          ? PriceHelper.maxDeliveryDistance
+          : 15.0;
 
       if (distanceKm > maxDist) {
         return CoverageCheckResult(
@@ -752,10 +781,13 @@ class _CheckoutOrdersSummaryScreenState
               width: double.infinity,
               padding: EdgeInsets.all(14.w),
               decoration: BoxDecoration(
-                color: isDark ? const Color(0xFF2A1515) : const Color(0xFFFEF2F2),
+                color:
+                    isDark ? const Color(0xFF2A1515) : const Color(0xFFFEF2F2),
                 borderRadius: BorderRadius.circular(16.r),
                 border: Border.all(
-                  color: isDark ? const Color(0xFF7F1D1D) : const Color(0xFFFCA5A5),
+                  color: isDark
+                      ? const Color(0xFF7F1D1D)
+                      : const Color(0xFFFCA5A5),
                   width: 1,
                 ),
               ),
@@ -776,7 +808,8 @@ class _CheckoutOrdersSummaryScreenState
                           style: TextStyle(
                             color: primaryTextColor,
                             fontWeight: FontWeight.bold,
-                            fontSize: AppTypography.font(AppFontSizes.bodySmall),
+                            fontSize:
+                                AppTypography.font(AppFontSizes.bodySmall),
                           ),
                         ),
                         if (addrFull.isNotEmpty) ...[
@@ -785,7 +818,8 @@ class _CheckoutOrdersSummaryScreenState
                             addrFull,
                             style: TextStyle(
                               color: mutedTextColor,
-                              fontSize: AppTypography.font(AppFontSizes.caption),
+                              fontSize:
+                                  AppTypography.font(AppFontSizes.caption),
                             ),
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
@@ -860,7 +894,8 @@ class _CheckoutOrdersSummaryScreenState
         lng,
       );
       _deliveryDistanceKm = meters / 1000.0;
-      _deliverySurcharge = PriceHelper.calculateDeliverySurcharge(_deliveryDistanceKm);
+      _deliverySurcharge =
+          PriceHelper.calculateDeliverySurcharge(_deliveryDistanceKm);
     } else {
       _deliveryDistanceKm = 0.0;
       _deliverySurcharge = 0.0;
@@ -871,12 +906,16 @@ class _CheckoutOrdersSummaryScreenState
 
   double get _subtotal => _activeCheckoutItems.fold(
         0.0,
-        (acc, item) => acc + (_toDouble(item['price']) * ((item['quantity'] ?? 1) as int)),
+        (acc, item) =>
+            acc + (_toDouble(item['price']) * ((item['quantity'] ?? 1) as int)),
       );
 
   double get _vendorSubtotal => _activeCheckoutItems.fold(
         0.0,
-        (acc, item) => acc + (_toDouble(item['basePrice'] ?? item['price']) * ((item['quantity'] ?? 1) as int)),
+        (acc, item) =>
+            acc +
+            (_toDouble(item['basePrice'] ?? item['price']) *
+                ((item['quantity'] ?? 1) as int)),
       );
 
   double get _discountAmount {
@@ -976,12 +1015,14 @@ class _CheckoutOrdersSummaryScreenState
       }
       final uid = user.uid;
 
-      final customerDoc = await _firestore.collection('customers').doc(uid).get();
+      final customerDoc =
+          await _firestore.collection('customers').doc(uid).get();
       if (customerDoc.exists) {
         final cData = customerDoc.data() ?? {};
         if (cData['status'] == 'suspended') {
           final reason = cData['suspensionReason'] ?? 'Policy Violation';
-          throw Exception('Your account is currently suspended ($reason). Please contact support@martfood.com to appeal.');
+          throw Exception(
+              'Your account is currently suspended ($reason). Please contact support@martfood.com to appeal.');
         }
       }
 
@@ -991,34 +1032,46 @@ class _CheckoutOrdersSummaryScreenState
               : null);
 
       if (effectiveVendorId != null && effectiveVendorId.isNotEmpty) {
-        final vendorDoc = await _firestore.collection('vendors').doc(effectiveVendorId).get();
+        final vendorDoc =
+            await _firestore.collection('vendors').doc(effectiveVendorId).get();
         if (vendorDoc.exists) {
           final vendorData = vendorDoc.data() ?? {};
           final isRestricted = vendorData['isRestricted'] == true;
           final isBanned = vendorData['isBanned'] == true;
           final isSuspended = vendorData['status'] == 'suspended';
           if (isRestricted || isBanned || isSuspended) {
-            throw Exception('This vendor is currently suspended and unable to accept new orders. Please try another restaurant.');
+            throw Exception(
+                'This vendor is currently suspended and unable to accept new orders. Please try another restaurant.');
           }
 
-          final systemSettingsSnap = await _firestore.collection('settings').doc('system_settings').get();
+          final systemSettingsSnap = await _firestore
+              .collection('settings')
+              .doc('system_settings')
+              .get();
           if (systemSettingsSnap.exists) {
             final sysData = systemSettingsSnap.data() ?? {};
-            final enabledStates = List<String>.from(sysData['enabledStates'] ?? []);
+            final enabledStates =
+                List<String>.from(sysData['enabledStates'] ?? []);
             final enabledLgas = List<String>.from(sysData['enabledLgas'] ?? []);
 
             final customerAddrObj = _selectedAddress?['address'];
             String customerAddrStr = '';
             if (customerAddrObj is Map) {
-              customerAddrStr = (customerAddrObj['address'] ?? customerAddrObj['street'] ?? '').toString();
+              customerAddrStr = (customerAddrObj['address'] ??
+                      customerAddrObj['street'] ??
+                      '')
+                  .toString();
             } else if (customerAddrObj != null) {
               customerAddrStr = customerAddrObj.toString();
             }
 
-            final vendorAddrObj = vendorData['address'] ?? vendorData['location'];
+            final vendorAddrObj =
+                vendorData['address'] ?? vendorData['location'];
             String vendorAddrStr = '';
             if (vendorAddrObj is Map) {
-              vendorAddrStr = (vendorAddrObj['address'] ?? vendorAddrObj['street'] ?? '').toString();
+              vendorAddrStr =
+                  (vendorAddrObj['address'] ?? vendorAddrObj['street'] ?? '')
+                      .toString();
             } else if (vendorAddrObj != null) {
               vendorAddrStr = vendorAddrObj.toString();
             }
@@ -1031,7 +1084,8 @@ class _CheckoutOrdersSummaryScreenState
 
               for (final lga in enabledLgas) {
                 for (final state in enabledStates) {
-                  if (addrLower.contains(lga.toLowerCase().trim()) && addrLower.contains(state.toLowerCase().trim())) {
+                  if (addrLower.contains(lga.toLowerCase().trim()) &&
+                      addrLower.contains(state.toLowerCase().trim())) {
                     matchFound = true;
                     break;
                   }
@@ -1058,7 +1112,8 @@ class _CheckoutOrdersSummaryScreenState
               }
 
               if (!matchFound) {
-                throw Exception("We're sorry, our services are not available at your delivery location yet.");
+                throw Exception(
+                    "We're sorry, our services are not available at your delivery location yet.");
               }
             }
           }
@@ -1077,7 +1132,8 @@ class _CheckoutOrdersSummaryScreenState
       for (final checkoutItem in _activeCheckoutItems) {
         final itemId = checkoutItem['id']?.toString() ?? '';
         final itemTitle = checkoutItem['title']?.toString() ?? 'Item';
-        final int reqQuantity = (checkoutItem['quantity'] as num?)?.toInt() ?? 1;
+        final int reqQuantity =
+            (checkoutItem['quantity'] as num?)?.toInt() ?? 1;
 
         DocumentSnapshot? foundDoc;
         String? foundCollection;
@@ -1150,7 +1206,8 @@ class _CheckoutOrdersSummaryScreenState
             .get();
         final totalUsageCount = totalOrdersSnap.docs.length;
 
-        final promoDoc = await _firestore.collection('promos').doc(promoId).get();
+        final promoDoc =
+            await _firestore.collection('promos').doc(promoId).get();
         if (promoDoc.exists) {
           final promoData = promoDoc.data()!;
           final customerLimit = promoData['usagePerCustomer'];
@@ -1159,14 +1216,16 @@ class _CheckoutOrdersSummaryScreenState
           if (customerLimit != 'unlimited' && customerLimit != null) {
             final limitVal = int.tryParse(customerLimit.toString()) ?? 1;
             if (customerUsageCount >= limitVal) {
-              throw Exception('You have reached the maximum usage limit for this promo code.');
+              throw Exception(
+                  'You have reached the maximum usage limit for this promo code.');
             }
           }
 
           if (availabilityLimit != 'unlimited' && availabilityLimit != null) {
             final limitVal = int.tryParse(availabilityLimit.toString()) ?? 0;
             if (totalUsageCount >= limitVal) {
-              throw Exception('This promo code is no longer available (fully redeemed).');
+              throw Exception(
+                  'This promo code is no longer available (fully redeemed).');
             }
           }
         }
@@ -1263,8 +1322,8 @@ class _CheckoutOrdersSummaryScreenState
               'basePrice': _toDouble(item['basePrice'] ?? item['price']),
               'quantity': item['quantity'] ?? 1,
               'imageUrl': item['imageUrl'],
-              'selectedChoices':
-                  List<Map<String, dynamic>>.from(item['selectedChoices'] ?? []),
+              'selectedChoices': List<Map<String, dynamic>>.from(
+                  item['selectedChoices'] ?? []),
               'selectedAddOns':
                   List<Map<String, dynamic>>.from(item['selectedAddOns'] ?? []),
             };
@@ -1281,7 +1340,8 @@ class _CheckoutOrdersSummaryScreenState
                   'id': _selectedPromo!['id'],
                   'discountPercentage': _selectedPromo!['discountPercentage'],
                   'appliedOn': _selectedPromo!['appliedOn'],
-                  'description': _selectedPromo!['description'] ?? _selectedPromo!['code'],
+                  'description':
+                      _selectedPromo!['description'] ?? _selectedPromo!['code'],
                 },
           'paymentMethod': _selectedPayment,
           'paymentReference': bankAcc['reference'] ?? '',
@@ -1347,8 +1407,10 @@ class _CheckoutOrdersSummaryScreenState
       final orderId = await _generateUniqueOrderId(_restaurantName);
       final orderRef = _firestore.collection('orders').doc(orderId);
       final deliveryPin = _generateDeliveryPin();
-      final String initialStatus = (paymentType == 'someone') ? 'awaiting_payment' : 'pending';
-      final String paymentStatus = (paymentType == 'someone') ? 'unpaid' : 'paid';
+      final String initialStatus =
+          (paymentType == 'someone') ? 'awaiting_payment' : 'pending';
+      final String paymentStatus =
+          (paymentType == 'someone') ? 'unpaid' : 'paid';
       String? paymentToken;
       DateTime? expiresAt;
 
@@ -1407,7 +1469,8 @@ class _CheckoutOrdersSummaryScreenState
                 'id': _selectedPromo!['id'],
                 'discountPercentage': _selectedPromo!['discountPercentage'],
                 'appliedOn': _selectedPromo!['appliedOn'],
-                'description': _selectedPromo!['description'] ?? _selectedPromo!['code'],
+                'description':
+                    _selectedPromo!['description'] ?? _selectedPromo!['code'],
               },
         'paymentMethod': _selectedPayment,
         if (paymentToken != null) 'paymentToken': paymentToken,
@@ -1428,12 +1491,17 @@ class _CheckoutOrdersSummaryScreenState
       });
 
       // ── Dispatch Push Notification to Vendor (Only for Paid/Confirmed Orders) ──
-      if (initialStatus != 'awaiting_payment' && effectiveVendorId != null && effectiveVendorId.isNotEmpty) {
-        final orderNum = orderRef.id.length >= 6 ? orderRef.id.substring(0, 6).toUpperCase() : orderRef.id;
+      if (initialStatus != 'awaiting_payment' &&
+          effectiveVendorId != null &&
+          effectiveVendorId.isNotEmpty) {
+        final orderNum = orderRef.id.length >= 6
+            ? orderRef.id.substring(0, 6).toUpperCase()
+            : orderRef.id;
         NotificationService.sendPushToVendor(
           vendorId: effectiveVendorId,
           title: 'New Order Received!',
-          body: 'Order #$orderNum (${_activeCheckoutItems.length} items - ₦${orderTotal.toStringAsFixed(0)}) placed by $_customerName',
+          body:
+              'Order #$orderNum (${_activeCheckoutItems.length} items - ₦${orderTotal.toStringAsFixed(0)}) placed by $_customerName',
           data: {
             'orderId': orderRef.id,
             'type': 'order',
@@ -1452,7 +1520,8 @@ class _CheckoutOrdersSummaryScreenState
 
             final postRef = _firestore.collection(coll).doc(docId);
             if (curQty != null) {
-              final int newQty = (curQty - deductQty) > 0 ? (curQty - deductQty) : 0;
+              final int newQty =
+                  (curQty - deductQty) > 0 ? (curQty - deductQty) : 0;
               await postRef.update({
                 'quantity': newQty,
                 'stockQuantity': newQty,
@@ -1519,7 +1588,8 @@ class _CheckoutOrdersSummaryScreenState
       if (!mounted) return;
       setState(() => _isLoading = false);
       if (paymentType == 'someone') {
-        context.go('/orders?payForMeSuccess=true&orderId=${orderRef.id}&token=${paymentToken ?? ''}');
+        context.go(
+            '/orders?payForMeSuccess=true&orderId=${orderRef.id}&token=${paymentToken ?? ''}');
       } else {
         context.go('/orders?showSuccess=true');
       }
@@ -1539,7 +1609,8 @@ class _CheckoutOrdersSummaryScreenState
     final primaryTextColor = isDark ? Colors.white : Colors.black87;
     final mutedTextColor = AppTheme.mutedTextColorFor(isDark);
     final purpleColor = AppTheme.primaryPurpleFor(isDark);
-    final borderColor = isDark ? AppTheme.darkBorder : AppTheme.lightInputBorder;
+    final borderColor =
+        isDark ? AppTheme.darkBorder : AppTheme.lightInputBorder;
 
     _restaurantNoteController.text = _restaurantNote;
 
@@ -1594,7 +1665,9 @@ class _CheckoutOrdersSummaryScreenState
               SizedBox(height: 16.h),
               Container(
                 decoration: BoxDecoration(
-                  color: isDark ? const Color(0xFF1E1E2E) : const Color(0xFFF9FAFB),
+                  color: isDark
+                      ? const Color(0xFF1E1E2E)
+                      : const Color(0xFFF9FAFB),
                   borderRadius: BorderRadius.circular(16.r),
                   border: Border.all(color: borderColor, width: 1),
                 ),
@@ -1609,7 +1682,8 @@ class _CheckoutOrdersSummaryScreenState
                     fontSize: AppTypography.font(AppFontSizes.bodyMedium),
                   ),
                   decoration: InputDecoration(
-                    hintText: 'Extra spicy, Please. I like it with extra mayo too',
+                    hintText:
+                        'Extra spicy, Please. I like it with extra mayo too',
                     hintStyle: TextStyle(
                       color: AppTheme.hintColorFor(isDark),
                       fontSize: AppTypography.font(AppFontSizes.bodySmall),
@@ -1674,7 +1748,8 @@ class _CheckoutOrdersSummaryScreenState
     final primaryTextColor = isDark ? Colors.white : Colors.black87;
     final mutedTextColor = AppTheme.mutedTextColorFor(isDark);
     final purpleColor = AppTheme.primaryPurpleFor(isDark);
-    final borderColor = isDark ? AppTheme.darkBorder : AppTheme.lightInputBorder;
+    final borderColor =
+        isDark ? AppTheme.darkBorder : AppTheme.lightInputBorder;
 
     _riderNoteController.text = _riderNote;
 
@@ -1731,7 +1806,8 @@ class _CheckoutOrdersSummaryScreenState
                 width: double.infinity,
                 padding: EdgeInsets.all(16.w),
                 decoration: BoxDecoration(
-                  color: isDark ? AppTheme.darkSurface : AppTheme.lightInputFill,
+                  color:
+                      isDark ? AppTheme.darkSurface : AppTheme.lightInputFill,
                   borderRadius: BorderRadius.circular(20.r),
                   border: Border.all(color: borderColor, width: 1),
                 ),
@@ -1873,7 +1949,11 @@ class _CheckoutOrdersSummaryScreenState
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   border: Border.all(
-                    color: isSelected ? purpleColor : (isDark ? Colors.grey[600]! : AppTheme.hintColorFor(isDark)),
+                    color: isSelected
+                        ? purpleColor
+                        : (isDark
+                            ? Colors.grey[600]!
+                            : AppTheme.hintColorFor(isDark)),
                     width: isSelected ? 6.w : 1.5.w,
                   ),
                 ),
@@ -1891,10 +1971,12 @@ class _CheckoutOrdersSummaryScreenState
     final primaryTextColor = isDark ? Colors.white : Colors.black87;
     final mutedTextColor = AppTheme.mutedTextColorFor(isDark);
     final purpleColor = AppTheme.primaryPurpleFor(isDark);
-    final borderColor = isDark ? AppTheme.darkBorder : AppTheme.lightInputBorder;
+    final borderColor =
+        isDark ? AppTheme.darkBorder : AppTheme.lightInputBorder;
 
     String tempSelectedType = _selectedPayment?['type']?.toString() ?? 'wallet';
-    String? tempSelectedCardCode = _selectedPayment?['card']?['authorizationCode']?.toString();
+    String? tempSelectedCardCode =
+        _selectedPayment?['card']?['authorizationCode']?.toString();
     bool tempHideOrderDetails = _hideOrderDetailsForSomeone;
 
     showModalBottomSheet(
@@ -2012,9 +2094,11 @@ class _CheckoutOrdersSummaryScreenState
                 SizedBox(height: 10.h),
                 Container(
                   width: double.infinity,
-                  padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
                   decoration: BoxDecoration(
-                    color: isDark ? AppTheme.darkSurface : AppTheme.lightInputFill,
+                    color:
+                        isDark ? AppTheme.darkSurface : AppTheme.lightInputFill,
                     borderRadius: BorderRadius.circular(16.r),
                     border: Border.all(color: borderColor, width: 1),
                   ),
@@ -2027,7 +2111,9 @@ class _CheckoutOrdersSummaryScreenState
                           shape: BoxShape.circle,
                         ),
                         child: Icon(
-                          tempHideOrderDetails ? LucideIcons.eyeOff : LucideIcons.eye,
+                          tempHideOrderDetails
+                              ? LucideIcons.eyeOff
+                              : LucideIcons.eye,
                           color: purpleColor,
                           size: 18.sp,
                         ),
@@ -2041,7 +2127,8 @@ class _CheckoutOrdersSummaryScreenState
                               'Hide order details',
                               style: TextStyle(
                                 color: primaryTextColor,
-                                fontSize: AppTypography.font(AppFontSizes.bodySmall),
+                                fontSize:
+                                    AppTypography.font(AppFontSizes.bodySmall),
                                 fontWeight: FontWeight.w700,
                               ),
                             ),
@@ -2050,7 +2137,8 @@ class _CheckoutOrdersSummaryScreenState
                               'Conceal food items and choices from the payment link',
                               style: TextStyle(
                                 color: mutedTextColor,
-                                fontSize: AppTypography.font(AppFontSizes.caption),
+                                fontSize:
+                                    AppTypography.font(AppFontSizes.caption),
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
@@ -2086,8 +2174,8 @@ class _CheckoutOrdersSummaryScreenState
               if (_savedCards.isNotEmpty) ...[
                 ..._savedCards.map((card) {
                   final authCode = card['authorizationCode']?.toString() ?? '';
-                  final isCardSelected =
-                      tempSelectedType == 'card' && tempSelectedCardCode == authCode;
+                  final isCardSelected = tempSelectedType == 'card' &&
+                      tempSelectedCardCode == authCode;
                   final brand = card['brand']?.toString() ?? 'Card';
                   final last4 = card['last4']?.toString() ?? '••••';
 
@@ -2120,7 +2208,9 @@ class _CheckoutOrdersSummaryScreenState
                 },
                 icon: Icon(LucideIcons.plus, size: 18.sp, color: purpleColor),
                 label: Text(
-                  _savedCards.isEmpty ? 'Add Debit / Credit Card' : 'Add a New Card',
+                  _savedCards.isEmpty
+                      ? 'Add Debit / Credit Card'
+                      : 'Add a New Card',
                   style: TextStyle(
                     color: purpleColor,
                     fontSize: AppTypography.font(AppFontSizes.bodyMedium),
@@ -2165,8 +2255,11 @@ class _CheckoutOrdersSummaryScreenState
                       });
                     } else if (tempSelectedType == 'card') {
                       final selectedCard = _savedCards.firstWhere(
-                        (c) => c['authorizationCode']?.toString() == tempSelectedCardCode,
-                        orElse: () => _savedCards.isNotEmpty ? _savedCards.first : {},
+                        (c) =>
+                            c['authorizationCode']?.toString() ==
+                            tempSelectedCardCode,
+                        orElse: () =>
+                            _savedCards.isNotEmpty ? _savedCards.first : {},
                       );
                       if (selectedCard.isNotEmpty) {
                         setState(() {
@@ -2222,7 +2315,8 @@ class _CheckoutOrdersSummaryScreenState
     final mutedTextColor = AppTheme.mutedTextColorFor(isDark);
     final surfaceColor = isDark ? AppTheme.darkSurface : Colors.white;
     final purpleColor = AppTheme.primaryPurpleFor(isDark);
-    final cardBgColor = isDark ? const Color(0xFF1E1E2E) : const Color(0xFFF3F4F6);
+    final cardBgColor =
+        isDark ? const Color(0xFF1E1E2E) : const Color(0xFFF3F4F6);
 
     bool isVerifying = false;
     String? verificationError;
@@ -2239,7 +2333,6 @@ class _CheckoutOrdersSummaryScreenState
       ),
       builder: (sheetContext) => StatefulBuilder(
         builder: (context, setSheetState) {
-
           return Padding(
             padding: EdgeInsets.fromLTRB(24.w, 16.h, 24.w, 24.h),
             child: Column(
@@ -2285,7 +2378,9 @@ class _CheckoutOrdersSummaryScreenState
                     color: cardBgColor,
                     borderRadius: BorderRadius.circular(20.r),
                     border: Border.all(
-                      color: isDark ? AppTheme.darkBorder : AppTheme.lightInputBorder,
+                      color: isDark
+                          ? AppTheme.darkBorder
+                          : AppTheme.lightInputBorder,
                       width: 1,
                     ),
                   ),
@@ -2343,14 +2438,16 @@ class _CheckoutOrdersSummaryScreenState
                           Text(
                             accountNumber,
                             style: TextStyle(
-                              fontSize: AppTypography.font(AppFontSizes.bodyLarge),
+                              fontSize:
+                                  AppTypography.font(AppFontSizes.bodyLarge),
                               fontWeight: FontWeight.w800,
                               color: primaryTextColor,
                             ),
                           ),
                           InkWell(
                             onTap: () {
-                              Clipboard.setData(ClipboardData(text: accountNumber));
+                              Clipboard.setData(
+                                  ClipboardData(text: accountNumber));
                               copyTimer?.cancel();
                               setSheetState(() {
                                 isCopied = true;
@@ -2372,7 +2469,9 @@ class _CheckoutOrdersSummaryScreenState
                               child: AnimatedSwitcher(
                                 duration: const Duration(milliseconds: 200),
                                 child: Icon(
-                                  isCopied ? LucideIcons.check : LucideIcons.copy,
+                                  isCopied
+                                      ? LucideIcons.check
+                                      : LucideIcons.copy,
                                   key: ValueKey<bool>(isCopied),
                                   size: 18.sp,
                                   color: isCopied ? Colors.green : purpleColor,
@@ -2409,7 +2508,8 @@ class _CheckoutOrdersSummaryScreenState
                 if (verificationError != null) ...[
                   Container(
                     width: double.infinity,
-                    padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
                     decoration: BoxDecoration(
                       color: isDark
                           ? const Color(0xFF3B1515)
@@ -2435,7 +2535,8 @@ class _CheckoutOrdersSummaryScreenState
                           child: Text(
                             verificationError ?? '',
                             style: TextStyle(
-                              fontSize: AppTypography.font(AppFontSizes.caption),
+                              fontSize:
+                                  AppTypography.font(AppFontSizes.caption),
                               fontWeight: FontWeight.w600,
                               color: isDark
                                   ? const Color(0xFFFCA5A5)
@@ -2477,7 +2578,8 @@ class _CheckoutOrdersSummaryScreenState
                             try {
                               if (reference.isNotEmpty) {
                                 final verifyRes =
-                                    await PaystackService.verifyTransaction(reference);
+                                    await PaystackService.verifyTransaction(
+                                        reference);
                                 if (verifyRes != null &&
                                     (verifyRes['status'] == 'success' ||
                                         verifyRes['status'] == true)) {
@@ -2523,8 +2625,8 @@ class _CheckoutOrdersSummaryScreenState
                               Text(
                                 'Verifying Transfer...',
                                 style: TextStyle(
-                                  fontSize:
-                                      AppTypography.font(AppFontSizes.bodyMedium),
+                                  fontSize: AppTypography.font(
+                                      AppFontSizes.bodyMedium),
                                   fontWeight: FontWeight.w700,
                                 ),
                               ),
@@ -2629,7 +2731,8 @@ class _CheckoutOrdersSummaryScreenState
     final primaryTextColor = isDark ? Colors.white : Colors.black87;
     final mutedTextColor = AppTheme.mutedTextColorFor(isDark);
     final purpleColor = AppTheme.primaryPurpleFor(isDark);
-    final borderColor = isDark ? AppTheme.darkBorder : AppTheme.lightInputBorder;
+    final borderColor =
+        isDark ? AppTheme.darkBorder : AppTheme.lightInputBorder;
 
     if (_isLoading) {
       return Scaffold(
@@ -2826,13 +2929,16 @@ class _CheckoutOrdersSummaryScreenState
                             _showOrderDetails ? 'Hide details' : 'View details',
                             style: TextStyle(
                               color: mutedTextColor,
-                              fontSize: AppTypography.font(AppFontSizes.bodySmall),
+                              fontSize:
+                                  AppTypography.font(AppFontSizes.bodySmall),
                               fontWeight: FontWeight.w700,
                             ),
                           ),
                           SizedBox(width: 4.w),
                           Icon(
-                            _showOrderDetails ? LucideIcons.chevronUp : LucideIcons.chevronDown,
+                            _showOrderDetails
+                                ? LucideIcons.chevronUp
+                                : LucideIcons.chevronDown,
                             color: mutedTextColor,
                             size: 16.sp,
                           ),
@@ -2853,7 +2959,8 @@ class _CheckoutOrdersSummaryScreenState
                           'No items in checkout.',
                           style: TextStyle(
                             color: mutedTextColor,
-                            fontSize: AppTypography.font(AppFontSizes.bodyMedium),
+                            fontSize:
+                                AppTypography.font(AppFontSizes.bodyMedium),
                           ),
                         ),
                       ),
@@ -2864,8 +2971,10 @@ class _CheckoutOrdersSummaryScreenState
                       final packTitle = 'Pack ${index + 1}';
                       final qty = (item['quantity'] ?? 1) as int;
                       final price = _toDouble(item['price']);
-                      final itemChoices = List<dynamic>.from(item['selectedChoices'] ?? []);
-                      final itemAddOns = List<dynamic>.from(item['selectedAddOns'] ?? []);
+                      final itemChoices =
+                          List<dynamic>.from(item['selectedChoices'] ?? []);
+                      final itemAddOns =
+                          List<dynamic>.from(item['selectedAddOns'] ?? []);
 
                       return Container(
                         margin: EdgeInsets.only(bottom: 16.h),
@@ -2917,24 +3026,30 @@ class _CheckoutOrdersSummaryScreenState
                                 ClipRRect(
                                   borderRadius: BorderRadius.circular(16.r),
                                   child: (item['imageUrl'] != null &&
-                                          item['imageUrl'].toString().isNotEmpty)
+                                          item['imageUrl']
+                                              .toString()
+                                              .isNotEmpty)
                                       ? CachedNetworkImage(
                                           imageUrl: item['imageUrl'].toString(),
                                           width: 72.w,
                                           height: 72.w,
                                           fit: BoxFit.cover,
                                           errorWidget: (_, __, ___) =>
-                                              _buildFoodFallback(purpleColor, isDark),
+                                              _buildFoodFallback(
+                                                  purpleColor, isDark),
                                         )
                                       : _buildFoodFallback(purpleColor, isDark),
                                 ),
                                 SizedBox(width: 12.w),
                                 Expanded(
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Text(
-                                        (item['title'] ?? item['name'] ?? 'Food Item')
+                                        (item['title'] ??
+                                                item['name'] ??
+                                                'Food Item')
                                             .toString(),
                                         style: TextStyle(
                                           color: primaryTextColor,
@@ -2961,9 +3076,19 @@ class _CheckoutOrdersSummaryScreenState
                                           itemChoices
                                               .map((c) {
                                                 if (c is Map) {
-                                                  final label = (c['label'] ?? c['name'] ?? '').toString();
-                                                  final group = (c['group'] ?? '').toString();
-                                                  return group.isNotEmpty && label.isNotEmpty ? '$group: $label' : (label.isNotEmpty ? label : group);
+                                                  final label = (c['label'] ??
+                                                          c['name'] ??
+                                                          '')
+                                                      .toString();
+                                                  final group =
+                                                      (c['group'] ?? '')
+                                                          .toString();
+                                                  return group.isNotEmpty &&
+                                                          label.isNotEmpty
+                                                      ? '$group: $label'
+                                                      : (label.isNotEmpty
+                                                          ? label
+                                                          : group);
                                                 }
                                                 return c.toString();
                                               })
@@ -2971,7 +3096,8 @@ class _CheckoutOrdersSummaryScreenState
                                               .join(' • '),
                                           style: TextStyle(
                                             color: mutedTextColor,
-                                            fontSize: AppTypography.font(AppFontSizes.caption),
+                                            fontSize: AppTypography.font(
+                                                AppFontSizes.caption),
                                             fontWeight: FontWeight.w500,
                                           ),
                                         ),
@@ -2982,7 +3108,8 @@ class _CheckoutOrdersSummaryScreenState
                                           'Add-ons: ${itemAddOns.map((a) => ((a['quantity'] as num?)?.toInt() ?? 1) > 1 ? '${a['name'] ?? a['title']} (x${a['quantity']})' : '${a['name'] ?? a['title']}').where((n) => n.isNotEmpty).join(', ')}',
                                           style: TextStyle(
                                             color: mutedTextColor,
-                                            fontSize: AppTypography.font(AppFontSizes.caption),
+                                            fontSize: AppTypography.font(
+                                                AppFontSizes.caption),
                                             fontWeight: FontWeight.w500,
                                           ),
                                           maxLines: 1,
@@ -3001,7 +3128,8 @@ class _CheckoutOrdersSummaryScreenState
                                           if (qty > 1) {
                                             item['quantity'] = qty - 1;
                                           } else {
-                                            _activeCheckoutItems.removeAt(index);
+                                            _activeCheckoutItems
+                                                .removeAt(index);
                                           }
                                         });
                                       },
@@ -3022,8 +3150,8 @@ class _CheckoutOrdersSummaryScreenState
                                       ),
                                     ),
                                     Padding(
-                                      padding:
-                                          EdgeInsets.symmetric(horizontal: 10.w),
+                                      padding: EdgeInsets.symmetric(
+                                          horizontal: 10.w),
                                       child: Text(
                                         '$qty',
                                         style: TextStyle(
@@ -3068,7 +3196,8 @@ class _CheckoutOrdersSummaryScreenState
                 ],
 
                 SectionDivider(
-                  margin: EdgeInsets.only(left: -20.w, right: -20.w, top: 16.h, bottom: 20.h),
+                  margin: EdgeInsets.only(
+                      left: -20.w, right: -20.w, top: 16.h, bottom: 20.h),
                 ),
 
                 // Leave a note for the restaurant Section
@@ -3082,8 +3211,8 @@ class _CheckoutOrdersSummaryScreenState
                             'Leave a note for the restaurant',
                             style: TextStyle(
                               color: primaryTextColor,
-                              fontSize: AppTypography.font(
-                                  AppFontSizes.bodyMedium),
+                              fontSize:
+                                  AppTypography.font(AppFontSizes.bodyMedium),
                               fontWeight: FontWeight.w800,
                             ),
                           ),
@@ -3107,9 +3236,8 @@ class _CheckoutOrdersSummaryScreenState
                     ElevatedButton(
                       onPressed: _showRestaurantNoteBottomSheet,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: isDark
-                            ? Colors.grey[800]
-                            : const Color(0xFFF3F4F6),
+                        backgroundColor:
+                            isDark ? Colors.grey[800] : const Color(0xFFF3F4F6),
                         foregroundColor: primaryTextColor,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(999.r),
@@ -3179,7 +3307,8 @@ class _CheckoutOrdersSummaryScreenState
             'Selected Address')
         : 'Select delivery address';
 
-    final paymentName = _selectedPayment?['name']?.toString() ?? 'MartFood Wallet';
+    final paymentName =
+        _selectedPayment?['name']?.toString() ?? 'MartFood Wallet';
 
     return Column(
       children: [
@@ -3217,7 +3346,8 @@ class _CheckoutOrdersSummaryScreenState
                             'Checking coverage...',
                             style: TextStyle(
                               color: purpleColor,
-                              fontSize: AppTypography.font(AppFontSizes.caption),
+                              fontSize:
+                                  AppTypography.font(AppFontSizes.caption),
                               fontWeight: FontWeight.w600,
                             ),
                           ),
@@ -3225,7 +3355,8 @@ class _CheckoutOrdersSummaryScreenState
                       )
                     else if (_isAddressOutOfCoverage)
                       Container(
-                        padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
+                        padding: EdgeInsets.symmetric(
+                            horizontal: 8.w, vertical: 3.h),
                         decoration: BoxDecoration(
                           color: const Color(0xFFFEE2E2),
                           borderRadius: BorderRadius.circular(6.r),
@@ -3241,7 +3372,8 @@ class _CheckoutOrdersSummaryScreenState
                       )
                     else if (_deliveryDistanceKm > 0)
                       Container(
-                        padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
+                        padding: EdgeInsets.symmetric(
+                            horizontal: 8.w, vertical: 3.h),
                         decoration: BoxDecoration(
                           color: const Color(0xFFDCFCE7),
                           borderRadius: BorderRadius.circular(6.r),
@@ -3302,10 +3434,14 @@ class _CheckoutOrdersSummaryScreenState
                     width: double.infinity,
                     padding: EdgeInsets.all(12.w),
                     decoration: BoxDecoration(
-                      color: isDark ? const Color(0xFF2A1515) : const Color(0xFFFEF2F2),
+                      color: isDark
+                          ? const Color(0xFF2A1515)
+                          : const Color(0xFFFEF2F2),
                       borderRadius: BorderRadius.circular(14.r),
                       border: Border.all(
-                        color: isDark ? const Color(0xFF7F1D1D) : const Color(0xFFFCA5A5),
+                        color: isDark
+                            ? const Color(0xFF7F1D1D)
+                            : const Color(0xFFFCA5A5),
                         width: 1,
                       ),
                     ),
@@ -3325,8 +3461,11 @@ class _CheckoutOrdersSummaryScreenState
                               Text(
                                 'Delivery Address Out of Coverage',
                                 style: TextStyle(
-                                  color: isDark ? const Color(0xFFFCA5A5) : const Color(0xFF991B1B),
-                                  fontSize: AppTypography.font(AppFontSizes.bodySmall),
+                                  color: isDark
+                                      ? const Color(0xFFFCA5A5)
+                                      : const Color(0xFF991B1B),
+                                  fontSize: AppTypography.font(
+                                      AppFontSizes.bodySmall),
                                   fontWeight: FontWeight.w700,
                                 ),
                               ),
@@ -3335,8 +3474,11 @@ class _CheckoutOrdersSummaryScreenState
                                 _coverageErrorMessage ??
                                     'The delivery address is out of service coverage so change to an address that service coverage covers.',
                                 style: TextStyle(
-                                  color: isDark ? const Color(0xFFFECACA) : const Color(0xFFB91C1C),
-                                  fontSize: AppTypography.font(AppFontSizes.caption),
+                                  color: isDark
+                                      ? const Color(0xFFFECACA)
+                                      : const Color(0xFFB91C1C),
+                                  fontSize:
+                                      AppTypography.font(AppFontSizes.caption),
                                   fontWeight: FontWeight.w500,
                                   height: 1.3,
                                 ),
@@ -3348,7 +3490,8 @@ class _CheckoutOrdersSummaryScreenState
                         InkWell(
                           onTap: _openDeliverToScreen,
                           child: Container(
-                            padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 10.w, vertical: 6.h),
                             decoration: BoxDecoration(
                               color: purpleColor,
                               borderRadius: BorderRadius.circular(8.r),
@@ -3357,7 +3500,8 @@ class _CheckoutOrdersSummaryScreenState
                               'Change',
                               style: TextStyle(
                                 color: Colors.white,
-                                fontSize: AppTypography.font(AppFontSizes.caption),
+                                fontSize:
+                                    AppTypography.font(AppFontSizes.caption),
                                 fontWeight: FontWeight.w700,
                               ),
                             ),
@@ -3368,7 +3512,8 @@ class _CheckoutOrdersSummaryScreenState
                   ),
                 ],
                 SectionDivider(
-                  margin: EdgeInsets.only(left: -20.w, right: -20.w, top: 16.h, bottom: 16.h),
+                  margin: EdgeInsets.only(
+                      left: -20.w, right: -20.w, top: 16.h, bottom: 16.h),
                 ),
 
                 // Leave a note for the rider Section
@@ -3382,8 +3527,8 @@ class _CheckoutOrdersSummaryScreenState
                             'Leave a note for the rider',
                             style: TextStyle(
                               color: primaryTextColor,
-                              fontSize: AppTypography.font(
-                                  AppFontSizes.bodyMedium),
+                              fontSize:
+                                  AppTypography.font(AppFontSizes.bodyMedium),
                               fontWeight: FontWeight.w800,
                             ),
                           ),
@@ -3407,9 +3552,8 @@ class _CheckoutOrdersSummaryScreenState
                     ElevatedButton(
                       onPressed: _showRiderNoteBottomSheet,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: isDark
-                            ? Colors.grey[800]
-                            : const Color(0xFFF3F4F6),
+                        backgroundColor:
+                            isDark ? Colors.grey[800] : const Color(0xFFF3F4F6),
                         foregroundColor: primaryTextColor,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(999.r),
@@ -3429,7 +3573,8 @@ class _CheckoutOrdersSummaryScreenState
                   ],
                 ),
                 SectionDivider(
-                  margin: EdgeInsets.only(left: -20.w, right: -20.w, top: 16.h, bottom: 16.h),
+                  margin: EdgeInsets.only(
+                      left: -20.w, right: -20.w, top: 16.h, bottom: 16.h),
                 ),
 
                 // Payment Method Card
@@ -3489,9 +3634,12 @@ class _CheckoutOrdersSummaryScreenState
                   SizedBox(height: 12.h),
                   Container(
                     width: double.infinity,
-                    padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
                     decoration: BoxDecoration(
-                      color: isDark ? AppTheme.darkSurface : AppTheme.lightInputFill,
+                      color: isDark
+                          ? AppTheme.darkSurface
+                          : AppTheme.lightInputFill,
                       borderRadius: BorderRadius.circular(16.r),
                       border: Border.all(color: borderColor, width: 1),
                     ),
@@ -3504,7 +3652,9 @@ class _CheckoutOrdersSummaryScreenState
                             shape: BoxShape.circle,
                           ),
                           child: Icon(
-                            _hideOrderDetailsForSomeone ? LucideIcons.eyeOff : LucideIcons.eye,
+                            _hideOrderDetailsForSomeone
+                                ? LucideIcons.eyeOff
+                                : LucideIcons.eye,
                             color: purpleColor,
                             size: 18.sp,
                           ),
@@ -3518,7 +3668,8 @@ class _CheckoutOrdersSummaryScreenState
                                 'Hide order details',
                                 style: TextStyle(
                                   color: primaryTextColor,
-                                  fontSize: AppTypography.font(AppFontSizes.bodySmall),
+                                  fontSize: AppTypography.font(
+                                      AppFontSizes.bodySmall),
                                   fontWeight: FontWeight.w700,
                                 ),
                               ),
@@ -3527,7 +3678,8 @@ class _CheckoutOrdersSummaryScreenState
                                 'Conceal food items and choices from the payment link',
                                 style: TextStyle(
                                   color: mutedTextColor,
-                                  fontSize: AppTypography.font(AppFontSizes.caption),
+                                  fontSize:
+                                      AppTypography.font(AppFontSizes.caption),
                                   fontWeight: FontWeight.w500,
                                 ),
                               ),
@@ -3548,7 +3700,8 @@ class _CheckoutOrdersSummaryScreenState
                   ),
                 ],
                 SectionDivider(
-                  margin: EdgeInsets.only(left: -20.w, right: -20.w, top: 16.h, bottom: 20.h),
+                  margin: EdgeInsets.only(
+                      left: -20.w, right: -20.w, top: 16.h, bottom: 20.h),
                 ),
 
                 // Payment Summary Section
@@ -3596,8 +3749,8 @@ class _CheckoutOrdersSummaryScreenState
                               'Special Offers & Promo',
                               style: TextStyle(
                                 color: Colors.white,
-                                fontSize: AppTypography.font(
-                                    AppFontSizes.bodyMedium),
+                                fontSize:
+                                    AppTypography.font(AppFontSizes.bodyMedium),
                                 fontWeight: FontWeight.w800,
                               ),
                             ),
@@ -3708,7 +3861,8 @@ class _CheckoutOrdersSummaryScreenState
                           'Delivery Fee',
                           style: TextStyle(
                             color: primaryTextColor,
-                            fontSize: AppTypography.font(AppFontSizes.bodyMedium),
+                            fontSize:
+                                AppTypography.font(AppFontSizes.bodyMedium),
                             fontWeight: FontWeight.w800,
                           ),
                         ),
@@ -3729,7 +3883,17 @@ class _CheckoutOrdersSummaryScreenState
                     Text(
                       _isAddressOutOfCoverage
                           ? 'Out of coverage'
-                          : _formatCurrency(_roundToNearest10(_deliveryFee)),
+                          : (_deliveryFee <= 0 ||
+                                  (_selectedPromo != null &&
+                                      (_selectedPromo!['appliedOn'] ?? '')
+                                              .toString() ==
+                                          'delivery_fee' &&
+                                      _toDouble(_selectedPromo![
+                                              'discountPercentage']) >=
+                                          100))
+                              ? 'Free'
+                              : _formatCurrency(
+                                  _roundToNearest10(_deliveryFee)),
                       style: TextStyle(
                         color: _isAddressOutOfCoverage
                             ? const Color(0xFFDC2626)
@@ -3751,7 +3915,8 @@ class _CheckoutOrdersSummaryScreenState
                           'Service Fee',
                           style: TextStyle(
                             color: primaryTextColor,
-                            fontSize: AppTypography.font(AppFontSizes.bodyMedium),
+                            fontSize:
+                                AppTypography.font(AppFontSizes.bodyMedium),
                             fontWeight: FontWeight.w800,
                           ),
                         ),
@@ -3839,7 +4004,8 @@ class _CheckoutOrdersSummaryScreenState
               onPressed: _isLoading
                   ? null
                   : (_isAddressOutOfCoverage
-                      ? () => _showOutOfCoverageBottomSheet(_selectedAddress ?? {})
+                      ? () =>
+                          _showOutOfCoverageBottomSheet(_selectedAddress ?? {})
                       : _placeOrder),
               style: ElevatedButton.styleFrom(
                 backgroundColor: _isAddressOutOfCoverage

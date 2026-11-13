@@ -7,6 +7,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:shared_widgets/core/theme/app_theme.dart';
 import 'package:shared_widgets/widgets/category_item.dart';
 import 'package:shared_widgets/widgets/food_card_horizontal.dart';
+import '../../core/widgets/guest_auth_prompt_sheet.dart';
 import 'package:shared_widgets/widgets/food_card_vertical.dart';
 import 'package:shared_widgets/widgets/vendor_promo_badge.dart';
 import 'package:shared_widgets/widgets/bulk_meal_card.dart';
@@ -2303,7 +2304,7 @@ class _HomeScreenState extends State<HomeScreen> {
         _buildSectionHeader(
             'Restaurants', () => context.push('/category/restaurant')),
         SizedBox(
-          height: MediaQuery.of(context).size.width >= 600 ? 180.h : 214.h,
+          height: MediaQuery.of(context).size.width >= 600 ? 208.h : 242.h,
           child: Builder(builder: (context) {
             if (_currentPosition == null || _vendorsMap.isEmpty) {
               return ListView.builder(
@@ -2351,22 +2352,55 @@ class _HomeScreenState extends State<HomeScreen> {
                   vendorData: data,
                   builder:
                       (context, rating, reviewsCount, distanceKm, deliveryFee) {
-                    return Padding(
-                      padding: EdgeInsets.only(right: 16.w),
-                      child: FoodCardVertical(
-                        title: vendorName,
-                        imageUrl: bannerUrl,
-                        rating: rating,
-                        reviewsCount: reviewsCount,
-                        distanceM: (distanceKm * 1000).toInt(),
-                        deliveryTime: '10 - 15 min',
-                        isVerified: true,
-                        vendorData: data,
-                        isClosed: !_isVendorOpen(data['operatingHours']),
-                        badge: VendorPromoBadge(vendorId: vendorId),
-                        onTap: () => context.push('/vendor/$vendorId'),
-                        onFavoriteTap: () {},
-                      ),
+                    final uid = FirebaseAuth.instance.currentUser?.uid;
+                    return StreamBuilder<DocumentSnapshot>(
+                      stream: uid != null
+                          ? FirebaseFirestore.instance
+                              .collection('customers')
+                              .doc(uid)
+                              .snapshots()
+                          : const Stream.empty(),
+                      builder: (context, favSnap) {
+                        final custData = favSnap.data?.data() as Map<String, dynamic>?;
+                        final favList = List<String>.from(custData?['favoriteRestaurants'] ?? []);
+                        final isFav = favList.contains(vendorId);
+
+                        return Padding(
+                          padding: EdgeInsets.only(right: 16.w),
+                          child: FoodCardVertical(
+                            title: vendorName,
+                            imageUrl: bannerUrl,
+                            rating: rating,
+                            reviewsCount: reviewsCount,
+                            distanceM: (distanceKm * 1000).toInt(),
+                            deliveryTime: '10 - 15 min',
+                            isVerified: true,
+                            isFavorite: isFav,
+                            vendorData: data,
+                            isClosed: !_isVendorOpen(data['operatingHours']),
+                            badge: VendorPromoBadge(vendorId: vendorId),
+                            onTap: () => context.push('/vendor/$vendorId'),
+                            onFavoriteTap: () async {
+                              if (uid == null) {
+                                GuestAuthPromptSheet.show(context);
+                                return;
+                              }
+                              final ref = FirebaseFirestore.instance
+                                  .collection('customers')
+                                  .doc(uid);
+                              if (isFav) {
+                                await ref.set({
+                                  'favoriteRestaurants': FieldValue.arrayRemove([vendorId])
+                                }, SetOptions(merge: true));
+                              } else {
+                                await ref.set({
+                                  'favoriteRestaurants': FieldValue.arrayUnion([vendorId])
+                                }, SetOptions(merge: true));
+                              }
+                            },
+                          ),
+                        );
+                      },
                     );
                   },
                 );

@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:shared_widgets/widgets/skeleton_loader.dart';
+import 'package:shared_widgets/widgets/vendor_promo_badge.dart';
 import 'package:shared_widgets/core/theme/app_theme.dart';
 import 'package:shared_widgets/widgets/verification_badge.dart';
 import 'package:geolocator/geolocator.dart';
@@ -414,6 +415,10 @@ class _FavoriteRestaurantsScreenState
                                     ],
                                   );
                                 },
+                              ),
+                              VendorPromoBadge(
+                                vendorId: vendorId,
+                                margin: EdgeInsets.only(top: 6.h),
                               ),
                             ],
                           ),

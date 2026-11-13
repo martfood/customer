@@ -1,9 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
-/// Displays a red rectangle promo badge for a vendor:
-/// - `'-XX% whole menu'` when an active admin promo applies to all or this vendor
-/// - `'-XX% select items'` for the highest vendor product promo discount
+/// Displays up to 2 red rectangle promo badges for a vendor:
+/// - Bike icon + `Free` when an active admin promo has `appliedOn == 'delivery_fee'` and `discountPercentage == 100`
+/// - `'-XX% whole menu'` for the highest active admin `full_order` promo
+/// - `'-XX% select items'` for the highest vendor `resturantPosts` promo (if no whole-menu promo)
 class VendorPromoBadge extends StatelessWidget {
   final String vendorId;
   final EdgeInsetsGeometry? margin;
@@ -24,67 +25,108 @@ class VendorPromoBadge extends StatelessWidget {
           .where('isActive', isEqualTo: true)
           .snapshots(),
       builder: (context, promoSnap) {
-        int maxAdminPercent = 0;
+        bool hasFreeDelivery = false;
+        int maxWholeMenuPercent = 0;
 
         if (promoSnap.hasData) {
           for (final doc in promoSnap.data!.docs) {
             final data = doc.data() as Map<String, dynamic>;
-            final applyToAll = data['applyToAll'] == true;
-            final vendorIds = (data['vendorIds'] as List?)
-                    ?.map((e) => e.toString())
-                    .toList() ??
-                const <String>[];
-            if (!applyToAll && !vendorIds.contains(vendorId)) continue;
+            final targetVendorId = data['vendorId']?.toString() ?? '';
+            if (targetVendorId != 'all' && targetVendorId != vendorId) continue;
 
-            final discountType =
-                (data['discountType'] ?? 'percentage').toString().toLowerCase();
-            if (discountType == 'percentage' || discountType == 'percent') {
-              final rawVal = data['discountValue'] ??
-                  data['discountPercent'] ??
-                  data['percentage'] ??
-                  0;
-              final pct = (rawVal is num) ? rawVal.round() : 0;
-              if (pct > maxAdminPercent) maxAdminPercent = pct;
+            final appliedOn =
+                (data['appliedOn'] ?? 'full_order').toString().toLowerCase();
+            final rawVal = data['discountPercentage'] ??
+                data['discountValue'] ??
+                data['discountPercent'] ??
+                0;
+            final pct = (rawVal is num) ? rawVal.round() : 0;
+
+            if (appliedOn == 'delivery_fee') {
+              if (pct >= 100) hasFreeDelivery = true;
+            } else {
+              if (pct > maxWholeMenuPercent) maxWholeMenuPercent = pct;
             }
           }
         }
 
-        if (maxAdminPercent > 0) {
-          return _buildBadge('-$maxAdminPercent% whole menu');
-        }
-
         return StreamBuilder<QuerySnapshot>(
           stream: FirebaseFirestore.instance
-              .collection('vendors')
-              .doc(vendorId)
-              .collection('products')
+              .collection('resturantPosts')
+              .where('vendorId', isEqualTo: vendorId)
+              .where('isPromotion', isEqualTo: true)
               .snapshots(),
-          builder: (context, prodSnap) {
-            if (!prodSnap.hasData) return const SizedBox.shrink();
-
-            int maxItemPercent = 0;
-            for (final doc in prodSnap.data!.docs) {
-              final data = doc.data() as Map<String, dynamic>;
-              if (data['isAvailable'] == false) continue;
-              final price = (data['price'] as num?)?.toDouble() ?? 0;
-              final promoPrice = (data['promoPrice'] as num?)?.toDouble() ?? 0;
-              if (promoPrice > 0 && price > promoPrice) {
-                final pct = (((price - promoPrice) / price) * 100).round();
-                if (pct > maxItemPercent) maxItemPercent = pct;
+          builder: (context, postSnap) {
+            int maxSelectItemsPercent = 0;
+            if (postSnap.hasData) {
+              for (final doc in postSnap.data!.docs) {
+                final data = doc.data() as Map<String, dynamic>;
+                if (data['isAvailable'] == false) continue;
+                final price =
+                    ((data['price'] ?? data['basePrice']) as num?)?.toDouble() ??
+                        0;
+                final promoPrice =
+                    (data['promoPrice'] as num?)?.toDouble() ?? 0;
+                if (promoPrice > 0 && price > promoPrice) {
+                  final pct = (((price - promoPrice) / price) * 100).round();
+                  if (pct > maxSelectItemsPercent) maxSelectItemsPercent = pct;
+                }
               }
             }
 
-            if (maxItemPercent <= 0) return const SizedBox.shrink();
-            return _buildBadge('-$maxItemPercent% select items');
+            final List<Widget> badges = [];
+            if (hasFreeDelivery) {
+              badges.add(_buildFreeDeliveryBadge());
+            }
+            if (maxWholeMenuPercent > 0) {
+              badges.add(_buildTextBadge('-$maxWholeMenuPercent% whole menu'));
+            } else if (maxSelectItemsPercent > 0) {
+              badges.add(_buildTextBadge('-$maxSelectItemsPercent% select items'));
+            }
+
+            if (badges.isEmpty) return const SizedBox.shrink();
+
+            return Padding(
+              padding: margin ?? EdgeInsets.zero,
+              child: Wrap(
+                spacing: 6,
+                runSpacing: 4,
+                children: badges.take(2).toList(),
+              ),
+            );
           },
         );
       },
     );
   }
 
-  Widget _buildBadge(String label) {
+  Widget _buildFreeDeliveryBadge() {
     return Container(
-      margin: margin,
+      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+      decoration: BoxDecoration(
+        color: const Color(0xFFDC2626),
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: const Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.directions_bike, size: 12, color: Colors.white),
+          SizedBox(width: 4),
+          Text(
+            'Free',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 10.5,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTextBadge(String label) {
+    return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(
         color: const Color(0xFFDC2626),
@@ -103,4 +145,3 @@ class VendorPromoBadge extends StatelessWidget {
     );
   }
 }
-
