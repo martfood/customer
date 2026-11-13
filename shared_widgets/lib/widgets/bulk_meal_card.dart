@@ -98,8 +98,8 @@ class BulkMealCard extends StatelessWidget {
     final showBanner = bannerText.isNotEmpty;
     final isDeliveryOngoing =
         bannerText.toLowerCase().contains('delivery ongoing');
-    final isOrderClosed =
-        isClosed || (!isDeliveryOngoing && bannerText.toLowerCase().contains('closed'));
+    final isOrderClosed = isClosed ||
+        (!isDeliveryOngoing && bannerText.toLowerCase().contains('closed'));
     final bannerBgColor = isOrderClosed
         ? (isDark ? AppTheme.darkBorder : AppTheme.lightInputBorder)
         : (isDark
@@ -108,9 +108,8 @@ class BulkMealCard extends StatelessWidget {
     final bannerIconColor = isOrderClosed
         ? (isDark ? Colors.grey[400]! : AppTheme.lightHintText)
         : purpleColor;
-    final bannerTextColor = isOrderClosed
-        ? (isDark ? Colors.white : Colors.black)
-        : purpleColor;
+    final bannerTextColor =
+        isOrderClosed ? (isDark ? Colors.white : Colors.black) : purpleColor;
 
     return Material(
       color: Colors.transparent,
@@ -130,6 +129,26 @@ class BulkMealCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(16.r),
         child: Stack(
           children: [
+            if (promoPrice != null && promoPrice! > 0 && price > promoPrice!)
+              Positioned(
+                top: 12.h,
+                left: 12.w,
+                child: Container(
+                  padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFDC2626),
+                    borderRadius: BorderRadius.circular(6.r),
+                  ),
+                  child: Text(
+                    '-${(((price - promoPrice!) / price) * 100).round()}%',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
             Container(
               width: cardWidth,
               height: height,

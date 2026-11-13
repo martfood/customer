@@ -252,15 +252,15 @@ class _NoticeBottomSheetBodyState extends State<_NoticeBottomSheetBody> {
               children: [
                 // Top close bar with round button
                 Padding(
-                  padding: EdgeInsets.fromLTRB(20.w, 14.h, 20.w, 4.h),
+                  padding: EdgeInsets.fromLTRB(20, 14, 20, 4),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
                       GestureDetector(
                         onTap: () => Navigator.of(context).pop(),
                         child: Container(
-                          width: 36.w,
-                          height: 36.w,
+                          width: 36,
+                          height: 36,
                           decoration: BoxDecoration(
                             color: closeBtnBg,
                             shape: BoxShape.circle,
@@ -268,7 +268,7 @@ class _NoticeBottomSheetBodyState extends State<_NoticeBottomSheetBody> {
                           ),
                           child: Icon(
                             LucideIcons.x,
-                            size: 18.sp,
+                            size: 18,
                             color: text,
                           ),
                         ),
@@ -280,7 +280,7 @@ class _NoticeBottomSheetBodyState extends State<_NoticeBottomSheetBody> {
                 // Scrollable notice content
                 Flexible(
                   child: SingleChildScrollView(
-                    padding: EdgeInsets.fromLTRB(24.w, 4.h, 24.w, 28.h),
+                    padding: EdgeInsets.fromLTRB(24, 4, 24, 28),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -295,7 +295,7 @@ class _NoticeBottomSheetBodyState extends State<_NoticeBottomSheetBody> {
                             height: 1.2,
                           ),
                         ),
-                        SizedBox(height: 8.h),
+                        SizedBox(height: 8),
 
                         // Subtitle
                         Text(
@@ -307,14 +307,14 @@ class _NoticeBottomSheetBodyState extends State<_NoticeBottomSheetBody> {
                             height: 1.4,
                           ),
                         ),
-                        SizedBox(height: 18.h),
+                        SizedBox(height: 18),
 
                         // Author / Date Metadata Row
                         Row(
                           children: [
                             Container(
-                              width: 36.w,
-                              height: 36.w,
+                              width: 36,
+                              height: 36,
                               decoration: const BoxDecoration(
                                 color: Color(0xFF0F5132),
                                 shape: BoxShape.circle,
@@ -330,7 +330,7 @@ class _NoticeBottomSheetBodyState extends State<_NoticeBottomSheetBody> {
                                 ),
                               ),
                             ),
-                            SizedBox(width: 12.w),
+                            SizedBox(width: 12),
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
@@ -342,7 +342,7 @@ class _NoticeBottomSheetBodyState extends State<_NoticeBottomSheetBody> {
                                     color: text,
                                   ),
                                 ),
-                                SizedBox(height: 2.h),
+                                SizedBox(height: 2),
                                 Text(
                                   data.updatedDate,
                                   style: TextStyle(
@@ -354,7 +354,7 @@ class _NoticeBottomSheetBodyState extends State<_NoticeBottomSheetBody> {
                             ),
                           ],
                         ),
-                        SizedBox(height: 24.h),
+                        SizedBox(height: 24),
 
                         // Section 1 Heading
                         Text(
@@ -367,7 +367,7 @@ class _NoticeBottomSheetBodyState extends State<_NoticeBottomSheetBody> {
                             height: 1.25,
                           ),
                         ),
-                        SizedBox(height: 10.h),
+                        SizedBox(height: 10),
 
                         // Section 1 Body
                         Text(
@@ -379,7 +379,7 @@ class _NoticeBottomSheetBodyState extends State<_NoticeBottomSheetBody> {
                             height: 1.55,
                           ),
                         ),
-                        SizedBox(height: 24.h),
+                        SizedBox(height: 24),
 
                         // Section 2 Heading
                         Text(
@@ -392,7 +392,7 @@ class _NoticeBottomSheetBodyState extends State<_NoticeBottomSheetBody> {
                             height: 1.25,
                           ),
                         ),
-                        SizedBox(height: 10.h),
+                        SizedBox(height: 10),
 
                         // Section 2 Body
                         Text(
@@ -404,7 +404,7 @@ class _NoticeBottomSheetBodyState extends State<_NoticeBottomSheetBody> {
                             height: 1.55,
                           ),
                         ),
-                        SizedBox(height: 36.h),
+                        SizedBox(height: 36),
 
                         // Feedback Section
                         Center(
@@ -422,7 +422,7 @@ class _NoticeBottomSheetBodyState extends State<_NoticeBottomSheetBody> {
                                       : muted,
                                 ),
                               ),
-                              SizedBox(height: 14.h),
+                              SizedBox(height: 14),
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
@@ -432,14 +432,14 @@ class _NoticeBottomSheetBodyState extends State<_NoticeBottomSheetBody> {
                                     border: border,
                                     isDark: isDark,
                                   ),
-                                  SizedBox(width: 16.w),
+                                  SizedBox(width: 16),
                                   _buildEmojiButton(
                                     emoji: '😐',
                                     index: 1,
                                     border: border,
                                     isDark: isDark,
                                   ),
-                                  SizedBox(width: 16.w),
+                                  SizedBox(width: 16),
                                   _buildEmojiButton(
                                     emoji: '😃',
                                     index: 2,
@@ -449,7 +449,7 @@ class _NoticeBottomSheetBodyState extends State<_NoticeBottomSheetBody> {
                                 ],
                               ),
                               if (_feedbackSubmitted) ...[
-                                SizedBox(height: 12.h),
+                                SizedBox(height: 12),
                                 Text(
                                   'Thank you for your feedback! ✨',
                                   style: TextStyle(
@@ -486,8 +486,8 @@ class _NoticeBottomSheetBodyState extends State<_NoticeBottomSheetBody> {
       onTap: () => _handleReaction(index),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 180),
-        width: 44.w,
-        height: 44.w,
+        width: 44,
+        height: 44,
         decoration: BoxDecoration(
           color: isSelected
               ? AppTheme.primaryPurpleFor(isDark).withValues(alpha: 0.15)

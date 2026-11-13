@@ -63,6 +63,8 @@ class RestaurantFoodDetailsScreen extends StatefulWidget {
   final String? vendorId;
   final String? docId;
   final String? sourceCollection;
+  final bool isEditingCartItem;
+  final String? cartDocId;
 
   const RestaurantFoodDetailsScreen({
     super.key,
@@ -70,6 +72,8 @@ class RestaurantFoodDetailsScreen extends StatefulWidget {
     this.vendorId,
     this.docId,
     this.sourceCollection,
+    this.isEditingCartItem = false,
+    this.cartDocId,
   });
 
   @override
@@ -1623,6 +1627,9 @@ class _RestaurantFoodDetailsScreenState
                             .snapshots()
                         : const Stream.empty(),
                     builder: (context, snapshot) {
+                      if (widget.isEditingCartItem) {
+                        return const SizedBox.shrink();
+                      }
                       final cartCount = snapshot.data?.docs.length ?? 0;
 
                       return Stack(
@@ -1695,6 +1702,39 @@ class _RestaurantFoodDetailsScreenState
                 onPressed: !_isAvailable
                     ? null
                     : () async {
+                        if (widget.isEditingCartItem && widget.cartDocId != null) {
+                          for (int g = 0; g < _menuGroups.length; g++) {
+                            if (_menuGroups[g].required &&
+                                _selectedIndex[g] < 0) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    'Please select an option for "${_menuGroups[g].title}"',
+                                  ),
+                                ),
+                              );
+                              return;
+                            }
+                          }
+                          final user = FirebaseAuth.instance.currentUser;
+                          if (user != null) {
+                            await FirebaseFirestore.instance
+                                .collection('customers')
+                                .doc(user.uid)
+                                .collection('cart')
+                                .doc(widget.cartDocId)
+                                .update({
+                              'quantity': _quantity,
+                              'price': currentTotal / (_quantity > 0 ? _quantity : 1),
+                              'totalPrice': currentTotal,
+                              'updatedAt': FieldValue.serverTimestamp(),
+                            });
+                          }
+                          if (context.mounted) {
+                            Navigator.of(context).pop();
+                          }
+                          return;
+                        }
                         if (!_addedToCart) {
                           // Check required groups
                           for (int g = 0; g < _menuGroups.length; g++) {
@@ -1943,9 +1983,11 @@ class _RestaurantFoodDetailsScreenState
                 child: Text(
                   !_isAvailable
                       ? 'Out of Stock'
-                      : (_addedToCart
-                          ? 'Checkout ${_fmt(currentTotal)}'
-                          : 'Add ${_fmt(currentTotal)}'),
+                      : (widget.isEditingCartItem
+                          ? 'Confirm'
+                          : (_addedToCart
+                              ? 'Checkout ${_fmt(currentTotal)}'
+                              : 'Add ${_fmt(currentTotal)}')),
                   style: TextStyle(
                     fontSize: AppTypography.font(15),
                     fontWeight: FontWeight.w800,

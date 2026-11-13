@@ -662,7 +662,12 @@ class _SearchScreenState extends State<SearchScreen> {
     double? parseTime(dynamic val) {
       if (val == null) return null;
       if (val is num) return val.toDouble();
-      final str = val.toString().toLowerCase().replaceAll('mins', '').replaceAll('min', '').trim();
+      final str = val
+          .toString()
+          .toLowerCase()
+          .replaceAll('mins', '')
+          .replaceAll('min', '')
+          .trim();
       if (str.isEmpty) return null;
       if (str.contains('-')) {
         final parts = str.split('-');
@@ -899,8 +904,7 @@ class _SearchScreenState extends State<SearchScreen> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final backgroundColor =
-        isDark ? AppTheme.darkSurface : Colors.white;
+    final backgroundColor = isDark ? AppTheme.darkSurface : Colors.white;
     final surfaceColor = isDark ? const Color(0xFF121212) : Colors.white;
     final primaryTextColor = isDark ? Colors.white : const Color(0xFF15161A);
     final mutedTextColor = AppTheme.mutedTextColorFor(isDark);
@@ -949,7 +953,7 @@ class _SearchScreenState extends State<SearchScreen> {
                                 padding: EdgeInsets.only(top: 8.h, bottom: 4.h),
                                 child: Center(
                                   child: Text(
-                                    'Search',
+                                    'Discover',
                                     style: TextStyle(
                                       color: purpleColor,
                                       fontSize: AppTypography.font(
@@ -1014,11 +1018,10 @@ class _SearchScreenState extends State<SearchScreen> {
                                               GestureDetector(
                                                 onTap: () {
                                                   _searchController.clear();
-                                                  setState(() =>
-                                                      _searchText = '');
+                                                  setState(
+                                                      () => _searchText = '');
                                                 },
-                                                child: Icon(
-                                                    Icons.close_rounded,
+                                                child: Icon(Icons.close_rounded,
                                                     color: mutedTextColor,
                                                     size: 20.sp),
                                               ),
@@ -1036,14 +1039,16 @@ class _SearchScreenState extends State<SearchScreen> {
                                         height: 48.w,
                                         decoration: BoxDecoration(
                                           color: _hasActiveFilters
-                                              ? AppTheme.primaryPurpleFor(isDark)
+                                              ? AppTheme.primaryPurpleFor(
+                                                      isDark)
                                                   .withValues(alpha: 0.15)
                                               : surfaceColor,
                                           borderRadius:
                                               BorderRadius.circular(18.r),
                                           border: Border.all(
                                             color: _hasActiveFilters
-                                                ? AppTheme.primaryPurpleFor(isDark)
+                                                ? AppTheme.primaryPurpleFor(
+                                                    isDark)
                                                 : borderColor,
                                             width: 1,
                                           ),
@@ -1052,12 +1057,12 @@ class _SearchScreenState extends State<SearchScreen> {
                                         child: Stack(
                                           alignment: Alignment.center,
                                           children: [
-                                            Icon(
-                                              LucideIcons.filter,
-                                              color: _hasActiveFilters
-                                                  ? AppTheme.primaryPurpleFor(isDark)
-                                                  : mutedTextColor,
-                                              size: 20.sp),
+                                            Icon(LucideIcons.filter,
+                                                color: _hasActiveFilters
+                                                    ? AppTheme.primaryPurpleFor(
+                                                        isDark)
+                                                    : mutedTextColor,
+                                                size: 20.sp),
                                             if (_hasActiveFilters)
                                               Positioned(
                                                 top: 10.h,
@@ -1067,7 +1072,8 @@ class _SearchScreenState extends State<SearchScreen> {
                                                   height: 7.w,
                                                   decoration: BoxDecoration(
                                                     color: AppTheme
-                                                        .primaryPurpleFor(isDark),
+                                                        .primaryPurpleFor(
+                                                            isDark),
                                                     shape: BoxShape.circle,
                                                   ),
                                                 ),
@@ -1102,8 +1108,7 @@ class _SearchScreenState extends State<SearchScreen> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: _categories.map((cat) {
                           final title = cat['title'] as String;
-                          final imageUrl =
-                              (cat['imageUrl'] ?? '').toString();
+                          final imageUrl = (cat['imageUrl'] ?? '').toString();
                           final iconData = cat['icon'] as IconData?;
                           final isSelected = _selectedTab == title;
 
@@ -1129,251 +1134,222 @@ class _SearchScreenState extends State<SearchScreen> {
 
           // ─── Results Body ──────────────────────────────────────────────
           body: !_isServiceAvailable
-                        ? _buildServiceUnavailableView(isDark)
-                        : StreamBuilder<List<Map<String, dynamic>>>(
-                            stream: _combinedStream,
-                            builder: (context, snapshot) {
-                              if (snapshot.connectionState ==
-                                      ConnectionState.waiting &&
-                                  !snapshot.hasData) {
-                                return ListView.separated(
-                                  padding:
-                                      EdgeInsets.symmetric(horizontal: 20.w),
-                                  itemCount: 4,
-                                  separatorBuilder: (_, __) =>
-                                      SizedBox(height: 16.h),
-                                  itemBuilder: (_, __) =>
-                                      SkeletonLoader.verticalFoodCard(
-                                          context: context),
-                                );
-                              }
+              ? _buildServiceUnavailableView(isDark)
+              : StreamBuilder<List<Map<String, dynamic>>>(
+                  stream: _combinedStream,
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting &&
+                        !snapshot.hasData) {
+                      return ListView.separated(
+                        padding: EdgeInsets.symmetric(horizontal: 20.w),
+                        itemCount: 4,
+                        separatorBuilder: (_, __) => SizedBox(height: 16.h),
+                        itemBuilder: (_, __) =>
+                            SkeletonLoader.verticalFoodCard(context: context),
+                      );
+                    }
 
-                              final allItems = snapshot.data ?? [];
+                    final allItems = snapshot.data ?? [];
 
-                              // ─── DEBUG: log filtering details (print-only, no setState) ─
-                              if (allItems.isNotEmpty || _vendorsLoaded) {
-                                final posInfo = _currentPosition != null
-                                    ? '${_currentPosition!.latitude.toStringAsFixed(4)},${_currentPosition!.longitude.toStringAsFixed(4)}'
-                                    : 'NULL';
-                                _dprint(
-                                    'StreamBuilder rebuild: ${allItems.length} raw posts | pos=$posInfo | vendorsLoaded=$_vendorsLoaded | vendorCount=${_vendorsMap.length}');
-                              }
+                    // ─── DEBUG: log filtering details (print-only, no setState) ─
+                    if (allItems.isNotEmpty || _vendorsLoaded) {
+                      final posInfo = _currentPosition != null
+                          ? '${_currentPosition!.latitude.toStringAsFixed(4)},${_currentPosition!.longitude.toStringAsFixed(4)}'
+                          : 'NULL';
+                      _dprint(
+                          'StreamBuilder rebuild: ${allItems.length} raw posts | pos=$posInfo | vendorsLoaded=$_vendorsLoaded | vendorCount=${_vendorsMap.length}');
+                    }
 
-                              final userPos =
-                                  _currentPosition ?? PriceHelper.currentPosition;
+                    final userPos =
+                        _currentPosition ?? PriceHelper.currentPosition;
 
-                              final filteredItems = allItems.where((item) {
-                                final isVisible = item['visibleOnMenu'] !=
-                                        false &&
-                                    item['isVisible'] != false &&
-                                    item['visible'] != false;
-                                if (!isVisible) return false;
+                    final filteredItems = allItems.where((item) {
+                      final isVisible = item['visibleOnMenu'] != false &&
+                          item['isVisible'] != false &&
+                          item['visible'] != false;
+                      if (!isVisible) return false;
 
-                                final vendorId = item['vendorId'] ?? '';
-                                final vendor = _vendorsMap[vendorId];
+                      final vendorId = item['vendorId'] ?? '';
+                      final vendor = _vendorsMap[vendorId];
 
-                                // 1. Search Text filter
-                                if (_searchText.isNotEmpty) {
-                                  final name = (item['name'] ?? '')
-                                      .toString()
-                                      .toLowerCase();
-                                  final query = _searchText.toLowerCase();
-                                  final vProfile = vendor?['businessProfile']
-                                      as Map<String, dynamic>?;
-                                  final vName = (vProfile?['restaurantName'] ??
-                                          vProfile?['businessName'] ??
-                                          vendor?['restaurantName'] ??
-                                          '')
-                                      .toString()
-                                      .toLowerCase();
-                                  if (!name.contains(query) &&
-                                      !vName.contains(query)) {
-                                    return false;
-                                  }
-                                }
+                      // 1. Search Text filter
+                      if (_searchText.isNotEmpty) {
+                        final name =
+                            (item['name'] ?? '').toString().toLowerCase();
+                        final query = _searchText.toLowerCase();
+                        final vProfile =
+                            vendor?['businessProfile'] as Map<String, dynamic>?;
+                        final vName = (vProfile?['restaurantName'] ??
+                                vProfile?['businessName'] ??
+                                vendor?['restaurantName'] ??
+                                '')
+                            .toString()
+                            .toLowerCase();
+                        if (!name.contains(query) && !vName.contains(query)) {
+                          return false;
+                        }
+                      }
 
-                                // 2. Distance filter
-                                final dist = _getDistanceToVendor(vendorId);
-                                final maxDist = _selectedDistanceKm;
-                                if (userPos != null && dist < 999990.0) {
-                                  if (dist > maxDist) {
-                                    return false;
-                                  }
-                                }
+                      // 2. Distance filter
+                      final dist = _getDistanceToVendor(vendorId);
+                      final maxDist = _selectedDistanceKm;
+                      if (userPos != null && dist < 999990.0) {
+                        if (dist > maxDist) {
+                          return false;
+                        }
+                      }
 
-                                // 3. Discount filter (if Sort By is 'Discount')
-                                if (_sortBy == 'Discount') {
-                                  final discountFraction =
-                                      _extractDiscountFraction(item);
-                                  if (discountFraction <= 0.0) return false;
-                                }
+                      // 3. Discount filter (if Sort By is 'Discount')
+                      if (_sortBy == 'Discount') {
+                        final discountFraction = _extractDiscountFraction(item);
+                        if (discountFraction <= 0.0) return false;
+                      }
 
-                                // 4. Delivery Time filter
-                                if (_deliveryTimeFilter != null) {
-                                  final double prepTime =
-                                      _extractPrepTimeMinutes(item, vendor);
-                                  final double transitTime =
-                                      (dist < 999990.0) ? (dist * 3.0) : 10.0;
-                                  final double estMins = prepTime + transitTime;
+                      // 4. Delivery Time filter
+                      if (_deliveryTimeFilter != null) {
+                        final double prepTime =
+                            _extractPrepTimeMinutes(item, vendor);
+                        final double transitTime =
+                            (dist < 999990.0) ? (dist * 3.0) : 10.0;
+                        final double estMins = prepTime + transitTime;
 
-                                  if (_deliveryTimeFilter == 'Under 15 mins') {
-                                    if (estMins > 15.0) return false;
-                                  } else if (_deliveryTimeFilter ==
-                                      '15 - 30 mins') {
-                                    if (estMins < 15.0 || estMins > 30.0) {
-                                      return false;
-                                    }
-                                  } else if (_deliveryTimeFilter ==
-                                      '30 - 40 mins') {
-                                    // Covers 30 up to 45 mins smoothly without gap
-                                    if (estMins < 30.0 || estMins > 45.0) {
-                                      return false;
-                                    }
-                                  } else if (_deliveryTimeFilter ==
-                                      '45+ mins') {
-                                    if (estMins < 45.0) return false;
-                                  }
-                                }
+                        if (_deliveryTimeFilter == 'Under 15 mins') {
+                          if (estMins > 15.0) return false;
+                        } else if (_deliveryTimeFilter == '15 - 30 mins') {
+                          if (estMins < 15.0 || estMins > 30.0) {
+                            return false;
+                          }
+                        } else if (_deliveryTimeFilter == '30 - 40 mins') {
+                          // Covers 30 up to 45 mins smoothly without gap
+                          if (estMins < 30.0 || estMins > 45.0) {
+                            return false;
+                          }
+                        } else if (_deliveryTimeFilter == '45+ mins') {
+                          if (estMins < 45.0) return false;
+                        }
+                      }
 
-                                // 5. Minimum Rating filter
-                                if (_minRatingFilter != null) {
-                                  final double rating =
-                                      _extractRating(item, vendor);
-                                  if (rating < _minRatingFilter!) {
-                                    return false;
-                                  }
-                                }
+                      // 5. Minimum Rating filter
+                      if (_minRatingFilter != null) {
+                        final double rating = _extractRating(item, vendor);
+                        if (rating < _minRatingFilter!) {
+                          return false;
+                        }
+                      }
 
-                                return true;
-                              }).toList();
+                      return true;
+                    }).toList();
 
-                              _dprint(
-                                  'After filtering: ${filteredItems.length} posts visible');
+                    _dprint(
+                        'After filtering: ${filteredItems.length} posts visible');
 
-                              // ── Sort results based on _sortBy mode ──────────────
-                              filteredItems.sort((a, b) {
-                                final vendorA =
-                                    _vendorsMap[a['vendorId'] ?? ''];
-                                final vendorB =
-                                    _vendorsMap[b['vendorId'] ?? ''];
-                                final distA =
-                                    _getDistanceToVendor(a['vendorId'] ?? '');
-                                final distB =
-                                    _getDistanceToVendor(b['vendorId'] ?? '');
+                    // ── Sort results based on _sortBy mode ──────────────
+                    filteredItems.sort((a, b) {
+                      final vendorA = _vendorsMap[a['vendorId'] ?? ''];
+                      final vendorB = _vendorsMap[b['vendorId'] ?? ''];
+                      final distA = _getDistanceToVendor(a['vendorId'] ?? '');
+                      final distB = _getDistanceToVendor(b['vendorId'] ?? '');
 
-                                if (_sortBy == 'Nearest') {
-                                  return distA.compareTo(distB);
-                                } else if (_sortBy == 'Top Rated') {
-                                  final double ratingA =
-                                      _extractRating(a, vendorA);
-                                  final double ratingB =
-                                      _extractRating(b, vendorB);
-                                  if (ratingA != ratingB) {
-                                    return ratingB.compareTo(ratingA);
-                                  }
-                                  return distA.compareTo(distB);
-                                } else if (_sortBy == 'Discount') {
-                                  final double discA =
-                                      _extractDiscountFraction(a);
-                                  final double discB =
-                                      _extractDiscountFraction(b);
-                                  if (discA != discB) {
-                                    return discB.compareTo(discA);
-                                  }
-                                  return distA.compareTo(distB);
-                                } else {
-                                  // Default ('All'): nearest distance order
-                                  return distA.compareTo(distB);
-                                }
-                              });
+                      if (_sortBy == 'Nearest') {
+                        return distA.compareTo(distB);
+                      } else if (_sortBy == 'Top Rated') {
+                        final double ratingA = _extractRating(a, vendorA);
+                        final double ratingB = _extractRating(b, vendorB);
+                        if (ratingA != ratingB) {
+                          return ratingB.compareTo(ratingA);
+                        }
+                        return distA.compareTo(distB);
+                      } else if (_sortBy == 'Discount') {
+                        final double discA = _extractDiscountFraction(a);
+                        final double discB = _extractDiscountFraction(b);
+                        if (discA != discB) {
+                          return discB.compareTo(discA);
+                        }
+                        return distA.compareTo(distB);
+                      } else {
+                        // Default ('All'): nearest distance order
+                        return distA.compareTo(distB);
+                      }
+                    });
 
-                              if (filteredItems.isEmpty) {
-                                return Center(
-                                  child: Padding(
-                                    padding: EdgeInsets.symmetric(
-                                        horizontal: 24.w, vertical: 40.h),
-                                    child: Column(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        Image.asset(
-                                          'assets/emoji/sad.png',
-                                          width: 120.w,
-                                          height: 120.w,
-                                          fit: BoxFit.contain,
-                                        ),
-                                        SizedBox(height: 20.h),
-                                        Text(
-                                          _searchText.isEmpty
-                                              ? 'No Posts Found'
-                                              : 'No Results Found',
-                                          style: TextStyle(
-                                            fontSize: AppTypography.font(
-                                                AppFontSizes.bodyLarge + 2),
-                                            fontWeight: FontWeight.w800,
-                                            color: primaryTextColor,
-                                          ),
-                                        ),
-                                        SizedBox(height: 8.h),
-                                        Text(
-                                          _searchText.isEmpty
-                                              ? 'There are no active food posts or items available at this time.'
-                                              : 'We couldn\'t find any matches for "$_searchText". Try checking your spelling or search for something else!',
-                                          style: TextStyle(
-                                            fontSize: AppTypography.font(
-                                                AppFontSizes.bodySmall),
-                                            fontWeight: FontWeight.w500,
-                                            color: mutedTextColor,
-                                            height: 1.4,
-                                          ),
-                                          textAlign: TextAlign.center,
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                );
-                              }
-
-                              return GridView.builder(
-                                padding: EdgeInsets.symmetric(
-                                    horizontal: 20.w, vertical: 10.h),
-                                gridDelegate:
-                                    SliverGridDelegateWithFixedCrossAxisCount(
-                                  crossAxisCount:
-                                      MediaQuery.of(context).size.width >= 900
-                                          ? 4
-                                          : (MediaQuery.of(context)
-                                                      .size
-                                                      .width >=
-                                                  600
-                                              ? 3
-                                              : 2),
-                                  crossAxisSpacing: 14.w,
-                                  mainAxisSpacing: 10.h,
-                                  childAspectRatio:
-                                      MediaQuery.of(context).size.width >= 900
-                                          ? 0.92
-                                          : (MediaQuery.of(context)
-                                                      .size
-                                                      .width >=
-                                                  600
-                                              ? 0.88
-                                              : 0.86),
+                    if (filteredItems.isEmpty) {
+                      return Center(
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 24.w, vertical: 40.h),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Image.asset(
+                                'assets/emoji/sad.png',
+                                width: 120.w,
+                                height: 120.w,
+                                fit: BoxFit.contain,
+                              ),
+                              SizedBox(height: 20.h),
+                              Text(
+                                _searchText.isEmpty
+                                    ? 'No Posts Found'
+                                    : 'No Results Found',
+                                style: TextStyle(
+                                  fontSize: AppTypography.font(
+                                      AppFontSizes.bodyLarge + 2),
+                                  fontWeight: FontWeight.w800,
+                                  color: primaryTextColor,
                                 ),
-                                itemCount: filteredItems.length,
-                                itemBuilder: (context, index) {
-                                  final item = filteredItems[index];
-                                  final vendorId = item['vendorId'] ?? '';
-                                  return _SearchResultItem(
-                                    item: item,
-                                    vendorId: vendorId,
-                                    vendorInfo: _vendorsMap[vendorId],
-                                    currentPosition: _currentPosition,
-                                  );
-                                },
-                              );
-                            },
+                              ),
+                              SizedBox(height: 8.h),
+                              Text(
+                                _searchText.isEmpty
+                                    ? 'There are no active food posts or items available at this time.'
+                                    : 'We couldn\'t find any matches for "$_searchText". Try checking your spelling or search for something else!',
+                                style: TextStyle(
+                                  fontSize: AppTypography.font(
+                                      AppFontSizes.bodySmall),
+                                  fontWeight: FontWeight.w500,
+                                  color: mutedTextColor,
+                                  height: 1.4,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            ],
                           ),
+                        ),
+                      );
+                    }
+
+                    return GridView.builder(
+                      padding: EdgeInsets.symmetric(
+                          horizontal: 20.w, vertical: 10.h),
+                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: MediaQuery.of(context).size.width >= 900
+                            ? 4
+                            : (MediaQuery.of(context).size.width >= 600
+                                ? 3
+                                : 2),
+                        crossAxisSpacing: 14.w,
+                        mainAxisSpacing: 10.h,
+                        childAspectRatio:
+                            MediaQuery.of(context).size.width >= 900
+                                ? 0.92
+                                : (MediaQuery.of(context).size.width >= 600
+                                    ? 0.88
+                                    : 0.86),
+                      ),
+                      itemCount: filteredItems.length,
+                      itemBuilder: (context, index) {
+                        final item = filteredItems[index];
+                        final vendorId = item['vendorId'] ?? '';
+                        return _SearchResultItem(
+                          item: item,
+                          vendorId: vendorId,
+                          vendorInfo: _vendorsMap[vendorId],
+                          currentPosition: _currentPosition,
+                        );
+                      },
+                    );
+                  },
+                ),
         ),
       ),
       bottomNavigationBar: MartFoodBottomNavBar(
@@ -1536,7 +1512,8 @@ class _SearchResultItem extends StatelessWidget {
           isOutOfStock: item['inStock'] == false ||
               item['isAvailable'] == false ||
               (item['quantity'] != null && (item['quantity'] as num) <= 0) ||
-              (item['stockQuantity'] != null && (item['stockQuantity'] as num) <= 0),
+              (item['stockQuantity'] != null &&
+                  (item['stockQuantity'] as num) <= 0),
           vendorName: vendorName.isNotEmpty ? vendorName : null,
           isVerified: isVerified,
           vendorData: vendorInfo,

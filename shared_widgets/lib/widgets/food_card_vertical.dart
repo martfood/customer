@@ -133,6 +133,31 @@ class FoodCardVertical extends StatelessWidget {
                       ),
                     ),
                   ),
+                  if (promoPrice != null &&
+                      promoPrice! > 0 &&
+                      basePrice != null &&
+                      basePrice! > promoPrice!)
+                    Positioned(
+                      top: isTablet ? 4.h : 6.h,
+                      left: isTablet ? 4.w : 6.w,
+                      child: Container(
+                        padding: EdgeInsets.symmetric(
+                            horizontal: isTablet ? 6.w : 8.w,
+                            vertical: isTablet ? 2.h : 3.h),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFDC2626),
+                          borderRadius: BorderRadius.circular(6.r),
+                        ),
+                        child: Text(
+                          '-${(((basePrice! - promoPrice!) / basePrice!) * 100).round()}%',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
                   if (isClosed)
                     Positioned.fill(
                       child: Container(

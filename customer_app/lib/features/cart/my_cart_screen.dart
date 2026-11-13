@@ -1,3 +1,4 @@
+import '../home/restaurant_food_details_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:shared_widgets/core/theme/app_theme.dart';
@@ -188,7 +189,8 @@ class _MyCartScreenState extends State<MyCartScreen> {
     final surfaceColor = isDark ? AppTheme.darkSurface : Colors.white;
     final primaryTextColor = isDark ? Colors.white : const Color(0xFF15161A);
     final purpleColor = AppTheme.primaryPurpleFor(isDark);
-    final borderColor = isDark ? AppTheme.darkBorder : AppTheme.lightInputBorder;
+    final borderColor =
+        isDark ? AppTheme.darkBorder : AppTheme.lightInputBorder;
     final user = _auth.currentUser;
 
     if (user == null) {
@@ -228,7 +230,8 @@ class _MyCartScreenState extends State<MyCartScreen> {
         body: const GuestPlaceholderView(
           icon: LucideIcons.shoppingBag,
           title: 'Sign In to View Cart',
-          subtitle: 'Sign in or register an account to add items and view your cart.',
+          subtitle:
+              'Sign in or register an account to add items and view your cart.',
           primaryButtonText: 'Sign In',
         ),
       );
@@ -305,7 +308,8 @@ class _MyCartScreenState extends State<MyCartScreen> {
                       "Your cart is empty",
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        fontSize: AppTypography.font(AppFontSizes.headlineSmall),
+                        fontSize:
+                            AppTypography.font(AppFontSizes.headlineSmall),
                         fontWeight: FontWeight.w800,
                         color: primaryTextColor,
                       ),
@@ -377,14 +381,32 @@ class _MyCartScreenState extends State<MyCartScreen> {
                   itemCount: cartItems.length,
                   itemBuilder: (context, index) {
                     final item = cartItems[index];
-                    return _buildCartItem(
-                      context,
-                      item,
-                      isDark,
-                      surfaceColor,
-                      borderColor,
-                      purpleColor,
-                      showCheckoutButton: !hasMultipleItems,
+                    return GestureDetector(
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => RestaurantFoodDetailsScreen(
+                              title: item['title']?.toString() ?? 'Food Item',
+                              vendorId: item['vendorId']?.toString(),
+                              docId: item['productId']?.toString() ??
+                                  item['foodId']?.toString(),
+                              sourceCollection:
+                                  item['sourceCollection']?.toString(),
+                              isEditingCartItem: true,
+                              cartDocId: item['id']?.toString(),
+                            ),
+                          ),
+                        );
+                      },
+                      child: _buildCartItem(
+                        context,
+                        item,
+                        isDark,
+                        surfaceColor,
+                        borderColor,
+                        purpleColor,
+                        showCheckoutButton: !hasMultipleItems,
+                      ),
                     );
                   },
                 ),
@@ -392,8 +414,14 @@ class _MyCartScreenState extends State<MyCartScreen> {
               if (hasMultipleItems)
                 StreamBuilder<bool>(
                   stream: VendorStatusHelper.streamVendorOpenStatus(
-                    vendorId: cartItems.firstWhere((it) => it['vendorId'] != null, orElse: () => {})['vendorId']?.toString(),
-                    vendorName: cartItems.firstWhere((it) => it['restaurant'] != null, orElse: () => {})['restaurant']?.toString(),
+                    vendorId: cartItems
+                        .firstWhere((it) => it['vendorId'] != null,
+                            orElse: () => {})['vendorId']
+                        ?.toString(),
+                    vendorName: cartItems
+                        .firstWhere((it) => it['restaurant'] != null,
+                            orElse: () => {})['restaurant']
+                        ?.toString(),
                   ),
                   initialData: true,
                   builder: (context, openSnap) {
@@ -402,27 +430,39 @@ class _MyCartScreenState extends State<MyCartScreen> {
                       padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 20.h),
                       decoration: BoxDecoration(
                         color: surfaceColor,
-                        border: Border(top: BorderSide(color: borderColor, width: 1)),
+                        border: Border(
+                            top: BorderSide(color: borderColor, width: 1)),
                       ),
                       child: SafeArea(
                         top: false,
                         child: SizedBox(
                           width: double.infinity,
                           child: ElevatedButton(
-                            onPressed: isAllOpen ? () => context.push('/checkout') : null,
+                            onPressed: isAllOpen
+                                ? () => context.push('/checkout')
+                                : null,
                             style: ElevatedButton.styleFrom(
                               backgroundColor: isAllOpen
                                   ? purpleColor
-                                  : (isDark ? const Color(0xFF374151) : const Color(0xFFE5E7EB)),
+                                  : (isDark
+                                      ? const Color(0xFF374151)
+                                      : const Color(0xFFE5E7EB)),
                               foregroundColor: isAllOpen
                                   ? Colors.white
-                                  : (isDark ? const Color(0xFF9CA3AF) : const Color(0xFF6B7280)),
-                              disabledBackgroundColor: isDark ? const Color(0xFF374151) : const Color(0xFFE5E7EB),
-                              disabledForegroundColor: isDark ? const Color(0xFF9CA3AF) : const Color(0xFF6B7280),
+                                  : (isDark
+                                      ? const Color(0xFF9CA3AF)
+                                      : const Color(0xFF6B7280)),
+                              disabledBackgroundColor: isDark
+                                  ? const Color(0xFF374151)
+                                  : const Color(0xFFE5E7EB),
+                              disabledForegroundColor: isDark
+                                  ? const Color(0xFF9CA3AF)
+                                  : const Color(0xFF6B7280),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(18.r),
                               ),
-                              padding: EdgeInsets.symmetric(vertical: 16.h, horizontal: 20.w),
+                              padding: EdgeInsets.symmetric(
+                                  vertical: 16.h, horizontal: 20.w),
                               elevation: 0,
                             ),
                             child: Row(
@@ -433,14 +473,16 @@ class _MyCartScreenState extends State<MyCartScreen> {
                                       ? 'Checkout ($totalQuantity item${totalQuantity > 1 ? 's' : ''})'
                                       : 'Checkout (Store Closed)',
                                   style: TextStyle(
-                                    fontSize: AppTypography.font(AppFontSizes.bodyMedium),
+                                    fontSize: AppTypography.font(
+                                        AppFontSizes.bodyMedium),
                                     fontWeight: FontWeight.w800,
                                   ),
                                 ),
                                 Text(
                                   '₦${subtotal.toInt().toString().replaceAllMapped(RegExp(r'(\d)(?=(\d{3})+(?!\d))'), (m) => '${m[1]},')}',
                                   style: TextStyle(
-                                    fontSize: AppTypography.font(AppFontSizes.bodyMedium),
+                                    fontSize: AppTypography.font(
+                                        AppFontSizes.bodyMedium),
                                     fontWeight: FontWeight.w800,
                                   ),
                                 ),
@@ -487,308 +529,335 @@ class _MyCartScreenState extends State<MyCartScreen> {
       builder: (context, openSnap) {
         final bool isOpen = openSnap.data ?? true;
         return Dismissible(
-      key: Key(docId),
-      direction: DismissDirection.endToStart,
-      confirmDismiss: (direction) async {
-        final confirmed =
-            await _showDeleteConfirmationBottomSheet(context, title);
-        return confirmed == true;
-      },
-      onDismissed: (direction) async {
-        await _removeItem(docId);
-        if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('$title removed from cart'),
-              duration: const Duration(seconds: 2),
+          key: Key(docId),
+          direction: DismissDirection.endToStart,
+          confirmDismiss: (direction) async {
+            final confirmed =
+                await _showDeleteConfirmationBottomSheet(context, title);
+            return confirmed == true;
+          },
+          onDismissed: (direction) async {
+            await _removeItem(docId);
+            if (context.mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('$title removed from cart'),
+                  duration: const Duration(seconds: 2),
+                ),
+              );
+            }
+          },
+          background: Container(
+            margin: EdgeInsets.only(bottom: 16.h),
+            decoration: BoxDecoration(
+              color: Colors.red,
+              borderRadius: BorderRadius.circular(24.r),
             ),
-          );
-        }
-      },
-      background: Container(
-        margin: EdgeInsets.only(bottom: 16.h),
-        decoration: BoxDecoration(
-          color: Colors.red,
-          borderRadius: BorderRadius.circular(24.r),
-        ),
-        alignment: Alignment.centerRight,
-        padding: EdgeInsets.only(right: 24.w),
-        child: const Icon(LucideIcons.trash2, color: Colors.white, size: 28),
-      ),
-      child: Container(
-        margin: EdgeInsets.only(bottom: 16.h),
-        decoration: BoxDecoration(
-          color: isDark ? AppTheme.darkSurface : Colors.white,
-          borderRadius: BorderRadius.circular(24.r),
-          border: Border.all(
-            color: borderColor,
-            width: 1,
+            alignment: Alignment.centerRight,
+            padding: EdgeInsets.only(right: 24.w),
+            child:
+                const Icon(LucideIcons.trash2, color: Colors.white, size: 28),
           ),
-          boxShadow: null,
-        ),
-        child: Column(
-          children: [
-            Padding(
-              padding: EdgeInsets.all(16.w),
-              child: Row(
-                children: [
-                  Stack(
+          child: Container(
+            margin: EdgeInsets.only(bottom: 16.h),
+            decoration: BoxDecoration(
+              color: isDark ? AppTheme.darkSurface : Colors.white,
+              borderRadius: BorderRadius.circular(24.r),
+              border: Border.all(
+                color: borderColor,
+                width: 1,
+              ),
+              boxShadow: null,
+            ),
+            child: Column(
+              children: [
+                Padding(
+                  padding: EdgeInsets.all(16.w),
+                  child: Row(
                     children: [
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(18.r),
-                        child: imageUrl.isNotEmpty
-                            ? CachedNetworkImage(
-                                imageUrl: imageUrl,
-                                width: 92.w,
-                                height: 92.w,
-                                fit: BoxFit.cover,
-                                errorWidget: (_, __, ___) => Container(
-                                  width: 92.w,
-                                  height: 92.w,
-                                  color: isDark ? Colors.grey[800] : Colors.grey[300],
-                                  child: Icon(Icons.fastfood, color: Colors.grey, size: 24.sp),
-                                ),
-                              )
-                            : Container(
-                                width: 92.w,
-                                height: 92.w,
-                                color: isDark ? Colors.grey[800] : Colors.grey[300],
-                                child: Icon(Icons.fastfood, color: Colors.grey, size: 24.sp),
-                              ),
-                      ),
-                      if (!isOpen)
-                        Positioned.fill(
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color: Colors.black.withValues(alpha: 0.6),
-                              borderRadius: BorderRadius.circular(18.r),
-                            ),
-                            alignment: Alignment.center,
-                            child: Container(
-                              padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
-                              decoration: BoxDecoration(
-                                color: Colors.red.withValues(alpha: 0.95),
-                                borderRadius: BorderRadius.circular(8.r),
-                              ),
-                              child: Text(
-                                'CLOSED',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: AppTypography.font(10),
-                                  letterSpacing: 0.5,
-                                ),
-                              ),
-                            ),
+                      Stack(
+                        children: [
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(18.r),
+                            child: imageUrl.isNotEmpty
+                                ? CachedNetworkImage(
+                                    imageUrl: imageUrl,
+                                    width: 92.w,
+                                    height: 92.w,
+                                    fit: BoxFit.cover,
+                                    errorWidget: (_, __, ___) => Container(
+                                      width: 92.w,
+                                      height: 92.w,
+                                      color: isDark
+                                          ? Colors.grey[800]
+                                          : Colors.grey[300],
+                                      child: Icon(Icons.fastfood,
+                                          color: Colors.grey, size: 24.sp),
+                                    ),
+                                  )
+                                : Container(
+                                    width: 92.w,
+                                    height: 92.w,
+                                    color: isDark
+                                        ? Colors.grey[800]
+                                        : Colors.grey[300],
+                                    child: Icon(Icons.fastfood,
+                                        color: Colors.grey, size: 24.sp),
+                                  ),
                           ),
-                        ),
-                    ],
-                  ),
-                  SizedBox(width: 14.w),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Food Name & Quantity Controls at Top Right
-                        Row(
+                          if (!isOpen)
+                            Positioned.fill(
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: Colors.black.withValues(alpha: 0.6),
+                                  borderRadius: BorderRadius.circular(18.r),
+                                ),
+                                alignment: Alignment.center,
+                                child: Container(
+                                  padding: EdgeInsets.symmetric(
+                                      horizontal: 8.w, vertical: 4.h),
+                                  decoration: BoxDecoration(
+                                    color: Colors.red.withValues(alpha: 0.95),
+                                    borderRadius: BorderRadius.circular(8.r),
+                                  ),
+                                  child: Text(
+                                    'CLOSED',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: AppTypography.font(10),
+                                      letterSpacing: 0.5,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                      SizedBox(width: 14.w),
+                      Expanded(
+                        child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Expanded(
-                              child: Text(
-                                title,
-                                style: TextStyle(
-                                  fontSize: AppTypography.font(AppFontSizes.bodyLarge),
-                                  fontWeight: FontWeight.w800,
-                                  color: primaryTextColor,
+                            // Food Name & Quantity Controls at Top Right
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    title,
+                                    style: TextStyle(
+                                      fontSize: AppTypography.font(
+                                          AppFontSizes.bodyLarge),
+                                      fontWeight: FontWeight.w800,
+                                      color: primaryTextColor,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
                                 ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
+                                SizedBox(width: 8.w),
+                                Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    _buildQuantityButton(LucideIcons.minus, () {
+                                      if (quantity > 1) {
+                                        _updateQuantity(docId, quantity - 1);
+                                      }
+                                    }, isDark, purpleColor, borderColor),
+                                    SizedBox(width: 6.w),
+                                    Text(
+                                      '$quantity',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: AppTypography.font(
+                                            AppFontSizes.bodyMedium),
+                                        color: primaryTextColor,
+                                      ),
+                                    ),
+                                    SizedBox(width: 6.w),
+                                    _buildQuantityButton(LucideIcons.plus, () {
+                                      _updateQuantity(docId, quantity + 1);
+                                    }, isDark, purpleColor, borderColor,
+                                        isPrimary: true),
+                                  ],
+                                ),
+                              ],
+                            ),
+                            SizedBox(height: 4.h),
+                            Text(
+                              '₦${price.toInt().toString().replaceAllMapped(RegExp(r'(\d)(?=(\d{3})+(?!\d))'), (m) => '${m[1]},')}',
+                              style: TextStyle(
+                                fontSize:
+                                    AppTypography.font(AppFontSizes.bodyLarge),
+                                fontWeight: FontWeight.w800,
+                                color: purpleColor,
                               ),
                             ),
-                            SizedBox(width: 8.w),
+                            SizedBox(height: 6.h),
                             Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                _buildQuantityButton(LucideIcons.minus, () {
-                                  if (quantity > 1) {
-                                    _updateQuantity(docId, quantity - 1);
-                                  }
-                                }, isDark, purpleColor, borderColor),
-                                SizedBox(width: 6.w),
-                                Text(
-                                  '$quantity',
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: AppTypography.font(AppFontSizes.bodyMedium),
-                                    color: primaryTextColor,
+                                Flexible(
+                                  child: Text(
+                                    restaurant,
+                                    style: TextStyle(
+                                      fontSize: AppTypography.font(
+                                          AppFontSizes.bodySmall),
+                                      fontWeight: FontWeight.w600,
+                                      color: AppTheme.mutedTextColorFor(isDark),
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
                                   ),
                                 ),
-                                SizedBox(width: 6.w),
-                                _buildQuantityButton(LucideIcons.plus, () {
-                                  _updateQuantity(docId, quantity + 1);
-                                }, isDark, purpleColor, borderColor, isPrimary: true),
                               ],
                             ),
-                          ],
-                        ),
-                        SizedBox(height: 4.h),
-                        Text(
-                          '₦${price.toInt().toString().replaceAllMapped(RegExp(r'(\d)(?=(\d{3})+(?!\d))'), (m) => '${m[1]},')}',
-                          style: TextStyle(
-                            fontSize: AppTypography.font(AppFontSizes.bodyLarge),
-                            fontWeight: FontWeight.w800,
-                            color: purpleColor,
-                          ),
-                        ),
-                        SizedBox(height: 6.h),
-                        Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Flexible(
-                              child: Text(
-                                restaurant,
+                            if (selectedChoices.isNotEmpty) ...[
+                              SizedBox(height: 4.h),
+                              Text(
+                                selectedChoices
+                                    .map((choice) => choice['label'] ?? '')
+                                    .where(
+                                        (label) => label.toString().isNotEmpty)
+                                    .join(' • '),
                                 style: TextStyle(
-                                  fontSize: AppTypography.font(AppFontSizes.bodySmall),
-                                  fontWeight: FontWeight.w600,
                                   color: AppTheme.mutedTextColorFor(isDark),
+                                  fontSize:
+                                      AppTypography.font(AppFontSizes.caption),
+                                  fontWeight: FontWeight.w500,
                                 ),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                               ),
-                            ),
+                            ],
+                            if (selectedAddOns.isNotEmpty) ...[
+                              SizedBox(height: 2.h),
+                              Text(
+                                'Add-ons: ${selectedAddOns.map((addon) => (((addon['quantity'] as num?)?.toInt() ?? 1) > 1) ? '${addon['name'] ?? addon['title']} (x${addon['quantity']})' : '${addon['name'] ?? addon['title']}').where((name) => name.isNotEmpty).join(', ')}',
+                                style: TextStyle(
+                                  color: AppTheme.mutedTextColorFor(isDark),
+                                  fontSize:
+                                      AppTypography.font(AppFontSizes.caption),
+                                  fontWeight: FontWeight.w500,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ],
                           ],
                         ),
-                        if (selectedChoices.isNotEmpty) ...[
-                          SizedBox(height: 4.h),
-                          Text(
-                            selectedChoices
-                                .map((choice) => choice['label'] ?? '')
-                                .where((label) => label.toString().isNotEmpty)
-                                .join(' • '),
-                            style: TextStyle(
-                              color: AppTheme.mutedTextColorFor(isDark),
-                              fontSize: AppTypography.font(AppFontSizes.caption),
-                              fontWeight: FontWeight.w500,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ],
-                        if (selectedAddOns.isNotEmpty) ...[
-                          SizedBox(height: 2.h),
-                          Text(
-                            'Add-ons: ${selectedAddOns.map((addon) => (((addon['quantity'] as num?)?.toInt() ?? 1) > 1) ? '${addon['name'] ?? addon['title']} (x${addon['quantity']})' : '${addon['name'] ?? addon['title']}').where((name) => name.isNotEmpty).join(', ')}',
-                            style: TextStyle(
-                              color: AppTheme.mutedTextColorFor(isDark),
-                              fontSize: AppTypography.font(AppFontSizes.caption),
-                              fontWeight: FontWeight.w500,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ],
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Divider(
-              height: 1,
-              color: borderColor,
-            ),
-            Padding(
-              padding: EdgeInsets.all(16.w),
-              child: Column(
-                children: [
-                  if (showCheckoutButton) ...[
-                    // Checkout Button (Full Width)
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: isOpen
-                            ? () {
-                                context.push('/checkout');
-                              }
-                            : null,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: isOpen
-                              ? purpleColor
-                              : (isDark ? const Color(0xFF374151) : const Color(0xFFE5E7EB)),
-                          foregroundColor: isOpen
-                              ? Colors.white
-                              : (isDark ? const Color(0xFF9CA3AF) : const Color(0xFF6B7280)),
-                          disabledBackgroundColor: isDark ? const Color(0xFF374151) : const Color(0xFFE5E7EB),
-                          disabledForegroundColor: isDark ? const Color(0xFF9CA3AF) : const Color(0xFF6B7280),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(18.r),
-                          ),
-                          padding: EdgeInsets.symmetric(vertical: 14.h),
-                          elevation: 0,
-                        ),
-                        child: Text(
-                          isOpen ? 'Checkout' : 'Checkout (Store Closed)',
-                          style: TextStyle(
-                            fontSize: AppTypography.font(AppFontSizes.bodyMedium),
-                            fontWeight: FontWeight.w800,
-                          ),
-                        ),
                       ),
-                    ),
-                    SizedBox(height: 10.h),
-                  ],
-                  // Delete Button
-                  SizedBox(
-                    width: double.infinity,
-                    child: OutlinedButton(
-                      onPressed: () async {
-                        final confirmed =
-                            await _showDeleteConfirmationBottomSheet(
-                                context, title);
-                        if (confirmed == true) {
-                          await _removeItem(docId);
-                          if (context.mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text('$title removed from cart'),
-                                duration: const Duration(seconds: 2),
+                    ],
+                  ),
+                ),
+                Divider(
+                  height: 1,
+                  color: borderColor,
+                ),
+                Padding(
+                  padding: EdgeInsets.all(16.w),
+                  child: Column(
+                    children: [
+                      if (showCheckoutButton) ...[
+                        // Checkout Button (Full Width)
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton(
+                            onPressed: isOpen
+                                ? () {
+                                    context.push('/checkout');
+                                  }
+                                : null,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: isOpen
+                                  ? purpleColor
+                                  : (isDark
+                                      ? const Color(0xFF374151)
+                                      : const Color(0xFFE5E7EB)),
+                              foregroundColor: isOpen
+                                  ? Colors.white
+                                  : (isDark
+                                      ? const Color(0xFF9CA3AF)
+                                      : const Color(0xFF6B7280)),
+                              disabledBackgroundColor: isDark
+                                  ? const Color(0xFF374151)
+                                  : const Color(0xFFE5E7EB),
+                              disabledForegroundColor: isDark
+                                  ? const Color(0xFF9CA3AF)
+                                  : const Color(0xFF6B7280),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(18.r),
                               ),
-                            );
-                          }
-                        }
-                      },
-                      style: OutlinedButton.styleFrom(
-                        backgroundColor: Colors.transparent,
-                        foregroundColor: isDark ? Colors.white : purpleColor,
-                        side: BorderSide(
-                          color: borderColor,
-                          width: 1,
+                              padding: EdgeInsets.symmetric(vertical: 14.h),
+                              elevation: 0,
+                            ),
+                            child: Text(
+                              isOpen ? 'Checkout' : 'Checkout (Store Closed)',
+                              style: TextStyle(
+                                fontSize:
+                                    AppTypography.font(AppFontSizes.bodyMedium),
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                          ),
                         ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(18.r),
+                        SizedBox(height: 10.h),
+                      ],
+                      // Delete Button
+                      SizedBox(
+                        width: double.infinity,
+                        child: OutlinedButton(
+                          onPressed: () async {
+                            final confirmed =
+                                await _showDeleteConfirmationBottomSheet(
+                                    context, title);
+                            if (confirmed == true) {
+                              await _removeItem(docId);
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text('$title removed from cart'),
+                                    duration: const Duration(seconds: 2),
+                                  ),
+                                );
+                              }
+                            }
+                          },
+                          style: OutlinedButton.styleFrom(
+                            backgroundColor: Colors.transparent,
+                            foregroundColor:
+                                isDark ? Colors.white : purpleColor,
+                            side: BorderSide(
+                              color: borderColor,
+                              width: 1,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(18.r),
+                            ),
+                            padding: EdgeInsets.symmetric(vertical: 14.h),
+                            elevation: 0,
+                          ),
+                          child: Text(
+                            'Delete',
+                            style: TextStyle(
+                              color: isDark ? Colors.white : purpleColor,
+                              fontSize:
+                                  AppTypography.font(AppFontSizes.bodyMedium),
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
                         ),
-                        padding: EdgeInsets.symmetric(vertical: 14.h),
-                        elevation: 0,
                       ),
-                      child: Text(
-                        'Delete',
-                        style: TextStyle(
-                          color: isDark ? Colors.white : purpleColor,
-                          fontSize: AppTypography.font(AppFontSizes.bodyMedium),
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                    ),
+                    ],
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
-  },
-);
   }
 
   Widget _buildQuantityButton(

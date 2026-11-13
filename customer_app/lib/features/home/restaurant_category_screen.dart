@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:shared_widgets/widgets/vendor_promo_badge.dart';
 import 'package:shared_widgets/core/theme/app_theme.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:go_router/go_router.dart';
@@ -749,6 +750,10 @@ class _RestaurantCategoryScreenState extends State<RestaurantCategoryScreen> {
                                 ],
                               ),
                               SizedBox(height: 6.h),
+                              VendorPromoBadge(
+                                vendorId: vendorId,
+                                margin: EdgeInsets.only(bottom: 6.h),
+                              ),
                               // Rating & Reviews right below businessName
                               StreamBuilder<QuerySnapshot>(
                                 stream: FirebaseFirestore.instance

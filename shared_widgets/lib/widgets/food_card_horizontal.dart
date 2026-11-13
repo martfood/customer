@@ -67,7 +67,8 @@ class FoodCardHorizontal extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final purpleColor = AppTheme.primaryPurpleFor(isDark);
-    final surfaceColor = backgroundColor ?? (isDark ? AppTheme.darkSurface : AppTheme.lightSurface);
+    final surfaceColor = backgroundColor ??
+        (isDark ? AppTheme.darkSurface : AppTheme.lightSurface);
     final borderColor =
         isDark ? AppTheme.darkBorder : AppTheme.lightInputBorder;
     final primaryTextColor = isDark ? Colors.white : Colors.black87;
@@ -125,167 +126,172 @@ class FoodCardHorizontal extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                  // ── Image ──────────────────────────────────────────────────
-                  Stack(
-                    children: [
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(12.r),
-                        child: AspectRatio(
-                          aspectRatio: 4 / 3,
-                          child: CachedNetworkImage(
-                            imageUrl: imageUrl,
-                            width: double.infinity,
-                            fit: BoxFit.cover,
-                            placeholder: (_, __) => Container(
+                    // ── Image ──────────────────────────────────────────────────
+                    Stack(
+                      children: [
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(12.r),
+                          child: AspectRatio(
+                            aspectRatio: 4 / 3,
+                            child: CachedNetworkImage(
+                              imageUrl: imageUrl,
                               width: double.infinity,
-                              color: isDark
-                                  ? Colors.grey[900]
-                                  : Colors.grey[200],
-                              child: Icon(LucideIcons.image,
-                                  color: Colors.grey[500],
-                                  size: isTablet ? 18.sp : 24.sp),
-                            ),
-                            errorWidget: (_, __, ___) => Container(
-                              width: double.infinity,
-                              color: purpleColor,
-                              alignment: Alignment.center,
-                              child: Text(
-                                title.trim().isNotEmpty
-                                    ? title.trim()[0].toUpperCase()
-                                    : 'F',
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 22,
-                                  fontWeight: FontWeight.bold,
+                              fit: BoxFit.cover,
+                              placeholder: (_, __) => Container(
+                                width: double.infinity,
+                                color: isDark
+                                    ? Colors.grey[900]
+                                    : Colors.grey[200],
+                                child: Icon(LucideIcons.image,
+                                    color: Colors.grey[500],
+                                    size: isTablet ? 18.sp : 24.sp),
+                              ),
+                              errorWidget: (_, __, ___) => Container(
+                                width: double.infinity,
+                                color: purpleColor,
+                                alignment: Alignment.center,
+                                child: Text(
+                                  title.trim().isNotEmpty
+                                      ? title.trim()[0].toUpperCase()
+                                      : 'F',
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 22,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
                               ),
                             ),
                           ),
                         ),
-                      ),
-                      if (isPromo)
-                        Positioned(
-                          top: isTablet ? 4.h : 6.h,
-                          left: isTablet ? 4.w : 6.w,
-                          child: Container(
-                            padding: EdgeInsets.symmetric(
-                                horizontal: isTablet ? 6.w : 8.w,
-                                vertical: isTablet ? 2.h : 3.h),
-                            decoration: BoxDecoration(
-                              color: purpleColor,
-                              borderRadius: BorderRadius.circular(6.r),
-                            ),
-                            child: const Text(
-                              'PROMO',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 10,
-                                fontWeight: FontWeight.bold,
+                        if (isPromo ||
+                            (hasPromo && hasBase && basePrice! > promoPrice!))
+                          Positioned(
+                            top: isTablet ? 4.h : 6.h,
+                            left: isTablet ? 4.w : 6.w,
+                            child: Container(
+                              padding: EdgeInsets.symmetric(
+                                  horizontal: isTablet ? 6.w : 8.w,
+                                  vertical: isTablet ? 2.h : 3.h),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFDC2626),
+                                borderRadius: BorderRadius.circular(6.r),
+                              ),
+                              child: Text(
+                                (hasPromo &&
+                                        hasBase &&
+                                        basePrice! > promoPrice!)
+                                    ? '-${(((basePrice! - promoPrice!) / basePrice!) * 100).round()}%'
+                                    : 'PROMO',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                             ),
                           ),
-                        ),
-                    ],
-                  ),
-                  SizedBox(height: isTablet ? 4.h : 5.h),
-
-                  // ── Title ──────────────────────────────────────────────────
-                  Text(
-                    title,
-                    style: TextStyle(
-                      fontSize: isTablet ? 13.5 : 13.5,
-                      fontWeight: FontWeight.bold,
-                      color: primaryTextColor,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  SizedBox(height: isTablet ? 2.h : 3.h),
-
-                  // ── Price / Add Button ──────────────────────────────────────
-                  if (showPrice) ...[
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Flexible(
-                          child: Text(
-                            hasPromo
-                                ? _priceLabel(promoPrice!)
-                                : _priceLabel(basePrice!),
-                            style: TextStyle(
-                              fontSize: isTablet ? 14 : 14,
-                              fontWeight: FontWeight.w800,
-                              color: isDark ? Colors.white : purpleColor,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                        GestureDetector(
-                          onTap: onAddTap ?? onTap,
-                          child: Container(
-                            width: isTablet ? 20.w : 22.w,
-                            height: isTablet ? 20.w : 22.w,
-                            decoration: BoxDecoration(
-                              color: purpleColor,
-                              shape: BoxShape.circle,
-                            ),
-                            child: Icon(Icons.add,
-                                color: Colors.white,
-                                size: isTablet ? 14 : 13),
-                          ),
-                        ),
                       ],
                     ),
-                  ],
+                    SizedBox(height: isTablet ? 4.h : 5.h),
 
-                  // ── Category / Vendor Subline ─────────────────────────────
-                  if (categoryName != null && categoryName!.isNotEmpty) ...[
-                    SizedBox(height: isTablet ? 2.h : 2.h),
+                    // ── Title ──────────────────────────────────────────────────
                     Text(
-                      categoryName!,
+                      title,
                       style: TextStyle(
-                        fontSize: isTablet ? 11.5 : 11,
-                        color: mutedTextColor,
+                        fontSize: isTablet ? 13.5 : 13.5,
                         fontWeight: FontWeight.bold,
+                        color: primaryTextColor,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
-                  ] else if (vendorName != null && vendorName!.isNotEmpty) ...[
-                    SizedBox(height: isTablet ? 2.h : 2.h),
-                    Row(
-                      children: [
-                        Flexible(
-                          child: Text(
-                            vendorName!,
-                            style: TextStyle(
-                              fontSize: isTablet ? 11.5 : 11,
-                              color: mutedTextColor,
-                              fontWeight: FontWeight.bold,
+                    SizedBox(height: isTablet ? 2.h : 3.h),
+
+                    // ── Price / Add Button ──────────────────────────────────────
+                    if (showPrice) ...[
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Flexible(
+                            child: Text(
+                              hasPromo
+                                  ? _priceLabel(promoPrice!)
+                                  : _priceLabel(basePrice!),
+                              style: TextStyle(
+                                fontSize: isTablet ? 14 : 14,
+                                fontWeight: FontWeight.w800,
+                                color: isDark ? Colors.white : purpleColor,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
                           ),
-                        ),
-                        if (vendorData != null) ...[
-                          SizedBox(width: 4.w),
-                          VerificationBadge(
-                              vendorData: vendorData!,
-                              size: isTablet ? 12 : 11),
-                        ] else if (isVerified) ...[
-                          SizedBox(width: 4.w),
-                          Icon(Icons.verified,
-                              color: Colors.blue,
-                              size: isTablet ? 12 : 11),
+                          GestureDetector(
+                            onTap: onAddTap ?? onTap,
+                            child: Container(
+                              width: isTablet ? 20.w : 22.w,
+                              height: isTablet ? 20.w : 22.w,
+                              decoration: BoxDecoration(
+                                color: purpleColor,
+                                shape: BoxShape.circle,
+                              ),
+                              child: Icon(Icons.add,
+                                  color: Colors.white,
+                                  size: isTablet ? 14 : 13),
+                            ),
+                          ),
                         ],
-                      ],
-                    ),
+                      ),
+                    ],
+
+                    // ── Category / Vendor Subline ─────────────────────────────
+                    if (categoryName != null && categoryName!.isNotEmpty) ...[
+                      SizedBox(height: isTablet ? 2.h : 2.h),
+                      Text(
+                        categoryName!,
+                        style: TextStyle(
+                          fontSize: isTablet ? 11.5 : 11,
+                          color: mutedTextColor,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ] else if (vendorName != null &&
+                        vendorName!.isNotEmpty) ...[
+                      SizedBox(height: isTablet ? 2.h : 2.h),
+                      Row(
+                        children: [
+                          Flexible(
+                            child: Text(
+                              vendorName!,
+                              style: TextStyle(
+                                fontSize: isTablet ? 11.5 : 11,
+                                color: mutedTextColor,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          if (vendorData != null) ...[
+                            SizedBox(width: 4.w),
+                            VerificationBadge(
+                                vendorData: vendorData!,
+                                size: isTablet ? 12 : 11),
+                          ] else if (isVerified) ...[
+                            SizedBox(width: 4.w),
+                            Icon(Icons.verified,
+                                color: Colors.blue, size: isTablet ? 12 : 11),
+                          ],
+                        ],
+                      ),
+                    ],
                   ],
-                ],
+                ),
               ),
             ),
-          ),
             if (isClosed)
               Positioned.fill(
                 child: Container(

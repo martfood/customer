@@ -8,6 +8,7 @@ import 'package:shared_widgets/core/theme/app_theme.dart';
 import 'package:shared_widgets/widgets/category_item.dart';
 import 'package:shared_widgets/widgets/food_card_horizontal.dart';
 import 'package:shared_widgets/widgets/food_card_vertical.dart';
+import 'package:shared_widgets/widgets/vendor_promo_badge.dart';
 import 'package:shared_widgets/widgets/bulk_meal_card.dart';
 import 'package:shared_widgets/core/utils/meal_time_helper.dart';
 import 'package:shared_widgets/widgets/bottom_nav_bar.dart';
@@ -66,7 +67,6 @@ class _HomeScreenState extends State<HomeScreen> {
   StreamSubscription<QuerySnapshot>? _deliveredOrdersSubscription;
   final Set<String> _promptedReviewOrderIds = {};
   bool _isReviewPromptActive = false;
-
 
   final List<Map<String, String>> _categories = [
     {'title': 'Restaurant', 'imageUrl': 'assets/category/restaurant.png'},
@@ -444,7 +444,6 @@ class _HomeScreenState extends State<HomeScreen> {
     super.dispose();
   }
 
-
   void _listenForDeliveredOrdersToReview() {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return;
@@ -461,7 +460,8 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
-  Future<void> _checkUnratedDeliveredOrders(List<QueryDocumentSnapshot> docs) async {
+  Future<void> _checkUnratedDeliveredOrders(
+      List<QueryDocumentSnapshot> docs) async {
     if (_isReviewPromptActive || !mounted) return;
 
     for (final doc in docs) {
@@ -517,14 +517,24 @@ class _HomeScreenState extends State<HomeScreen> {
     final primaryTextColor = isDark ? Colors.white : const Color(0xFF15161A);
     final mutedTextColor = AppTheme.mutedTextColorFor(isDark);
     final purpleColor = AppTheme.primaryPurpleFor(isDark);
-    final borderColor = isDark ? AppTheme.darkBorder : AppTheme.lightInputBorder;
+    final borderColor =
+        isDark ? AppTheme.darkBorder : AppTheme.lightInputBorder;
 
-    final restaurantName = (orderData['restaurantName'] ?? orderData['restaurant'] ?? 'MartFood').toString();
+    final restaurantName =
+        (orderData['restaurantName'] ?? orderData['restaurant'] ?? 'MartFood')
+            .toString();
     final riderName = (orderData['riderName'] ?? 'Rider').toString();
-    final riderId = (orderData['riderId'] ?? orderData['driverId'] ?? '').toString();
-    final riderPhoto = (orderData['riderPhotoUrl'] ?? orderData['riderPhoto'] ?? orderData['photoUrl'] ?? '').toString();
+    final riderId =
+        (orderData['riderId'] ?? orderData['driverId'] ?? '').toString();
+    final riderPhoto = (orderData['riderPhotoUrl'] ??
+            orderData['riderPhoto'] ??
+            orderData['photoUrl'] ??
+            '')
+        .toString();
     final vendorId = (orderData['vendorId'] ?? '').toString();
-    final vendorAvatarUrl = (orderData['vendorAvatarUrl'] ?? orderData['vendorLogo'] ?? '').toString();
+    final vendorAvatarUrl =
+        (orderData['vendorAvatarUrl'] ?? orderData['vendorLogo'] ?? '')
+            .toString();
     final items = (orderData['items'] as List?) ?? [];
     final itemsSummary = items
         .map((it) => it is Map ? (it['title'] ?? it['name'] ?? '') : '')
@@ -727,7 +737,8 @@ class _HomeScreenState extends State<HomeScreen> {
                             slivers: [
                               // Pending Bank Transfer Resume Banner (if any)
                               SliverToBoxAdapter(
-                                  child: _buildPendingBankTransferResumeBanner(isDark)),
+                                  child: _buildPendingBankTransferResumeBanner(
+                                      isDark)),
                               // Search Bar
                               SliverToBoxAdapter(
                                   child: _buildSearchBar(isDark)),
@@ -983,7 +994,9 @@ class _HomeScreenState extends State<HomeScreen> {
         final orderData = orderDoc.data() as Map<String, dynamic>;
         final orderId = orderDoc.id;
         final double total = ((orderData['total'] ?? 0.0) as num).toDouble();
-        final String shortId = orderId.length >= 6 ? orderId.substring(0, 6).toUpperCase() : orderId;
+        final String shortId = orderId.length >= 6
+            ? orderId.substring(0, 6).toUpperCase()
+            : orderId;
 
         return Padding(
           padding: EdgeInsets.fromLTRB(20.w, 8.h, 20.w, 4.h),
@@ -1023,7 +1036,8 @@ class _HomeScreenState extends State<HomeScreen> {
                         style: TextStyle(
                           fontSize: AppTypography.font(AppFontSizes.bodySmall),
                           fontWeight: FontWeight.w800,
-                          color: isDark ? Colors.white : const Color(0xFF15161A),
+                          color:
+                              isDark ? Colors.white : const Color(0xFF15161A),
                         ),
                       ),
                       SizedBox(height: 2.h),
@@ -1051,7 +1065,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     backgroundColor: purpleColor,
                     foregroundColor: Colors.white,
                     elevation: 0,
-                    padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 8.h),
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 14.w, vertical: 8.h),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12.r),
                     ),
@@ -1081,12 +1096,22 @@ class _HomeScreenState extends State<HomeScreen> {
     final mutedTextColor = AppTheme.mutedTextColorFor(isDark);
     final surfaceColor = isDark ? AppTheme.darkSurface : Colors.white;
     final purpleColor = AppTheme.primaryPurpleFor(isDark);
-    final cardBgColor = isDark ? const Color(0xFF1E1E2E) : const Color(0xFFF3F4F6);
+    final cardBgColor =
+        isDark ? const Color(0xFF1E1E2E) : const Color(0xFFF3F4F6);
 
-    final bankDetails = (orderData['bankDetails'] as Map<String, dynamic>?) ?? {};
-    final String bankName = (bankDetails['bankName'] ?? bankDetails['bank_name'] ?? 'Paystack Virtual Bank').toString();
-    final String accountName = (bankDetails['accountName'] ?? bankDetails['account_name'] ?? 'MartFood Delivery').toString();
-    final String accountNumber = (bankDetails['accountNumber'] ?? bankDetails['account_number'] ?? 'N/A').toString();
+    final bankDetails =
+        (orderData['bankDetails'] as Map<String, dynamic>?) ?? {};
+    final String bankName = (bankDetails['bankName'] ??
+            bankDetails['bank_name'] ??
+            'Paystack Virtual Bank')
+        .toString();
+    final String accountName = (bankDetails['accountName'] ??
+            bankDetails['account_name'] ??
+            'MartFood Delivery')
+        .toString();
+    final String accountNumber =
+        (bankDetails['accountNumber'] ?? bankDetails['account_number'] ?? 'N/A')
+            .toString();
     final String reference = (orderData['paymentReference'] ?? '').toString();
     final double amount = ((orderData['total'] ?? 0.0) as num).toDouble();
 
@@ -1145,7 +1170,9 @@ class _HomeScreenState extends State<HomeScreen> {
                     color: cardBgColor,
                     borderRadius: BorderRadius.circular(16.r),
                     border: Border.all(
-                      color: isDark ? AppTheme.darkBorder : AppTheme.lightInputBorder,
+                      color: isDark
+                          ? AppTheme.darkBorder
+                          : AppTheme.lightInputBorder,
                       width: 1,
                     ),
                   ),
@@ -1203,7 +1230,8 @@ class _HomeScreenState extends State<HomeScreen> {
                           Text(
                             accountNumber,
                             style: TextStyle(
-                              fontSize: AppTypography.font(AppFontSizes.bodyLarge),
+                              fontSize:
+                                  AppTypography.font(AppFontSizes.bodyLarge),
                               fontWeight: FontWeight.w800,
                               color: primaryTextColor,
                             ),
@@ -1258,7 +1286,8 @@ class _HomeScreenState extends State<HomeScreen> {
                         SelectableText(
                           reference,
                           style: TextStyle(
-                            fontSize: AppTypography.font(AppFontSizes.bodySmall),
+                            fontSize:
+                                AppTypography.font(AppFontSizes.bodySmall),
                             fontWeight: FontWeight.w600,
                             color: primaryTextColor,
                           ),
@@ -1272,7 +1301,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 if (verificationError != null) ...[
                   Container(
                     width: double.infinity,
-                    padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
                     decoration: BoxDecoration(
                       color: isDark
                           ? const Color(0xFF3B1515)
@@ -1298,7 +1328,8 @@ class _HomeScreenState extends State<HomeScreen> {
                           child: Text(
                             verificationError!,
                             style: TextStyle(
-                              fontSize: AppTypography.font(AppFontSizes.caption),
+                              fontSize:
+                                  AppTypography.font(AppFontSizes.caption),
                               fontWeight: FontWeight.w600,
                               color: isDark
                                   ? const Color(0xFFFCA5A5)
@@ -1340,7 +1371,8 @@ class _HomeScreenState extends State<HomeScreen> {
                             try {
                               if (reference.isNotEmpty) {
                                 final verifyRes =
-                                    await PaystackService.verifyTransaction(reference);
+                                    await PaystackService.verifyTransaction(
+                                        reference);
                                 if (verifyRes != null &&
                                     (verifyRes['status'] == 'success' ||
                                         verifyRes['status'] == true)) {
@@ -1360,7 +1392,8 @@ class _HomeScreenState extends State<HomeScreen> {
                               if (mounted) {
                                 messenger.showSnackBar(
                                   const SnackBar(
-                                    content: Text('Payment verified! Order confirmed.'),
+                                    content: Text(
+                                        'Payment verified! Order confirmed.'),
                                   ),
                                 );
                               }
@@ -1397,8 +1430,8 @@ class _HomeScreenState extends State<HomeScreen> {
                               Text(
                                 'Verifying Transfer...',
                                 style: TextStyle(
-                                  fontSize:
-                                      AppTypography.font(AppFontSizes.bodyMedium),
+                                  fontSize: AppTypography.font(
+                                      AppFontSizes.bodyMedium),
                                   fontWeight: FontWeight.w700,
                                 ),
                               ),
@@ -1816,7 +1849,7 @@ class _HomeScreenState extends State<HomeScreen> {
               Icon(LucideIcons.search, color: purpleColor, size: 20.sp),
               SizedBox(width: 12.w),
               Text(
-                'Search',
+                'Discover',
                 style: TextStyle(
                   color: AppTheme.hintColorFor(isDark),
                   fontSize: AppTypography.font(AppFontSizes.bodyMedium),
@@ -1843,25 +1876,25 @@ class _HomeScreenState extends State<HomeScreen> {
         final promos = snapshot.data!.docs
             .map((doc) => doc.data() as Map<String, dynamic>)
             .where((promo) {
-              if (promo['isActive'] == false) return false;
+          if (promo['isActive'] == false) return false;
 
-              if (promo['startDate'] != null &&
-                  promo['startDate'].toString().isNotEmpty) {
-                try {
-                  final start = DateTime.parse(promo['startDate']);
-                  if (start.isAfter(now)) return false;
-                } catch (_) {}
-              }
-              if (promo['endDate'] != null &&
-                  promo['endDate'].toString().isNotEmpty) {
-                try {
-                  final end = DateTime.parse(promo['endDate']);
-                  if (end.isBefore(now)) return false;
-                } catch (_) {}
-              }
-              final imageUrl = promo['imageUrl'] ?? '';
-              return imageUrl.toString().trim().isNotEmpty;
-            }).toList();
+          if (promo['startDate'] != null &&
+              promo['startDate'].toString().isNotEmpty) {
+            try {
+              final start = DateTime.parse(promo['startDate']);
+              if (start.isAfter(now)) return false;
+            } catch (_) {}
+          }
+          if (promo['endDate'] != null &&
+              promo['endDate'].toString().isNotEmpty) {
+            try {
+              final end = DateTime.parse(promo['endDate']);
+              if (end.isBefore(now)) return false;
+            } catch (_) {}
+          }
+          final imageUrl = promo['imageUrl'] ?? '';
+          return imageUrl.toString().trim().isNotEmpty;
+        }).toList();
 
         if (promos.isEmpty) {
           return const SizedBox.shrink();
@@ -1896,7 +1929,8 @@ class _HomeScreenState extends State<HomeScreen> {
                         });
                       },
                       itemBuilder: (context, index) {
-                        final imageUrl = (promos[index]['imageUrl'] ?? '').toString();
+                        final imageUrl =
+                            (promos[index]['imageUrl'] ?? '').toString();
                         return ClipRRect(
                           borderRadius: BorderRadius.circular(24.r),
                           child: CachedNetworkImage(
@@ -1904,9 +1938,8 @@ class _HomeScreenState extends State<HomeScreen> {
                             fit: BoxFit.cover,
                             width: double.infinity,
                             placeholder: (_, __) => Container(
-                              color: isDark
-                                  ? Colors.grey[900]
-                                  : Colors.grey[200],
+                              color:
+                                  isDark ? Colors.grey[900] : Colors.grey[200],
                               child: const Center(
                                 child: CircularProgressIndicator(
                                   color: AppTheme.primaryColor,
@@ -1944,7 +1977,9 @@ class _HomeScreenState extends State<HomeScreen> {
                           decoration: BoxDecoration(
                             color: isActive
                                 ? AppTheme.primaryPurpleFor(isDark)
-                                : (isDark ? Colors.grey[800] : Colors.grey[300]),
+                                : (isDark
+                                    ? Colors.grey[800]
+                                    : Colors.grey[300]),
                             borderRadius: BorderRadius.circular(10.r),
                           ),
                         );
@@ -2328,6 +2363,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         isVerified: true,
                         vendorData: data,
                         isClosed: !_isVendorOpen(data['operatingHours']),
+                        badge: VendorPromoBadge(vendorId: vendorId),
                         onTap: () => context.push('/vendor/$vendorId'),
                         onFavoriteTap: () {},
                       ),

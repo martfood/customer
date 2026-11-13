@@ -13,6 +13,7 @@ import 'package:shared_widgets/widgets/food_card_horizontal.dart';
 import 'package:shared_widgets/widgets/bulk_meal_card.dart';
 import 'package:shared_widgets/core/utils/meal_time_helper.dart';
 import '../../core/services/price_helper.dart';
+import 'package:shared_widgets/widgets/vendor_promo_badge.dart';
 import 'vendor_ratings_screen.dart';
 import '../../core/widgets/guest_auth_prompt_sheet.dart';
 
@@ -854,6 +855,10 @@ class _VendorScreenState extends State<VendorScreen> {
                                       ),
                                     ],
                                   ),
+                                ),
+                                VendorPromoBadge(
+                                  vendorId: widget.vendorId,
+                                  margin: EdgeInsets.only(top: 10.h),
                                 ),
                               ],
                             ),
