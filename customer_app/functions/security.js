@@ -404,17 +404,22 @@ module.exports = function buildSecurity({ sendEmail, resendApiKey }) {
 
         let html = "";
         let text = "";
+        let attachments = [];
         try {
           const r = await fetch(`https://api.resend.com/emails/receiving/${emailId}`, { headers: { Authorization: `Bearer ${resendApiKey}` } });
           if (r.ok) {
             const j = await r.json();
             html = j.html || "";
             text = j.text || "";
+            attachments = Array.isArray(j.attachments) ? j.attachments : [];
           } else {
             logger.warn("Receiving API fetch failed", r.status);
           }
         } catch (e) {
           logger.error("Receiving API error", e);
+        }
+        if (!attachments.length && Array.isArray(data.attachments)) {
+          attachments = data.attachments;
         }
 
         const fromEmail = parseAddress(data.from);
@@ -435,6 +440,7 @@ module.exports = function buildSecurity({ sendEmail, resendApiKey }) {
           status: "open",
           direction: "inbound",
           account,
+          attachments,
           createdAt: FieldValue().serverTimestamp(),
           updatedAt: FieldValue().serverTimestamp(),
         });
@@ -444,6 +450,7 @@ module.exports = function buildSecurity({ sendEmail, resendApiKey }) {
           subject: data.subject || "",
           html,
           text,
+          attachments,
           createdAt: FieldValue().serverTimestamp(),
         });
         return res.status(200).send("stored");

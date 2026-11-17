@@ -129,26 +129,6 @@ class BulkMealCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(16.r),
         child: Stack(
           children: [
-            if (promoPrice != null && promoPrice! > 0 && price > promoPrice!)
-              Positioned(
-                top: 12.h,
-                left: 12.w,
-                child: Container(
-                  padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFDC2626),
-                    borderRadius: BorderRadius.circular(6.r),
-                  ),
-                  child: Text(
-                    '-${(((price - promoPrice!) / price) * 100).round()}%',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 10,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ),
             Container(
               width: cardWidth,
               height: height,
@@ -204,63 +184,10 @@ class BulkMealCard extends StatelessWidget {
                       ),
                     ),
                     SizedBox(
-                        height: isFullWidth ? 10.h : (isTablet ? 6.h : 5.h)),
+                        height: isFullWidth ? 8.h : (isTablet ? 5.h : 4.5.h)),
 
-                    // ── Title ──────────────────────────────────────────────────
-                    Text(
-                      title,
-                      style: TextStyle(
-                        fontSize: isFullWidth ? 16 : (isTablet ? 14 : 13.5),
-                        fontWeight: FontWeight.w700,
-                        color: primaryTextColor,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    SizedBox(
-                        height: isFullWidth ? 4.h : (isTablet ? 2.h : 1.8.h)),
-
-                    // ── Price & Add Button Row ─────────────────────────────────
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Flexible(
-                          child: Text(
-                            _priceLabel(effectivePrice),
-                            style: TextStyle(
-                              fontSize:
-                                  isFullWidth ? 16.5 : (isTablet ? 15.5 : 14.5),
-                              fontWeight: FontWeight.w800,
-                              color: isDark ? Colors.white : purpleColor,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                        GestureDetector(
-                          onTap: onAddTap ?? onTap,
-                          child: Container(
-                            width:
-                                isFullWidth ? 26.w : (isTablet ? 20.w : 19.w),
-                            height:
-                                isFullWidth ? 26.w : (isTablet ? 20.w : 19.w),
-                            decoration: BoxDecoration(
-                              color: purpleColor,
-                              shape: BoxShape.circle,
-                            ),
-                            child: Icon(Icons.add,
-                                color: Colors.white,
-                                size: isFullWidth ? 16 : (isTablet ? 14 : 12)),
-                          ),
-                        ),
-                      ],
-                    ),
-
-                    // ── Vendor Subline with Verified Badge ────────────────────
+                    // ── Vendor Subline with Verified Badge (Above Food Name) ──
                     if (vendorName != null && vendorName!.isNotEmpty) ...[
-                      SizedBox(
-                          height: isFullWidth ? 4.h : (isTablet ? 2.h : 1.8.h)),
                       Row(
                         children: [
                           Flexible(
@@ -291,7 +218,119 @@ class BulkMealCard extends StatelessWidget {
                           ],
                         ],
                       ),
+                      SizedBox(
+                          height: isFullWidth ? 4.h : (isTablet ? 2.h : 1.8.h)),
                     ],
+
+                    // ── Title ──────────────────────────────────────────────────
+                    Text(
+                      title,
+                      style: TextStyle(
+                        fontSize: isFullWidth ? 16 : (isTablet ? 14 : 13.5),
+                        fontWeight: FontWeight.w700,
+                        color: primaryTextColor,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    SizedBox(
+                        height: isFullWidth ? 4.h : (isTablet ? 2.h : 1.8.h)),
+
+                    // ── Price & Add Button Row ─────────────────────────────────
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Flexible(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              if (promoPrice != null &&
+                                  promoPrice! > 0 &&
+                                  price > promoPrice!) ...[
+                                Text(
+                                  _priceLabel(price),
+                                  style: TextStyle(
+                                    fontSize: isFullWidth
+                                        ? 12.5
+                                        : (isTablet ? 11 : 10.5),
+                                    fontWeight: FontWeight.w600,
+                                    color: isDark
+                                        ? Colors.grey[400]
+                                        : AppTheme.lightHintText,
+                                    decoration: TextDecoration.lineThrough,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                SizedBox(height: 1.h),
+                              ],
+                              Row(
+                                mainAxisSize: MainAxisSize.min,
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  Flexible(
+                                    child: Text(
+                                      _priceLabel(effectivePrice),
+                                      style: TextStyle(
+                                        fontSize: isFullWidth
+                                            ? 16.5
+                                            : (isTablet ? 15.5 : 14.5),
+                                        fontWeight: FontWeight.w800,
+                                        color:
+                                            isDark ? Colors.white : purpleColor,
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                  if (promoPrice != null &&
+                                      promoPrice! > 0 &&
+                                      price > promoPrice!) ...[
+                                    SizedBox(width: 4.w),
+                                    Container(
+                                      padding: EdgeInsets.symmetric(
+                                          horizontal: isTablet ? 4.w : 5.w,
+                                          vertical: isTablet ? 1.5.h : 2.h),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFFDC2626),
+                                        borderRadius:
+                                            BorderRadius.circular(4.r),
+                                      ),
+                                      child: Text(
+                                        '${(((price - promoPrice!) / price) * 100).round()}% OFF',
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 9,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                        GestureDetector(
+                          onTap: onAddTap ?? onTap,
+                          child: Container(
+                            width:
+                                isFullWidth ? 26.w : (isTablet ? 20.w : 19.w),
+                            height:
+                                isFullWidth ? 26.w : (isTablet ? 20.w : 19.w),
+                            decoration: BoxDecoration(
+                              color: purpleColor,
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(Icons.add,
+                                color: Colors.white,
+                                size: isFullWidth ? 16 : (isTablet ? 14 : 12)),
+                          ),
+                        ),
+                      ],
+                    ),
 
                     // ── Hairline Divider ──────────────────────────────────────
                     Padding(

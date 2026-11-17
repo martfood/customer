@@ -560,6 +560,7 @@ class _RestaurantFoodDetailsScreenState
                               VerificationBadge(
                                 vendorData: _vendorData!,
                                 size: 15.sp,
+                                interactive: true,
                               ),
                             ],
                           ],
@@ -601,11 +602,14 @@ class _RestaurantFoodDetailsScreenState
                               padding: EdgeInsets.symmetric(
                                   horizontal: 8.w, vertical: 3.h),
                               decoration: BoxDecoration(
-                                color: purpleColor,
+                                color: const Color(0xFFDC2626),
                                 borderRadius: BorderRadius.circular(6.r),
                               ),
                               child: Text(
-                                'PROMO',
+                                (_originalBasePrice != null &&
+                                        _originalBasePrice! > _basePrice)
+                                    ? '${(((_originalBasePrice! - _basePrice) / _originalBasePrice!) * 100).round()}% OFF'
+                                    : 'PROMO',
                                 style: TextStyle(
                                   color: Colors.white,
                                   fontSize:

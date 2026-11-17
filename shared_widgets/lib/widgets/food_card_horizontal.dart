@@ -164,36 +164,54 @@ class FoodCardHorizontal extends StatelessWidget {
                             ),
                           ),
                         ),
-                        if (isPromo ||
-                            (hasPromo && hasBase && basePrice! > promoPrice!))
-                          Positioned(
-                            top: isTablet ? 4.h : 6.h,
-                            left: isTablet ? 4.w : 6.w,
-                            child: Container(
-                              padding: EdgeInsets.symmetric(
-                                  horizontal: isTablet ? 6.w : 8.w,
-                                  vertical: isTablet ? 2.h : 3.h),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFDC2626),
-                                borderRadius: BorderRadius.circular(6.r),
-                              ),
-                              child: Text(
-                                (hasPromo &&
-                                        hasBase &&
-                                        basePrice! > promoPrice!)
-                                    ? '-${(((basePrice! - promoPrice!) / basePrice!) * 100).round()}%'
-                                    : 'PROMO',
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                          ),
                       ],
                     ),
                     SizedBox(height: isTablet ? 4.h : 5.h),
+
+                    // ── Business Name / Category (Above Food Name) ────────────
+                    if (vendorName != null && vendorName!.isNotEmpty) ...[
+                      Row(
+                        children: [
+                          Flexible(
+                            child: Text(
+                              vendorName!,
+                              style: TextStyle(
+                                fontSize: isTablet ? 11.5 : 11,
+                                color: mutedTextColor,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          if (vendorData != null) ...[
+                            SizedBox(width: 4.w),
+                            VerificationBadge(
+                              vendorData: vendorData!,
+                              size: isTablet ? 12 : 11,
+                            ),
+                          ] else if (isVerified) ...[
+                            SizedBox(width: 4.w),
+                            Icon(Icons.verified,
+                                color: Colors.blue, size: isTablet ? 12 : 11),
+                          ],
+                        ],
+                      ),
+                      SizedBox(height: isTablet ? 1.5.h : 2.h),
+                    ] else if (categoryName != null &&
+                        categoryName!.isNotEmpty) ...[
+                      Text(
+                        categoryName!,
+                        style: TextStyle(
+                          fontSize: isTablet ? 11.5 : 11,
+                          color: mutedTextColor,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      SizedBox(height: isTablet ? 1.5.h : 2.h),
+                    ],
 
                     // ── Title ──────────────────────────────────────────────────
                     Text(
@@ -212,19 +230,80 @@ class FoodCardHorizontal extends StatelessWidget {
                     if (showPrice) ...[
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
                           Flexible(
-                            child: Text(
-                              hasPromo
-                                  ? _priceLabel(promoPrice!)
-                                  : _priceLabel(basePrice!),
-                              style: TextStyle(
-                                fontSize: isTablet ? 14 : 14,
-                                fontWeight: FontWeight.w800,
-                                color: isDark ? Colors.white : purpleColor,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                if (hasPromo &&
+                                    hasBase &&
+                                    basePrice! > promoPrice!) ...[
+                                  Text(
+                                    _priceLabel(basePrice!),
+                                    style: TextStyle(
+                                      fontSize: isTablet ? 10.5 : 10.5,
+                                      fontWeight: FontWeight.w600,
+                                      color: mutedTextColor,
+                                      decoration: TextDecoration.lineThrough,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  SizedBox(height: 1.h),
+                                ],
+                                Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    Flexible(
+                                      child: Text(
+                                        hasPromo
+                                            ? _priceLabel(promoPrice!)
+                                            : _priceLabel(basePrice!),
+                                        style: TextStyle(
+                                          fontSize: isTablet ? 13.5 : 13.5,
+                                          fontWeight: FontWeight.w800,
+                                          color: isDark
+                                              ? Colors.white
+                                              : purpleColor,
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                    if ((hasPromo &&
+                                            hasBase &&
+                                            basePrice! > promoPrice!) ||
+                                        isPromo) ...[
+                                      SizedBox(width: 4.w),
+                                      Container(
+                                        padding: EdgeInsets.symmetric(
+                                            horizontal: isTablet ? 4.w : 5.w,
+                                            vertical: isTablet ? 1.5.h : 2.h),
+                                        decoration: BoxDecoration(
+                                          color: const Color(0xFFDC2626),
+                                          borderRadius:
+                                              BorderRadius.circular(4.r),
+                                        ),
+                                        child: Text(
+                                          (hasPromo &&
+                                                  hasBase &&
+                                                  basePrice! > promoPrice!)
+                                              ? '${(((basePrice! - promoPrice!) / basePrice!) * 100).round()}% OFF'
+                                              : 'PROMO',
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 9,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ],
+                                ),
+                              ],
                             ),
                           ),
                           GestureDetector(
@@ -241,50 +320,6 @@ class FoodCardHorizontal extends StatelessWidget {
                                   size: isTablet ? 14 : 13),
                             ),
                           ),
-                        ],
-                      ),
-                    ],
-
-                    // ── Category / Vendor Subline ─────────────────────────────
-                    if (categoryName != null && categoryName!.isNotEmpty) ...[
-                      SizedBox(height: isTablet ? 2.h : 2.h),
-                      Text(
-                        categoryName!,
-                        style: TextStyle(
-                          fontSize: isTablet ? 11.5 : 11,
-                          color: mutedTextColor,
-                          fontWeight: FontWeight.bold,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ] else if (vendorName != null &&
-                        vendorName!.isNotEmpty) ...[
-                      SizedBox(height: isTablet ? 2.h : 2.h),
-                      Row(
-                        children: [
-                          Flexible(
-                            child: Text(
-                              vendorName!,
-                              style: TextStyle(
-                                fontSize: isTablet ? 11.5 : 11,
-                                color: mutedTextColor,
-                                fontWeight: FontWeight.bold,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                          if (vendorData != null) ...[
-                            SizedBox(width: 4.w),
-                            VerificationBadge(
-                                vendorData: vendorData!,
-                                size: isTablet ? 12 : 11),
-                          ] else if (isVerified) ...[
-                            SizedBox(width: 4.w),
-                            Icon(Icons.verified,
-                                color: Colors.blue, size: isTablet ? 12 : 11),
-                          ],
                         ],
                       ),
                     ],

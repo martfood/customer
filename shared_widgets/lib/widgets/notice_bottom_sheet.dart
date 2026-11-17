@@ -139,6 +139,7 @@ class NoticeBottomSheet {
 
     return showModalBottomSheet<void>(
       context: context,
+      useRootNavigator: true,
       isScrollControlled: true,
       isDismissible: true,
       backgroundColor: Colors.transparent,
@@ -238,7 +239,7 @@ class _NoticeBottomSheetBodyState extends State<_NoticeBottomSheetBody> {
 
         return Container(
           constraints: BoxConstraints(
-            maxHeight: MediaQuery.of(context).size.height * 0.90,
+            maxHeight: MediaQuery.of(context).size.height * 0.72,
           ),
           decoration: BoxDecoration(
             color: surface,
