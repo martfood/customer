@@ -283,7 +283,7 @@ class FoodCardHorizontal extends StatelessWidget {
                                             horizontal: isTablet ? 4.w : 5.w,
                                             vertical: isTablet ? 1.5.h : 2.h),
                                         decoration: BoxDecoration(
-                                          color: const Color(0xFFDC2626),
+                                          color: AppTheme.promoRed,
                                           borderRadius:
                                               BorderRadius.circular(4.r),
                                         ),

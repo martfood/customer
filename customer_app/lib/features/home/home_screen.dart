@@ -2054,7 +2054,7 @@ class _HomeScreenState extends State<HomeScreen> {
             _buildSectionHeader(
                 'Discounts', () => context.push('/discount-guaranteed')),
             SizedBox(
-              height: MediaQuery.of(context).size.width >= 600 ? 178.h : 184.h,
+              height: MediaQuery.of(context).size.width >= 600 ? 212.h : 220.h,
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
                 padding: EdgeInsets.symmetric(horizontal: 20.w),
@@ -2361,8 +2361,10 @@ class _HomeScreenState extends State<HomeScreen> {
                               .snapshots()
                           : const Stream.empty(),
                       builder: (context, favSnap) {
-                        final custData = favSnap.data?.data() as Map<String, dynamic>?;
-                        final favList = List<String>.from(custData?['favoriteRestaurants'] ?? []);
+                        final custData =
+                            favSnap.data?.data() as Map<String, dynamic>?;
+                        final favList = List<String>.from(
+                            custData?['favoriteRestaurants'] ?? []);
                         final isFav = favList.contains(vendorId);
 
                         return Padding(
@@ -2390,11 +2392,13 @@ class _HomeScreenState extends State<HomeScreen> {
                                   .doc(uid);
                               if (isFav) {
                                 await ref.set({
-                                  'favoriteRestaurants': FieldValue.arrayRemove([vendorId])
+                                  'favoriteRestaurants':
+                                      FieldValue.arrayRemove([vendorId])
                                 }, SetOptions(merge: true));
                               } else {
                                 await ref.set({
-                                  'favoriteRestaurants': FieldValue.arrayUnion([vendorId])
+                                  'favoriteRestaurants':
+                                      FieldValue.arrayUnion([vendorId])
                                 }, SetOptions(merge: true));
                               }
                             },

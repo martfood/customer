@@ -42,6 +42,7 @@ class AppTheme {
   /// Brand black (#121212) used for bold light-mode outlines.
   static const Color brandBlack = Color(0xFF121212);
   static const Color onboardingBackground = Color(0xFFE4E1DA);
+  static const Color promoRed = Color(0xFFDC2626);
 
   // High contrast text tokens (Eliminates faint/dull 20% opacity look in light mode)
   static const Color lightMutedText =

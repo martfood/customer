@@ -167,6 +167,38 @@ class _VendorScreenState extends State<VendorScreen> {
     return 'resturantPosts';
   }
 
+  Map<String, double?> _resolvePrices(
+      Map<String, dynamic> item, String fallbackCategory) {
+    final sourceColl = item['sourceCollection'] ?? fallbackCategory;
+    final double rawBasePrice = (item['basePrice'] ?? 0).toDouble();
+    final double rawPromoPrice = (item['promoPrice'] ?? 0).toDouble();
+    final double rawOriginalPrice = (item['originalPrice'] ?? 0).toDouble();
+
+    double? basePrice;
+    double? promoPrice;
+
+    if (rawPromoPrice > 0 && rawBasePrice > rawPromoPrice) {
+      // Standard schema: basePrice is regular/original price, promoPrice is discounted price
+      basePrice = PriceHelper.applyMarkup(rawBasePrice, sourceColl);
+      promoPrice = PriceHelper.applyMarkup(rawPromoPrice, sourceColl);
+    } else if (rawOriginalPrice > 0 &&
+        rawBasePrice > 0 &&
+        rawOriginalPrice > rawBasePrice) {
+      // Alternate schema: originalPrice is regular/original price, basePrice is discounted price
+      basePrice = PriceHelper.applyMarkup(rawOriginalPrice, sourceColl);
+      promoPrice = PriceHelper.applyMarkup(rawBasePrice, sourceColl);
+    } else {
+      final double effective = rawBasePrice > 0
+          ? rawBasePrice
+          : (rawPromoPrice > 0 ? rawPromoPrice : rawOriginalPrice);
+      basePrice =
+          effective > 0 ? PriceHelper.applyMarkup(effective, sourceColl) : null;
+      promoPrice = null;
+    }
+
+    return {'basePrice': basePrice, 'promoPrice': promoPrice};
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -237,7 +269,13 @@ class _VendorScreenState extends State<VendorScreen> {
             ? (physicalVerification['status']?.toString() ?? 'pending')
             : 'pending';
         final name = profile?['businessName'] ?? 'Store';
-        final bio = (profile?['bio'] ?? profile?['about'] ?? profile?['description'] ?? vendorData['bio'] ?? '').toString().trim();
+        final bio = (profile?['bio'] ??
+                profile?['about'] ??
+                profile?['description'] ??
+                vendorData['bio'] ??
+                '')
+            .toString()
+            .trim();
         final category = profile?['category'] ?? 'Restaurant';
         final coverImageUrl =
             profile?['coverImageUrl'] ?? profile?['logoUrl'] ?? '';
@@ -673,8 +711,8 @@ class _VendorScreenState extends State<VendorScreen> {
                                             Text(
                                               'Delivery Fee',
                                               style: TextStyle(
-                                                fontSize:
-                                                    AppTypography.font(AppFontSizes.caption),
+                                                fontSize: AppTypography.font(
+                                                    AppFontSizes.caption),
                                                 color: mutedTextColor,
                                                 fontWeight: FontWeight.w600,
                                               ),
@@ -683,8 +721,8 @@ class _VendorScreenState extends State<VendorScreen> {
                                             Text(
                                               formattedFee,
                                               style: TextStyle(
-                                                fontSize:
-                                                    AppTypography.font(AppFontSizes.bodySmall),
+                                                fontSize: AppTypography.font(
+                                                    AppFontSizes.bodySmall),
                                                 fontWeight: FontWeight.bold,
                                                 color: primaryTextColor,
                                               ),
@@ -707,8 +745,8 @@ class _VendorScreenState extends State<VendorScreen> {
                                               Text(
                                                 'Prep Time',
                                                 style: TextStyle(
-                                                  fontSize:
-                                                      AppTypography.font(AppFontSizes.caption),
+                                                  fontSize: AppTypography.font(
+                                                      AppFontSizes.caption),
                                                   color: mutedTextColor,
                                                   fontWeight: FontWeight.w600,
                                                 ),
@@ -801,7 +839,9 @@ class _VendorScreenState extends State<VendorScreen> {
                                                       'Ratings',
                                                       style: TextStyle(
                                                         fontSize:
-                                                            AppTypography.font(AppFontSizes.caption),
+                                                            AppTypography.font(
+                                                                AppFontSizes
+                                                                    .caption),
                                                         color: mutedTextColor,
                                                         fontWeight:
                                                             FontWeight.w600,
@@ -994,8 +1034,7 @@ class _VendorScreenState extends State<VendorScreen> {
                   // ── Product Cards 2x2 Grid ──────────────────────────────
                   if (postsLoading)
                     SliverPadding(
-                      padding:
-                          EdgeInsets.fromLTRB(16.w, 24.h, 16.w, 4.h),
+                      padding: EdgeInsets.fromLTRB(16.w, 24.h, 16.w, 4.h),
                       sliver: SliverGrid(
                         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                           crossAxisCount: 2,
@@ -1024,8 +1063,10 @@ class _VendorScreenState extends State<VendorScreen> {
                   else ...[
                     // If all items are bulk meals (or category is Bulk/Schedule), render 1x1 full-width list
                     if (itemsToDisplay.every((item) {
-                      final orderType =
-                          (item['orderType'] ?? '').toString().toLowerCase().trim();
+                      final orderType = (item['orderType'] ?? '')
+                          .toString()
+                          .toLowerCase()
+                          .trim();
                       final cat =
                           (item['mealCategory'] ?? item['category'] ?? '')
                               .toString()
@@ -1045,31 +1086,27 @@ class _VendorScreenState extends State<VendorScreen> {
                           delegate: SliverChildBuilderDelegate(
                             (context, idx) {
                               final item = itemsToDisplay[idx];
-                              final title = item['name'] ?? 'Scheduled Order Item';
+                              final title =
+                                  item['name'] ?? 'Scheduled Order Item';
                               final photoUrl = item['photoUrl'] ?? '';
-                              final basePriceRaw =
-                                  (item['basePrice'] ?? 0).toDouble();
-                              final originalPriceRaw = item['originalPrice'] != null
-                                  ? (item['originalPrice'] as num).toDouble()
-                                  : null;
-                              final price = PriceHelper.applyMarkup(basePriceRaw,
-                                  item['sourceCollection'] ?? category);
-                              final originalPrice = originalPriceRaw != null
-                                  ? PriceHelper.applyMarkup(originalPriceRaw,
-                                      item['sourceCollection'] ?? category)
-                                  : null;
+                              final prices = _resolvePrices(item, category);
+                              final price = prices['basePrice'] ?? 0.0;
+                              final promoPrice = prices['promoPrice'];
 
                               final rawOrderStart = item['orderStartTime'] ??
                                   item['orderStarttime'];
                               final rawOrderClose = item['orderEndTime'] ??
                                   item['orderClosetime'] ??
                                   item['orderTimeClose'];
-                              final rawDeliveryStart = item['deliveryStartTime'] ??
-                                  item['deliveryStarttime'];
-                              final rawDeliveryClose = item['deliveryEndTime'] ??
-                                  item['deliveryClosetime'];
+                              final rawDeliveryStart =
+                                  item['deliveryStartTime'] ??
+                                      item['deliveryStarttime'];
+                              final rawDeliveryClose =
+                                  item['deliveryEndTime'] ??
+                                      item['deliveryClosetime'];
 
-                              final orderWindow = MealTimeHelper.formatTimeWindow(
+                              final orderWindow =
+                                  MealTimeHelper.formatTimeWindow(
                                 rawOrderStart?.toString(),
                                 rawOrderClose?.toString(),
                               );
@@ -1079,7 +1116,9 @@ class _VendorScreenState extends State<VendorScreen> {
                                 rawDeliveryClose?.toString(),
                               );
                               final rawClosesText =
-                                  (item['orderClosesText'] ?? '').toString().trim();
+                                  (item['orderClosesText'] ?? '')
+                                      .toString()
+                                      .trim();
                               final orderClosesText = rawClosesText.isNotEmpty
                                   ? rawClosesText
                                   : MealTimeHelper.calculateOrderClosesText(
@@ -1100,7 +1139,7 @@ class _VendorScreenState extends State<VendorScreen> {
                                   title: title,
                                   imageUrl: photoUrl,
                                   price: price,
-                                  promoPrice: originalPrice,
+                                  promoPrice: promoPrice,
                                   vendorName: null,
                                   vendorData: vendorData,
                                   orderTimeWindow: orderWindow,
@@ -1114,7 +1153,8 @@ class _VendorScreenState extends State<VendorScreen> {
                                   isClosed: !isStoreOpen,
                                   onTap: () {
                                     if (!isStoreOpen) {
-                                      ScaffoldMessenger.of(context).showSnackBar(
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(
                                         const SnackBar(
                                           content: Text(
                                               'Ordering is disabled as this store is currently closed.'),
@@ -1123,7 +1163,8 @@ class _VendorScreenState extends State<VendorScreen> {
                                       );
                                       return;
                                     }
-                                    context.push('/food-details/$title', extra: {
+                                    context
+                                        .push('/food-details/$title', extra: {
                                       'vendorId': widget.vendorId,
                                       'docId': item['id'],
                                       'sourceCollection': _cachedCollectionName,
@@ -1131,7 +1172,8 @@ class _VendorScreenState extends State<VendorScreen> {
                                   },
                                   onAddTap: () {
                                     if (!isStoreOpen) {
-                                      ScaffoldMessenger.of(context).showSnackBar(
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(
                                         const SnackBar(
                                           content: Text(
                                               'Ordering is disabled as this store is currently closed.'),
@@ -1140,7 +1182,8 @@ class _VendorScreenState extends State<VendorScreen> {
                                       );
                                       return;
                                     }
-                                    context.push('/food-details/$title', extra: {
+                                    context
+                                        .push('/food-details/$title', extra: {
                                       'vendorId': widget.vendorId,
                                       'docId': item['id'],
                                       'sourceCollection': _cachedCollectionName,
@@ -1154,8 +1197,10 @@ class _VendorScreenState extends State<VendorScreen> {
                         ),
                       )
                     else if (itemsToDisplay.every((item) {
-                      final orderType =
-                          (item['orderType'] ?? '').toString().toLowerCase().trim();
+                      final orderType = (item['orderType'] ?? '')
+                          .toString()
+                          .toLowerCase()
+                          .trim();
                       final cat =
                           (item['mealCategory'] ?? item['category'] ?? '')
                               .toString()
@@ -1174,7 +1219,8 @@ class _VendorScreenState extends State<VendorScreen> {
                       SliverPadding(
                         padding: EdgeInsets.fromLTRB(16.w, 24.h, 16.w, 4.h),
                         sliver: SliverGrid(
-                          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                          gridDelegate:
+                              SliverGridDelegateWithFixedCrossAxisCount(
                             crossAxisCount:
                                 MediaQuery.of(context).size.width >= 900
                                     ? 4
@@ -1185,27 +1231,23 @@ class _VendorScreenState extends State<VendorScreen> {
                             crossAxisSpacing: 14.w,
                             childAspectRatio:
                                 MediaQuery.of(context).size.width >= 600
-                                    ? 0.98
-                                    : 0.88,
+                                    ? 0.90
+                                    : 0.76,
                           ),
                           delegate: SliverChildBuilderDelegate(
                             (context, idx) {
                               final item = itemsToDisplay[idx];
                               final title = item['name'] ?? 'Product';
                               final photoUrl = item['photoUrl'] ?? '';
-                              final basePriceRaw =
-                                  (item['basePrice'] ?? 0).toDouble();
-                              final originalPriceRaw = item['originalPrice'] != null
-                                  ? (item['originalPrice'] as num).toDouble()
-                                  : null;
-                              final price = PriceHelper.applyMarkup(basePriceRaw,
-                                  item['sourceCollection'] ?? category);
-                              final originalPrice = originalPriceRaw != null
-                                  ? PriceHelper.applyMarkup(originalPriceRaw,
-                                      item['sourceCollection'] ?? category)
-                                  : null;
-                              final mealCategory =
-                                  item['mealCategory'] ?? item['category'] ?? '';
+                              final prices = _resolvePrices(item, category);
+                              final basePrice = prices['basePrice'];
+                              final promoPrice = prices['promoPrice'];
+                              final isPromoItem = promoPrice != null &&
+                                  basePrice != null &&
+                                  basePrice > promoPrice;
+                              final mealCategory = item['mealCategory'] ??
+                                  item['category'] ??
+                                  '';
                               final inStock = item['inStock'] ?? true;
                               final quantity = item['quantity'] as num?;
                               final isOutOfStock = inStock == false ||
@@ -1219,12 +1261,12 @@ class _VendorScreenState extends State<VendorScreen> {
                                 rating:
                                     (item['rating'] as num?)?.toDouble() ?? 0.0,
                                 reviewsCount:
-                                    (item['reviewsCount'] as num?)?.toInt() ?? 0,
+                                    (item['reviewsCount'] as num?)?.toInt() ??
+                                        0,
                                 distanceKm: distanceKm,
-                                basePrice: price,
-                                promoPrice: originalPrice,
-                                isPromo: originalPrice != null &&
-                                    originalPrice > price,
+                                basePrice: basePrice,
+                                promoPrice: promoPrice,
+                                isPromo: isPromoItem,
                                 categoryName: mealCategory.isNotEmpty
                                     ? mealCategory
                                     : category,
@@ -1280,10 +1322,10 @@ class _VendorScreenState extends State<VendorScreen> {
                             .toString()
                             .toLowerCase()
                             .trim();
-                        final cat = (item['mealCategory'] ??
-                                item['category'] ?? '')
-                            .toString()
-                            .toLowerCase();
+                        final cat =
+                            (item['mealCategory'] ?? item['category'] ?? '')
+                                .toString()
+                                .toLowerCase();
                         return orderType == 'bulk' ||
                             item['isBulkMeal'] == true ||
                             cat.contains('bulk') ||
@@ -1304,7 +1346,8 @@ class _VendorScreenState extends State<VendorScreen> {
                                       .toLowerCase()
                                       .trim();
                                   final cat = (item['mealCategory'] ??
-                                          item['category'] ?? '')
+                                          item['category'] ??
+                                          '')
                                       .toString()
                                       .toLowerCase();
                                   return orderType == 'bulk' ||
@@ -1321,21 +1364,9 @@ class _VendorScreenState extends State<VendorScreen> {
                                 final title =
                                     item['name'] ?? 'Scheduled Order Item';
                                 final photoUrl = item['photoUrl'] ?? '';
-                                final basePriceRaw =
-                                    (item['basePrice'] ?? 0).toDouble();
-                                final originalPriceRaw =
-                                    item['originalPrice'] != null
-                                        ? (item['originalPrice'] as num)
-                                            .toDouble()
-                                        : null;
-                                final price = PriceHelper.applyMarkup(
-                                    basePriceRaw,
-                                    item['sourceCollection'] ?? category);
-                                final originalPrice = originalPriceRaw != null
-                                    ? PriceHelper.applyMarkup(
-                                        originalPriceRaw,
-                                        item['sourceCollection'] ?? category)
-                                    : null;
+                                final prices = _resolvePrices(item, category);
+                                final price = prices['basePrice'] ?? 0.0;
+                                final promoPrice = prices['promoPrice'];
 
                                 final rawOrderStart = item['orderStartTime'] ??
                                     item['orderStarttime'];
@@ -1366,10 +1397,8 @@ class _VendorScreenState extends State<VendorScreen> {
                                 final orderClosesText = rawClosesText.isNotEmpty
                                     ? rawClosesText
                                     : MealTimeHelper.calculateOrderClosesText(
-                                        startTimeStr:
-                                            rawOrderStart?.toString(),
-                                        closeTimeStr:
-                                            rawOrderClose?.toString(),
+                                        startTimeStr: rawOrderStart?.toString(),
+                                        closeTimeStr: rawOrderClose?.toString(),
                                         deliveryStartTimeStr:
                                             rawDeliveryStart?.toString(),
                                         deliveryEndTimeStr:
@@ -1385,7 +1414,7 @@ class _VendorScreenState extends State<VendorScreen> {
                                     title: title,
                                     imageUrl: photoUrl,
                                     price: price,
-                                    promoPrice: originalPrice,
+                                    promoPrice: promoPrice,
                                     vendorName: null,
                                     vendorData: vendorData,
                                     orderTimeWindow: orderWindow,
@@ -1410,13 +1439,13 @@ class _VendorScreenState extends State<VendorScreen> {
                                         );
                                         return;
                                       }
-                                      context.push('/food-details/$title',
-                                          extra: {
-                                            'vendorId': widget.vendorId,
-                                            'docId': item['id'],
-                                            'sourceCollection':
-                                                _cachedCollectionName,
-                                          });
+                                      context
+                                          .push('/food-details/$title', extra: {
+                                        'vendorId': widget.vendorId,
+                                        'docId': item['id'],
+                                        'sourceCollection':
+                                            _cachedCollectionName,
+                                      });
                                     },
                                     onAddTap: () {
                                       if (!isStoreOpen) {
@@ -1430,13 +1459,13 @@ class _VendorScreenState extends State<VendorScreen> {
                                         );
                                         return;
                                       }
-                                      context.push('/food-details/$title',
-                                          extra: {
-                                            'vendorId': widget.vendorId,
-                                            'docId': item['id'],
-                                            'sourceCollection':
-                                                _cachedCollectionName,
-                                          });
+                                      context
+                                          .push('/food-details/$title', extra: {
+                                        'vendorId': widget.vendorId,
+                                        'docId': item['id'],
+                                        'sourceCollection':
+                                            _cachedCollectionName,
+                                      });
                                     },
                                   ),
                                 );
@@ -1447,7 +1476,8 @@ class _VendorScreenState extends State<VendorScreen> {
                                     .toLowerCase()
                                     .trim();
                                 final cat = (item['mealCategory'] ??
-                                        item['category'] ?? '')
+                                        item['category'] ??
+                                        '')
                                     .toString()
                                     .toLowerCase();
                                 return orderType == 'bulk' ||
@@ -1468,10 +1498,10 @@ class _VendorScreenState extends State<VendorScreen> {
                             .toString()
                             .toLowerCase()
                             .trim();
-                        final cat = (item['mealCategory'] ??
-                                item['category'] ?? '')
-                            .toString()
-                            .toLowerCase();
+                        final cat =
+                            (item['mealCategory'] ?? item['category'] ?? '')
+                                .toString()
+                                .toLowerCase();
                         final isBulk = orderType == 'bulk' ||
                             item['isBulkMeal'] == true ||
                             cat.contains('bulk') ||
@@ -1498,8 +1528,8 @@ class _VendorScreenState extends State<VendorScreen> {
                               crossAxisSpacing: 14.w,
                               childAspectRatio:
                                   MediaQuery.of(context).size.width >= 600
-                                      ? 0.98
-                                      : 0.88,
+                                      ? 0.90
+                                      : 0.76,
                             ),
                             delegate: SliverChildBuilderDelegate(
                               (context, idx) {
@@ -1510,7 +1540,8 @@ class _VendorScreenState extends State<VendorScreen> {
                                       .toLowerCase()
                                       .trim();
                                   final cat = (item['mealCategory'] ??
-                                          item['category'] ?? '')
+                                          item['category'] ??
+                                          '')
                                       .toString()
                                       .toLowerCase();
                                   final isBulk = orderType == 'bulk' ||
@@ -1527,25 +1558,15 @@ class _VendorScreenState extends State<VendorScreen> {
                                 final item = standardItems[idx];
                                 final title = item['name'] ?? 'Product';
                                 final photoUrl = item['photoUrl'] ?? '';
-                                final basePriceRaw =
-                                    (item['basePrice'] ?? 0).toDouble();
-                                final originalPriceRaw =
-                                    item['originalPrice'] != null
-                                        ? (item['originalPrice'] as num)
-                                            .toDouble()
-                                        : null;
-                                final price = PriceHelper.applyMarkup(
-                                    basePriceRaw,
-                                    item['sourceCollection'] ?? category);
-                                final originalPrice = originalPriceRaw != null
-                                    ? PriceHelper.applyMarkup(
-                                        originalPriceRaw,
-                                        item['sourceCollection'] ?? category)
-                                    : null;
-                                final mealCategory =
-                                    item['mealCategory'] ??
-                                        item['category'] ??
-                                        '';
+                                final prices = _resolvePrices(item, category);
+                                final basePrice = prices['basePrice'];
+                                final promoPrice = prices['promoPrice'];
+                                final isPromoItem = promoPrice != null &&
+                                    basePrice != null &&
+                                    basePrice > promoPrice;
+                                final mealCategory = item['mealCategory'] ??
+                                    item['category'] ??
+                                    '';
                                 final inStock = item['inStock'] ?? true;
                                 final quantity = item['quantity'] as num?;
                                 final isOutOfStock = inStock == false ||
@@ -1556,18 +1577,16 @@ class _VendorScreenState extends State<VendorScreen> {
                                   backgroundColor: cardBackgroundColor,
                                   title: title,
                                   imageUrl: photoUrl,
-                                  rating: (item['rating'] as num?)
-                                          ?.toDouble() ??
-                                      0.0,
-                                  reviewsCount: (item['reviewsCount']
-                                              as num?)
-                                          ?.toInt() ??
-                                      0,
+                                  rating:
+                                      (item['rating'] as num?)?.toDouble() ??
+                                          0.0,
+                                  reviewsCount:
+                                      (item['reviewsCount'] as num?)?.toInt() ??
+                                          0,
                                   distanceKm: distanceKm,
-                                  basePrice: price,
-                                  promoPrice: originalPrice,
-                                  isPromo: originalPrice != null &&
-                                      originalPrice > price,
+                                  basePrice: basePrice,
+                                  promoPrice: promoPrice,
+                                  isPromo: isPromoItem,
                                   categoryName: mealCategory.isNotEmpty
                                       ? mealCategory
                                       : category,
@@ -1587,13 +1606,12 @@ class _VendorScreenState extends State<VendorScreen> {
                                       );
                                       return;
                                     }
-                                    context.push('/food-details/$title',
-                                        extra: {
-                                          'vendorId': widget.vendorId,
-                                          'docId': item['id'],
-                                          'sourceCollection':
-                                              _cachedCollectionName,
-                                        });
+                                    context
+                                        .push('/food-details/$title', extra: {
+                                      'vendorId': widget.vendorId,
+                                      'docId': item['id'],
+                                      'sourceCollection': _cachedCollectionName,
+                                    });
                                   },
                                   onFavoriteTap: () {},
                                   onAddTap: () {
@@ -1608,13 +1626,12 @@ class _VendorScreenState extends State<VendorScreen> {
                                       );
                                       return;
                                     }
-                                    context.push('/food-details/$title',
-                                        extra: {
-                                          'vendorId': widget.vendorId,
-                                          'docId': item['id'],
-                                          'sourceCollection':
-                                              _cachedCollectionName,
-                                        });
+                                    context
+                                        .push('/food-details/$title', extra: {
+                                      'vendorId': widget.vendorId,
+                                      'docId': item['id'],
+                                      'sourceCollection': _cachedCollectionName,
+                                    });
                                   },
                                 );
                               },
@@ -1624,7 +1641,8 @@ class _VendorScreenState extends State<VendorScreen> {
                                     .toLowerCase()
                                     .trim();
                                 final cat = (item['mealCategory'] ??
-                                        item['category'] ?? '')
+                                        item['category'] ??
+                                        '')
                                     .toString()
                                     .toLowerCase();
                                 final isBulk = orderType == 'bulk' ||
