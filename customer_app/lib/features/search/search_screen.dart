@@ -1331,10 +1331,10 @@ class _SearchScreenState extends State<SearchScreen> {
                         mainAxisSpacing: 10.h,
                         childAspectRatio:
                             MediaQuery.of(context).size.width >= 900
-                                ? 0.92
+                                ? 0.84
                                 : (MediaQuery.of(context).size.width >= 600
-                                    ? 0.88
-                                    : 0.86),
+                                    ? 0.80
+                                    : 0.75),
                       ),
                       itemCount: filteredItems.length,
                       itemBuilder: (context, index) {

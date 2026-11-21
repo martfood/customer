@@ -1371,7 +1371,8 @@ class _TrackDriverScreenState extends State<TrackDriverScreen> {
                                                 .map((i) =>
                                                     "${i['quantity'] ?? 1}x ${i['title'] ?? i['name'] ?? 'Item'}")
                                                 .join(', '),
-                                            'price': (order['total'] as num?)?.toDouble(),
+                                            'price': (order['total'] as num?)
+                                                ?.toDouble(),
                                           },
                                         );
                                       },

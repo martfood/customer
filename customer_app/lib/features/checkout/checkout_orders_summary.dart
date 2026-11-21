@@ -344,6 +344,79 @@ class _CheckoutOrdersSummaryScreenState
     }
   }
 
+  Future<void> _navigateToVendorScreen(
+    BuildContext context, [
+    Map<String, dynamic>? item,
+  ]) async {
+    String? vendorId = _vendorId ??
+        (item != null
+            ? (item['vendorId'] ?? item['restaurantId'])?.toString()
+            : null);
+
+    if (vendorId == null || vendorId.isEmpty || vendorId == 'null') {
+      if (_activeCheckoutItems.isNotEmpty) {
+        final first = _activeCheckoutItems.first;
+        vendorId = (first['vendorId'] ?? first['restaurantId'])?.toString();
+      }
+    }
+
+    // If vendorId is still missing, look it up by post name or vendor business name
+    if (vendorId == null || vendorId.isEmpty || vendorId == 'null') {
+      final title = item?['title']?.toString() ??
+          item?['name']?.toString() ??
+          _activeCheckoutItems.firstOrNull?['title']?.toString() ??
+          _activeCheckoutItems.firstOrNull?['name']?.toString() ??
+          '';
+      final restaurant = _restaurantName.isNotEmpty
+          ? _restaurantName
+          : (item?['restaurant']?.toString() ?? '');
+
+      if (title.isNotEmpty) {
+        final sourceColl = item?['sourceCollection']?.toString() ??
+            _activeCheckoutItems.firstOrNull?['sourceCollection']?.toString() ??
+            'resturantPosts';
+        try {
+          final postSnap = await _firestore
+              .collection(sourceColl)
+              .where('name', isEqualTo: title)
+              .limit(1)
+              .get();
+          if (postSnap.docs.isNotEmpty) {
+            final pData = postSnap.docs.first.data();
+            final vId = pData['vendorId']?.toString();
+            if (vId != null && vId.isNotEmpty) {
+              vendorId = vId;
+            }
+          }
+        } catch (e) {
+          debugPrint('Error finding vendor by post: $e');
+        }
+      }
+
+      if ((vendorId == null || vendorId.isEmpty) && restaurant.isNotEmpty) {
+        try {
+          final vendorSnap = await _firestore
+              .collection('vendors')
+              .where('businessProfile.businessName', isEqualTo: restaurant)
+              .limit(1)
+              .get();
+          if (vendorSnap.docs.isNotEmpty) {
+            vendorId = vendorSnap.docs.first.id;
+          }
+        } catch (e) {
+          debugPrint('Error finding vendor by businessName: $e');
+        }
+      }
+    }
+
+    if (vendorId != null &&
+        vendorId.isNotEmpty &&
+        vendorId != 'null' &&
+        context.mounted) {
+      context.push('/vendor/$vendorId');
+    }
+  }
+
   Future<void> _resolveVendorDetails() async {
     if (_vendorId == null || _vendorId!.isEmpty) return;
 
@@ -2784,7 +2857,7 @@ class _CheckoutOrdersSummaryScreenState
           ),
         ),
         title: Text(
-          'Order Review',
+          'Checkout',
           style: TextStyle(
             color: purpleColor,
             fontSize: AppTypography.font(AppFontSizes.bodyLarge),
@@ -2968,6 +3041,8 @@ class _CheckoutOrdersSummaryScreenState
                   ] else ...[
                     ...List.generate(_activeCheckoutItems.length, (index) {
                       final item = _activeCheckoutItems[index];
+                      final isLastItem =
+                          index == _activeCheckoutItems.length - 1;
                       final packTitle = 'Pack ${index + 1}';
                       final qty = (item['quantity'] ?? 1) as int;
                       final price = _toDouble(item['price']);
@@ -3188,11 +3263,86 @@ class _CheckoutOrdersSummaryScreenState
                                 ),
                               ],
                             ),
+                            if (isLastItem) ...[
+                              SizedBox(height: 14.h),
+                              SizedBox(
+                                width: double.infinity,
+                                child: OutlinedButton.icon(
+                                  onPressed: () =>
+                                      _navigateToVendorScreen(context, item),
+                                  icon: Icon(
+                                    LucideIcons.plus,
+                                    size: 16.sp,
+                                    color: purpleColor,
+                                  ),
+                                  label: Text(
+                                    'Add more items',
+                                    style: TextStyle(
+                                      color: purpleColor,
+                                      fontSize: AppTypography.font(
+                                          AppFontSizes.bodyMedium),
+                                      fontWeight: FontWeight.w800,
+                                    ),
+                                  ),
+                                  style: OutlinedButton.styleFrom(
+                                    backgroundColor:
+                                        purpleColor.withValues(alpha: 0.06),
+                                    foregroundColor: purpleColor,
+                                    side: BorderSide(
+                                      color:
+                                          purpleColor.withValues(alpha: 0.35),
+                                      width: 1,
+                                    ),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius:
+                                          BorderRadius.circular(18.r),
+                                    ),
+                                    padding:
+                                        EdgeInsets.symmetric(vertical: 14.h),
+                                    elevation: 0,
+                                  ),
+                                ),
+                              ),
+                            ],
                           ],
                         ),
                       );
                     }),
                   ],
+                ],
+                if (!_showOrderDetails && _activeCheckoutItems.isNotEmpty) ...[
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      onPressed: () => _navigateToVendorScreen(context),
+                      icon: Icon(
+                        LucideIcons.plus,
+                        size: 16.sp,
+                        color: purpleColor,
+                      ),
+                      label: Text(
+                        'Add more items',
+                        style: TextStyle(
+                          color: purpleColor,
+                          fontSize: AppTypography.font(AppFontSizes.bodyMedium),
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                      style: OutlinedButton.styleFrom(
+                        backgroundColor: purpleColor.withValues(alpha: 0.06),
+                        foregroundColor: purpleColor,
+                        side: BorderSide(
+                          color: purpleColor.withValues(alpha: 0.35),
+                          width: 1,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(18.r),
+                        ),
+                        padding: EdgeInsets.symmetric(vertical: 14.h),
+                        elevation: 0,
+                      ),
+                    ),
+                  ),
                 ],
 
                 SectionDivider(
