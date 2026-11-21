@@ -15,6 +15,7 @@ import '../../core/widgets/guest_auth_prompt_sheet.dart';
 import '../../core/services/order_completion_service.dart';
 import '../wallet/paystack_service.dart';
 import '../../core/utils/custom_snackbar.dart';
+import '../home/restaurant_food_details_screen.dart';
 
 class OrdersScreen extends StatefulWidget {
   final bool showSuccess;
@@ -499,124 +500,205 @@ class _OrdersScreenState extends State<OrdersScreen>
     }
   }
 
-  void _showDeleteOrderConfirmationSheet(
+  Future<bool?> _showDeleteConfirmationBottomSheet(
     BuildContext context,
-    String docId,
-    String title,
-  ) {
+    String itemTitle,
+  ) async {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final surfaceColor = isDark ? AppTheme.darkSurface : Colors.white;
-    final primaryTextColor = isDark ? Colors.white : const Color(0xFF15161A);
-    final mutedTextColor = AppTheme.mutedTextColorFor(isDark);
-    final borderColor =
-        isDark ? AppTheme.darkBorder : AppTheme.lightInputBorder;
+    final surface = isDark ? AppTheme.darkSurface : Colors.white;
+    final border = isDark ? AppTheme.darkBorder : AppTheme.lightInputBorder;
+    final textClr = isDark ? Colors.white : const Color(0xFF15161A);
+    final mutedClr = AppTheme.mutedTextColorFor(isDark);
 
-    showModalBottomSheet(
+    return showModalBottomSheet<bool>(
       context: context,
-      backgroundColor: surfaceColor,
+      backgroundColor: Colors.transparent,
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(28.r)),
       ),
-      builder: (sheetContext) => SafeArea(
-        child: Padding(
-          padding: EdgeInsets.fromLTRB(24.w, 16.h, 24.w, 24.h),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 44.w,
-                height: 4.h,
-                decoration: BoxDecoration(
-                  color: isDark ? Colors.grey[700] : Colors.grey[300],
-                  borderRadius: BorderRadius.circular(2.r),
-                ),
-              ),
-              SizedBox(height: 20.h),
-              Text(
-                'Delete this order?',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: AppTypography.font(AppFontSizes.headlineSmall),
-                  fontWeight: FontWeight.w800,
-                  color: primaryTextColor,
-                ),
-              ),
-              SizedBox(height: 10.h),
-              Text(
-                "This order will be permanently removed. You won't be able to recover it later.",
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: AppTypography.font(AppFontSizes.bodyMedium),
-                  color: mutedTextColor,
-                  fontWeight: FontWeight.w500,
-                  height: 1.45,
-                ),
-              ),
-              SizedBox(height: 28.h),
-              Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton(
-                      onPressed: () => Navigator.of(sheetContext).pop(),
-                      style: OutlinedButton.styleFrom(
-                        padding: EdgeInsets.symmetric(vertical: 14.h),
-                        side: BorderSide(color: borderColor, width: 1),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(18.r),
-                        ),
-                        elevation: 0,
-                      ),
-                      child: Text(
-                        'Cancel',
-                        style: TextStyle(
-                          fontSize: AppTypography.font(AppFontSizes.bodyMedium),
-                          fontWeight: FontWeight.w700,
-                          color: primaryTextColor,
-                        ),
-                      ),
-                    ),
-                  ),
-                  SizedBox(width: 14.w),
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: () async {
-                        Navigator.of(sheetContext).pop();
-                        await _removeCartItem(docId);
-                        if (context.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('$title removed from cart'),
-                              duration: const Duration(seconds: 2),
-                            ),
-                          );
-                        }
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.red,
-                        foregroundColor: Colors.white,
-                        padding: EdgeInsets.symmetric(vertical: 14.h),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(18.r),
-                        ),
-                        elevation: 0,
-                      ),
-                      child: Text(
-                        'Delete',
-                        style: TextStyle(
-                          fontSize: AppTypography.font(AppFontSizes.bodyMedium),
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ],
+      builder: (ctx) {
+        return Container(
+          decoration: BoxDecoration(
+            color: surface,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(28.r)),
+            border: Border.all(color: border, width: 1),
+            boxShadow: null,
           ),
-        ),
-      ),
+          padding: EdgeInsets.fromLTRB(24.w, 16.h, 24.w, 28.h),
+          child: SafeArea(
+            top: false,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Container(
+                  width: 40.w,
+                  height: 4.h,
+                  decoration: BoxDecoration(
+                    color: isDark ? Colors.grey[700] : Colors.grey[300],
+                    borderRadius: BorderRadius.circular(2.r),
+                  ),
+                ),
+                SizedBox(height: 20.h),
+                Container(
+                  width: 56.w,
+                  height: 56.w,
+                  decoration: BoxDecoration(
+                    color: Colors.red.withValues(alpha: 0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    LucideIcons.trash2,
+                    color: Colors.red,
+                    size: 26.sp,
+                  ),
+                ),
+                SizedBox(height: 16.h),
+                Text(
+                  'Remove from Cart?',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: AppTypography.font(AppFontSizes.headlineSmall),
+                    fontWeight: FontWeight.w800,
+                    color: textClr,
+                  ),
+                ),
+                SizedBox(height: 8.h),
+                Text(
+                  'Are you sure you want to remove "$itemTitle" from your cart?',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: AppTypography.font(AppFontSizes.bodyMedium),
+                    fontWeight: FontWeight.w500,
+                    color: mutedClr,
+                    height: 1.4,
+                  ),
+                ),
+                SizedBox(height: 24.h),
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: () => Navigator.pop(ctx, false),
+                        style: OutlinedButton.styleFrom(
+                          backgroundColor: Colors.transparent,
+                          foregroundColor: isDark ? Colors.white : textClr,
+                          side: BorderSide(color: border, width: 1),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(18.r),
+                          ),
+                          padding: EdgeInsets.symmetric(vertical: 14.h),
+                          elevation: 0,
+                        ),
+                        child: Text(
+                          'Cancel',
+                          style: TextStyle(
+                            fontSize:
+                                AppTypography.font(AppFontSizes.bodyMedium),
+                            fontWeight: FontWeight.w700,
+                            color: isDark ? Colors.white : textClr,
+                          ),
+                        ),
+                      ),
+                    ),
+                    SizedBox(width: 12.w),
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () => Navigator.pop(ctx, true),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.red,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(18.r),
+                          ),
+                          padding: EdgeInsets.symmetric(vertical: 14.h),
+                          elevation: 0,
+                        ),
+                        child: Text(
+                          'Remove',
+                          style: TextStyle(
+                            fontSize:
+                                AppTypography.font(AppFontSizes.bodyMedium),
+                            fontWeight: FontWeight.w800,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
+  }
+
+  Future<void> _navigateToVendorScreen(
+    BuildContext context,
+    Map<String, dynamic> item,
+  ) async {
+    String? vendorId = (item['vendorId'] ?? item['restaurantId'])?.toString();
+
+    // If vendorId is missing or empty, look it up by post name or vendor business name
+    if (vendorId == null || vendorId.isEmpty || vendorId == 'null') {
+      final title = item['title']?.toString() ?? '';
+      final restaurant = item['restaurant']?.toString() ?? '';
+
+      // 1. Try querying the post directly in resturantPosts or sourceCollection
+      if (title.isNotEmpty) {
+        final sourceColl =
+            item['sourceCollection']?.toString() ?? 'resturantPosts';
+        try {
+          final postSnap = await _firestore
+              .collection(sourceColl)
+              .where('name', isEqualTo: title)
+              .limit(1)
+              .get();
+          if (postSnap.docs.isNotEmpty) {
+            final pData = postSnap.docs.first.data();
+            final vId = pData['vendorId']?.toString();
+            if (vId != null && vId.isNotEmpty) {
+              vendorId = vId;
+            }
+          }
+        } catch (e) {
+          debugPrint('Error finding vendor by post: $e');
+        }
+      }
+
+      // 2. Try querying vendors by businessName
+      if ((vendorId == null || vendorId.isEmpty) && restaurant.isNotEmpty) {
+        try {
+          final vendorSnap = await _firestore
+              .collection('vendors')
+              .where('businessProfile.businessName', isEqualTo: restaurant)
+              .limit(1)
+              .get();
+          if (vendorSnap.docs.isNotEmpty) {
+            vendorId = vendorSnap.docs.first.id;
+          }
+        } catch (e) {
+          debugPrint('Error finding vendor by businessName: $e');
+        }
+      }
+    }
+
+    if (vendorId != null &&
+        vendorId.isNotEmpty &&
+        vendorId != 'null' &&
+        context.mounted) {
+      context.push('/vendor/$vendorId');
+    } else if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Could not locate vendor page for this item.'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+    }
   }
 
   Widget _buildCartTab(
@@ -738,15 +820,35 @@ class _OrdersScreenState extends State<OrdersScreen>
                 itemCount: cartItems.length,
                 itemBuilder: (context, index) {
                   final item = cartItems[index];
-                  return _buildCartItemWidget(
-                    context,
-                    item,
-                    isDark,
-                    surfaceColor,
-                    borderColor,
-                    purpleColor,
-                    primaryTextColor,
-                    showCheckoutButton: !hasMultipleItems,
+                  final isLastItem = index == cartItems.length - 1;
+                  return GestureDetector(
+                    onTap: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => RestaurantFoodDetailsScreen(
+                            title: item['title']?.toString() ?? 'Food Item',
+                            vendorId: item['vendorId']?.toString(),
+                            docId: item['productId']?.toString() ??
+                                item['foodId']?.toString(),
+                            sourceCollection:
+                                item['sourceCollection']?.toString(),
+                            isEditingCartItem: true,
+                            cartDocId: item['id']?.toString(),
+                          ),
+                        ),
+                      );
+                    },
+                    child: _buildCartItemWidget(
+                      context,
+                      item,
+                      isDark,
+                      surfaceColor,
+                      borderColor,
+                      purpleColor,
+                      primaryTextColor,
+                      showCheckoutButton: !hasMultipleItems,
+                      isLastItem: isLastItem,
+                    ),
                   );
                 },
               ),
@@ -849,6 +951,7 @@ class _OrdersScreenState extends State<OrdersScreen>
     Color purpleColor,
     Color primaryTextColor, {
     required bool showCheckoutButton,
+    bool isLastItem = false,
   }) {
     final docId = item['id'];
     final imageUrl = item['imageUrl'] ?? '';
@@ -870,6 +973,11 @@ class _OrdersScreenState extends State<OrdersScreen>
         return Dismissible(
           key: Key(docId),
           direction: DismissDirection.endToStart,
+          confirmDismiss: (direction) async {
+            final confirmed =
+                await _showDeleteConfirmationBottomSheet(context, title);
+            return confirmed == true;
+          },
           onDismissed: (direction) async {
             await _removeCartItem(docId);
             if (context.mounted) {
@@ -895,7 +1003,7 @@ class _OrdersScreenState extends State<OrdersScreen>
           child: Container(
             margin: EdgeInsets.only(bottom: 16.h),
             decoration: BoxDecoration(
-              color: isDark ? AppTheme.darkSurface : AppTheme.lightInputFill,
+              color: isDark ? AppTheme.darkSurface : Colors.white,
               borderRadius: BorderRadius.circular(24.r),
               border: Border.all(
                 color: borderColor,
@@ -1156,9 +1264,21 @@ class _OrdersScreenState extends State<OrdersScreen>
                       SizedBox(
                         width: double.infinity,
                         child: OutlinedButton(
-                          onPressed: () {
-                            _showDeleteOrderConfirmationSheet(
-                                context, docId, title);
+                          onPressed: () async {
+                            final confirmed =
+                                await _showDeleteConfirmationBottomSheet(
+                                    context, title);
+                            if (confirmed == true) {
+                              await _removeCartItem(docId);
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text('$title removed from cart'),
+                                    duration: const Duration(seconds: 2),
+                                  ),
+                                );
+                              }
+                            }
                           },
                           style: OutlinedButton.styleFrom(
                             backgroundColor: Colors.transparent,
@@ -1185,6 +1305,44 @@ class _OrdersScreenState extends State<OrdersScreen>
                           ),
                         ),
                       ),
+                      if (isLastItem) ...[
+                        SizedBox(height: 10.h),
+                        SizedBox(
+                          width: double.infinity,
+                          child: OutlinedButton.icon(
+                            onPressed: () =>
+                                _navigateToVendorScreen(context, item),
+                            icon: Icon(
+                              LucideIcons.plus,
+                              size: 16.sp,
+                              color: purpleColor,
+                            ),
+                            label: Text(
+                              'Add more items',
+                              style: TextStyle(
+                                color: purpleColor,
+                                fontSize:
+                                    AppTypography.font(AppFontSizes.bodyMedium),
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                            style: OutlinedButton.styleFrom(
+                              backgroundColor:
+                                  purpleColor.withValues(alpha: 0.06),
+                              foregroundColor: purpleColor,
+                              side: BorderSide(
+                                color: purpleColor.withValues(alpha: 0.35),
+                                width: 1,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(18.r),
+                              ),
+                              padding: EdgeInsets.symmetric(vertical: 14.h),
+                              elevation: 0,
+                            ),
+                          ),
+                        ),
+                      ],
                     ],
                   ),
                 ),

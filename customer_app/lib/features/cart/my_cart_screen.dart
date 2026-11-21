@@ -2,6 +2,7 @@ import '../home/restaurant_food_details_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:shared_widgets/core/theme/app_theme.dart';
+import 'package:shared_widgets/widgets/verification_badge.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -42,6 +43,71 @@ class _MyCartScreenState extends State<MyCartScreen> {
           .collection('cart')
           .doc(docId)
           .delete();
+    }
+  }
+
+  Future<void> _navigateToVendorScreen(
+    BuildContext context,
+    Map<String, dynamic> item,
+  ) async {
+    String? vendorId = (item['vendorId'] ?? item['restaurantId'])?.toString();
+
+    // If vendorId is missing or empty, look it up by post name or vendor business name
+    if (vendorId == null || vendorId.isEmpty || vendorId == 'null') {
+      final title = item['title']?.toString() ?? '';
+      final restaurant = item['restaurant']?.toString() ?? '';
+
+      // 1. Try querying the post directly in resturantPosts or sourceCollection
+      if (title.isNotEmpty) {
+        final sourceColl =
+            item['sourceCollection']?.toString() ?? 'resturantPosts';
+        try {
+          final postSnap = await _firestore
+              .collection(sourceColl)
+              .where('name', isEqualTo: title)
+              .limit(1)
+              .get();
+          if (postSnap.docs.isNotEmpty) {
+            final pData = postSnap.docs.first.data();
+            final vId = pData['vendorId']?.toString();
+            if (vId != null && vId.isNotEmpty) {
+              vendorId = vId;
+            }
+          }
+        } catch (e) {
+          debugPrint('Error finding vendor by post: $e');
+        }
+      }
+
+      // 2. Try querying vendors by businessName
+      if ((vendorId == null || vendorId.isEmpty) && restaurant.isNotEmpty) {
+        try {
+          final vendorSnap = await _firestore
+              .collection('vendors')
+              .where('businessProfile.businessName', isEqualTo: restaurant)
+              .limit(1)
+              .get();
+          if (vendorSnap.docs.isNotEmpty) {
+            vendorId = vendorSnap.docs.first.id;
+          }
+        } catch (e) {
+          debugPrint('Error finding vendor by businessName: $e');
+        }
+      }
+    }
+
+    if (vendorId != null &&
+        vendorId.isNotEmpty &&
+        vendorId != 'null' &&
+        context.mounted) {
+      context.push('/vendor/$vendorId');
+    } else if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Could not locate vendor page for this item.'),
+          duration: Duration(seconds: 2),
+        ),
+      );
     }
   }
 
@@ -381,6 +447,7 @@ class _MyCartScreenState extends State<MyCartScreen> {
                   itemCount: cartItems.length,
                   itemBuilder: (context, index) {
                     final item = cartItems[index];
+                    final isLastItem = index == cartItems.length - 1;
                     return GestureDetector(
                       onTap: () {
                         Navigator.of(context).push(
@@ -406,6 +473,7 @@ class _MyCartScreenState extends State<MyCartScreen> {
                         borderColor,
                         purpleColor,
                         showCheckoutButton: !hasMultipleItems,
+                        isLastItem: isLastItem,
                       ),
                     );
                   },
@@ -509,6 +577,7 @@ class _MyCartScreenState extends State<MyCartScreen> {
     Color borderColor,
     Color purpleColor, {
     required bool showCheckoutButton,
+    bool isLastItem = false,
   }) {
     final docId = item['id'];
     final imageUrl = item['imageUrl'] ?? '';
@@ -711,6 +780,15 @@ class _MyCartScreenState extends State<MyCartScreen> {
                                     overflow: TextOverflow.ellipsis,
                                   ),
                                 ),
+                                SizedBox(width: 4.w),
+                                VendorVerificationBadge(
+                                  vendorId: (item['vendorId'] ??
+                                          item['restaurantId'] ??
+                                          '')
+                                      .toString(),
+                                  fallbackData: item,
+                                  size: 14.sp,
+                                ),
                               ],
                             ),
                             if (selectedChoices.isNotEmpty) ...[
@@ -849,6 +927,44 @@ class _MyCartScreenState extends State<MyCartScreen> {
                           ),
                         ),
                       ),
+                      if (isLastItem) ...[
+                        SizedBox(height: 10.h),
+                        SizedBox(
+                          width: double.infinity,
+                          child: OutlinedButton.icon(
+                            onPressed: () =>
+                                _navigateToVendorScreen(context, item),
+                            icon: Icon(
+                              LucideIcons.plus,
+                              size: 16.sp,
+                              color: purpleColor,
+                            ),
+                            label: Text(
+                              'Add more items',
+                              style: TextStyle(
+                                color: purpleColor,
+                                fontSize:
+                                    AppTypography.font(AppFontSizes.bodyMedium),
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                            style: OutlinedButton.styleFrom(
+                              backgroundColor:
+                                  purpleColor.withValues(alpha: 0.06),
+                              foregroundColor: purpleColor,
+                              side: BorderSide(
+                                color: purpleColor.withValues(alpha: 0.35),
+                                width: 1,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(18.r),
+                              ),
+                              padding: EdgeInsets.symmetric(vertical: 14.h),
+                              elevation: 0,
+                            ),
+                          ),
+                        ),
+                      ],
                     ],
                   ),
                 ),
