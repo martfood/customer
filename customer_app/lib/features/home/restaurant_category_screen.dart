@@ -13,6 +13,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:shared_widgets/widgets/skeleton_loader.dart';
 import 'package:shared_widgets/widgets/verification_badge.dart';
 import '../../core/services/price_helper.dart';
+import '../../core/utils/vendor_status_helper.dart';
 
 class RestaurantCategoryScreen extends StatefulWidget {
   const RestaurantCategoryScreen({super.key});
@@ -30,62 +31,9 @@ class _RestaurantCategoryScreenState extends State<RestaurantCategoryScreen> {
   String _currentAddress = 'Set delivery address';
   String _fullAddress = '';
 
-  bool _isVendorOpen(Map<String, dynamic>? operatingHours) {
-    if (operatingHours == null) return true;
-    final now = DateTime.now();
-    final weekday = now.weekday;
-
-    const weekdayKeys = {
-      1: 'Mon',
-      2: 'Tue',
-      3: 'Wed',
-      4: 'Thu',
-      5: 'Fri',
-      6: 'Sat',
-      7: 'Sun',
-    };
-
-    final dayKey = weekdayKeys[weekday];
-    if (dayKey == null) return true;
-
-    final dayConfig = operatingHours[dayKey] as Map<String, dynamic>?;
-    if (dayConfig == null) return true;
-
-    final bool isClosedToday = dayConfig['closed'] == true;
-    if (isClosedToday) return false;
-
-    final String? openStr = dayConfig['open'] as String?;
-    final String? closeStr = dayConfig['close'] as String?;
-    if (openStr == null ||
-        openStr.isEmpty ||
-        closeStr == null ||
-        closeStr.isEmpty) return true;
-
-    try {
-      final openParts = openStr.split(':');
-      final closeParts = closeStr.split(':');
-
-      if (openParts.length < 2 || closeParts.length < 2) return true;
-
-      final openHour = int.parse(openParts[0]);
-      final openMin = int.parse(openParts[1]);
-      final closeHour = int.parse(closeParts[0]);
-      final closeMin = int.parse(closeParts[1]);
-
-      final openMinutes = openHour * 60 + openMin;
-      final closeMinutes = closeHour * 60 + closeMin;
-      final nowMinutes = now.hour * 60 + now.minute;
-
-      if (closeMinutes >= openMinutes) {
-        return nowMinutes >= openMinutes && nowMinutes <= closeMinutes;
-      } else {
-        return nowMinutes >= openMinutes || nowMinutes <= closeMinutes;
-      }
-    } catch (e) {
-      debugPrint("Error parsing operating hours: $e");
-      return true;
-    }
-  }
+  Map<String, int> _vendorPostCounts = {};
+  bool _postsLoaded = false;
+  StreamSubscription<QuerySnapshot>? _postsSubscription;
 
   @override
   void initState() {
@@ -99,6 +47,26 @@ class _RestaurantCategoryScreenState extends State<RestaurantCategoryScreen> {
     }
 
     PriceHelper.locationNotifier.addListener(_onLocationChanged);
+
+    _postsSubscription = FirebaseFirestore.instance
+        .collection('resturantPosts')
+        .snapshots()
+        .listen((snapshot) {
+      final counts = <String, int>{};
+      for (final doc in snapshot.docs) {
+        final data = doc.data();
+        final vendorId = data['vendorId']?.toString();
+        if (vendorId != null && vendorId.isNotEmpty) {
+          counts[vendorId] = (counts[vendorId] ?? 0) + 1;
+        }
+      }
+      if (mounted) {
+        setState(() {
+          _vendorPostCounts = counts;
+          _postsLoaded = true;
+        });
+      }
+    });
   }
 
   void _onLocationChanged() {
@@ -117,6 +85,7 @@ class _RestaurantCategoryScreenState extends State<RestaurantCategoryScreen> {
 
   @override
   void dispose() {
+    _postsSubscription?.cancel();
     PriceHelper.locationNotifier.removeListener(_onLocationChanged);
     _searchController.dispose();
     super.dispose();
@@ -470,7 +439,8 @@ class _RestaurantCategoryScreenState extends State<RestaurantCategoryScreen> {
                 .where('businessProfile.status', isEqualTo: 'verified')
                 .snapshots(),
             builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
+              if (snapshot.connectionState == ConnectionState.waiting ||
+                  !_postsLoaded) {
                 return ListView.builder(
                   padding: EdgeInsets.fromLTRB(20.w, 8.h, 20.w, 100.h),
                   itemCount: 3,
@@ -481,13 +451,17 @@ class _RestaurantCategoryScreenState extends State<RestaurantCategoryScreen> {
                 );
               }
               final docs = snapshot.data?.docs ?? [];
-              // Filter in-memory: category = Restaurant AND within range AND search filter
+              // Filter in-memory: category = Restaurant AND min 3 restaurant posts AND within range AND search filter
               final filteredDocs = docs.where((doc) {
                 final data = doc.data() as Map<String, dynamic>;
                 final profile =
                     data['businessProfile'] as Map<String, dynamic>?;
 
                 if (profile?['category'] != 'Restaurant') return false;
+
+                // Only vendors with a minimum of 3 restaurant posts are displayed to customers
+                final postCount = _vendorPostCounts[doc.id] ?? 0;
+                if (postCount < 3) return false;
 
                 // Search filter
                 if (_searchText.isNotEmpty) {
@@ -664,8 +638,7 @@ class _RestaurantCategoryScreenState extends State<RestaurantCategoryScreen> {
     required Color borderColor,
     required Map<String, dynamic> vendorData,
   }) {
-    final isOpen =
-        _isVendorOpen(vendorData['operatingHours'] as Map<String, dynamic>?);
+    final isOpen = VendorStatusHelper.isStoreOpen(vendorData);
     final user = FirebaseAuth.instance.currentUser;
 
     return GestureDetector(

@@ -25,6 +25,7 @@ import 'package:http/http.dart' as http;
 import '../../core/services/price_helper.dart';
 import '../../core/services/app_update_service.dart';
 import '../../core/services/order_completion_service.dart';
+import '../../core/utils/vendor_status_helper.dart';
 import '../wallet/paystack_service.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -60,10 +61,16 @@ class _HomeScreenState extends State<HomeScreen> {
   static Map<String, Map<String, dynamic>> _cachedVendorsMap = {};
   static bool _hasLoadedVendorsOnce = false;
 
+  static Map<String, int> _cachedRestaurantPostCounts = {};
+  static bool _hasLoadedRestaurantPostsOnce = false;
+
   Position? _currentPosition;
   Map<String, Map<String, dynamic>> _vendorsMap = _cachedVendorsMap;
   bool _vendorsLoaded = _hasLoadedVendorsOnce;
+  Map<String, int> _restaurantPostCounts = _cachedRestaurantPostCounts;
+  bool _restaurantPostsLoaded = _hasLoadedRestaurantPostsOnce;
   StreamSubscription<QuerySnapshot>? _vendorsSubscription;
+  StreamSubscription<QuerySnapshot>? _restaurantPostsSubscription;
   StreamSubscription<QuerySnapshot>? _addressesSubscription;
   StreamSubscription<QuerySnapshot>? _deliveredOrdersSubscription;
   final Set<String> _promptedReviewOrderIds = {};
@@ -121,6 +128,28 @@ class _HomeScreenState extends State<HomeScreen> {
         setState(() {
           _vendorsMap = map;
           _vendorsLoaded = true;
+        });
+      }
+    });
+
+    _restaurantPostsSubscription = FirebaseFirestore.instance
+        .collection('resturantPosts')
+        .snapshots()
+        .listen((snapshot) {
+      final counts = <String, int>{};
+      for (final doc in snapshot.docs) {
+        final data = doc.data();
+        final vendorId = data['vendorId']?.toString();
+        if (vendorId != null && vendorId.isNotEmpty) {
+          counts[vendorId] = (counts[vendorId] ?? 0) + 1;
+        }
+      }
+      _cachedRestaurantPostCounts = counts;
+      _hasLoadedRestaurantPostsOnce = true;
+      if (mounted) {
+        setState(() {
+          _restaurantPostCounts = counts;
+          _restaurantPostsLoaded = true;
         });
       }
     });
@@ -439,6 +468,7 @@ class _HomeScreenState extends State<HomeScreen> {
     _bannerTimer?.cancel();
     _bannerController.dispose();
     _vendorsSubscription?.cancel();
+    _restaurantPostsSubscription?.cancel();
     _addressesSubscription?.cancel();
     _serviceAvailabilitySubscription?.cancel();
     _deliveredOrdersSubscription?.cancel();
@@ -2297,6 +2327,20 @@ class _HomeScreenState extends State<HomeScreen> {
   // ── Restaurants Section ─────────────────────────────────────────────────────
 
   Widget _buildRestaurantsSection(bool isDark) {
+    if (_currentPosition != null &&
+        _vendorsMap.isNotEmpty &&
+        _restaurantPostsLoaded) {
+      final hasEligibleNearby = _vendorsMap.entries.any((entry) {
+        final postCount = _restaurantPostCounts[entry.key] ?? 0;
+        if (postCount < 3) return false;
+        return _getDistanceToVendor(entry.key) <=
+            PriceHelper.maxDeliveryDistance;
+      });
+      if (!hasEligibleNearby) {
+        return const SizedBox.shrink();
+      }
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -2306,7 +2350,9 @@ class _HomeScreenState extends State<HomeScreen> {
         SizedBox(
           height: MediaQuery.of(context).size.width >= 600 ? 208.h : 242.h,
           child: Builder(builder: (context) {
-            if (_currentPosition == null || _vendorsMap.isEmpty) {
+            if (_currentPosition == null ||
+                _vendorsMap.isEmpty ||
+                !_restaurantPostsLoaded) {
               return ListView.builder(
                 scrollDirection: Axis.horizontal,
                 padding: EdgeInsets.symmetric(horizontal: 20.w),
@@ -2319,7 +2365,10 @@ class _HomeScreenState extends State<HomeScreen> {
             }
 
             final nearby = _vendorsMap.entries.where((entry) {
-              final dist = _getDistanceToVendor(entry.key);
+              final vendorId = entry.key;
+              final postCount = _restaurantPostCounts[vendorId] ?? 0;
+              if (postCount < 3) return false;
+              final dist = _getDistanceToVendor(vendorId);
               return dist <= PriceHelper.maxDeliveryDistance;
             }).toList();
 
@@ -2379,7 +2428,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             isVerified: true,
                             isFavorite: isFav,
                             vendorData: data,
-                            isClosed: !_isVendorOpen(data['operatingHours']),
+                            isClosed: !VendorStatusHelper.isStoreOpen(data),
                             badge: VendorPromoBadge(vendorId: vendorId),
                             onTap: () => context.push('/vendor/$vendorId'),
                             onFavoriteTap: () async {
